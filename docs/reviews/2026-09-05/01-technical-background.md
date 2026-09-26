@@ -12,6 +12,43 @@
 - Codex만 잡은 high: 60행 define-and-run / define-by-run 대응 순서 뒤집힘, 92행 "GPGPU 등장 2007"(CUDA 등장), 131행 "N³" 정의 누락.
 - Fable만 잡은 medium: 137행 BLAS(1979)에 GEMM 포함(Level 3는 1990), 320행 V8은 tracing JIT 아님(TraceMonkey/PyPy가 맞는 예).
 
+## 반영 현황 (2026-09-27, commit 6831d51 기준)
+
+아래 두 목록(일치 항목 17건 + 한쪽만 제기한 항목 11건) 28건 중 **반영 7건, 부분 반영 4건, 미반영 17건**. 행 번호는 현재 파일 기준.
+
+반영된 것은 두 리뷰어 공통 high 정확성 오류(NumPy pybind11, `torch.compile`=AOT, CUDA=PTX/SASS)와 구조 항목(A2-3 절 신설, A3-3/A4-15 표 개편) 위주. 이해도(중복 문장, Dynamo 연결, bullet 과밀)와 다이어그램(Fisher 표지, 통합 지점 그림) 항목은 대부분 미반영.
+
+| 항목 (리뷰 표기) | 상태 | 현재 본문 근거 |
+|---|---|---|
+| 33 트랜스포메이션 | 미반영 | 33행 "트랜스포메이션 과정을 통해" 그대로 |
+| 35/68 도입 문장 3회 | 미반영 | 31·35·68행 모두 원문 그대로 |
+| 37-39/169-174 Dynamo/Inductor/Triton 중복 | 미반영 | 40행 Q&A가 더 길어졌고 175-177행과 중복 유지 |
+| 39,172 "Dynamo=JIT Trace 대체" | 미반영 | 175행 "JIT Trace를 대체하는 컴포넌트로, 컴파일러와 유사한 역할 수행" |
+| 52 MPI 1992→1994 | 반영 | 52행 "MPI (1994)" |
+| 54 TVM (OctoAI)→Apache/UW | 부분 반영 | 54행 "Apache TVM (OctoAI)" — 명칭만 수정, 귀속은 그대로 |
+| 121-125 SIMD/SPMD/MIMD/MPI 무정의 | 미반영 | 122-123행 정의 없이 나열 |
+| 138-139 CUTLASS 분류 | 부분 반영 | 141행 GEMM template 라이브러리로 재분류. 연도는 2018 유지(제안 2017) |
+| 212 NumPy pybind11 | 반영 | 215행 "NumPy는 CPython C API를, PyTorch는 CPython C API와 pybind11을 함께 사용" |
+| 228 `torch.compile` AOT | 반영 | 231행 "`torch.compile`의 JIT 방식"; ahead-of-time 표현 없음 |
+| 313-328 역사 4항목-Dynamo 무연결 | 미반영 | 332-343행 어디에도 Dynamo 언급 없음 |
+| 322 Fisher 논문 표지 이미지 | 미반영 | 337행 `slide16_1.png` 그대로 |
+| 328 "롤백 없이" | 미반영 | 343행 원문 그대로 |
+| 342-353 bullet 7개 과밀 | 미반영 | 362-368행 bullet 7개 그대로 |
+| 351 "제3 랭귀지/멀티 랭귀지" | 부분 반영 | 366행 괄호로 구성은 병기했으나 명칭 유지 |
+| 353 "2.0에서 training 지원" | 미반영 | 368행 AOTAutograd·backward graph 언급 없음 |
+| 379-381 CUDA=PTX/SASS vs Triton | 반영 | 395-399행 SIMT/thread 중심 vs 블록 중심으로 교체. "둘 다 PTX로 컴파일"은 없음 |
+| Codex A4-2 line 60 define 순서 | 반영 | 60행 `"define-by-run" vs. "define-and-run"` |
+| Codex A4-5 line 92 GPGPU 2007 | 미반영 | 92행 "GPGPU의 등장 (2007년)" |
+| Codex A4-6 line 131 N³ 정의 | 미반영 | 131행 N 정의 없음 |
+| Codex A4-8 line 144-149 "정적 model로 고정" | 반영 | 146-152행 "전체 또는 일부 연산을 graph로" |
+| Codex A4-11 line 235-239 eager autograd/`tf.function` | 미반영 | 238-239행 한 범주로 병기 |
+| Fable A4-6 line 137 BLAS 1979=GEMM | 미반영 | 137행 Level 3(1990) 구분 없음 |
+| Fable A4-7 line 320 V8 tracing JIT | 미반영 | 335행 "(2008 출시, 2010 Crankshaft 도입) — " 뒤가 끊긴 미완성 문장. 별도 수정 필요 |
+| Fable A4-10 line 205 Cython 분류 | 미반영 | 208행 "해결책 #1" 아래 Cython 유지 |
+| Fable A2-3 line 61 예고 절 누락 | 반영 | 315-326행 "Interpretation vs. JIT/AOT Compilation" 절 신설 |
+| Fable A3-3 line 355-363 통합 지점 표/그림 | 부분 반영 | 374-378행 표를 접점/입력 단위/연결 층 3열로 개편(A4-15 해소). 그림은 의도적으로 추가하지 않음 |
+| Fable A4-17 line 163 Rebellions TensorFlow | 미반영 | 166행 검증 표시 없이 유지 |
+
 ## 두 리뷰어가 일치한 항목 (우선 수정 후보)
 
 | line | 문제 | 제안 |
