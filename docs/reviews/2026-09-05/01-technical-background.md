@@ -14,7 +14,7 @@
 
 ## 반영 현황 (2026-09-27, commit 6831d51 기준)
 
-아래 두 목록(일치 항목 17건 + 한쪽만 제기한 항목 11건) 28건 중 **반영 7건, 부분 반영 4건, 미반영 17건**. 행 번호는 현재 파일 기준.
+아래 두 목록(일치 항목 17건 + 한쪽만 제기한 항목 11건) 28건 중 **반영 7건, 부분 반영 5건, 미반영 16건**. 행 번호는 현재 파일 기준.
 
 반영된 것은 두 리뷰어 공통 high 정확성 오류(NumPy pybind11, `torch.compile`=AOT, CUDA=PTX/SASS)와 구조 항목(A2-3 절 신설, A3-3/A4-15 표 개편) 위주. 이해도(중복 문장, Dynamo 연결, bullet 과밀)와 다이어그램(Fisher 표지, 통합 지점 그림) 항목은 대부분 미반영.
 
@@ -43,7 +43,7 @@
 | Codex A4-8 line 144-149 "정적 model로 고정" | 반영 | 146-152행 "전체 또는 일부 연산을 graph로" |
 | Codex A4-11 line 235-239 eager autograd/`tf.function` | 미반영 | 238-239행 한 범주로 병기 |
 | Fable A4-6 line 137 BLAS 1979=GEMM | 미반영 | 137행 Level 3(1990) 구분 없음 |
-| Fable A4-7 line 320 V8 tracing JIT | 미반영 | 335행 "(2008 출시, 2010 Crankshaft 도입) — " 뒤가 끊긴 미완성 문장. 별도 수정 필요 |
+| Fable A4-7 line 320 V8 tracing JIT | 부분 반영 | 335행 "런타임 정보를 활용하는 최적화 JIT로 발전" — tracing JIT 주장은 제거. TraceMonkey/PyPy 등 대체 예시는 없음 |
 | Fable A4-10 line 205 Cython 분류 | 미반영 | 208행 "해결책 #1" 아래 Cython 유지 |
 | Fable A2-3 line 61 예고 절 누락 | 반영 | 315-326행 "Interpretation vs. JIT/AOT Compilation" 절 신설 |
 | Fable A3-3 line 355-363 통합 지점 표/그림 | 부분 반영 | 374-378행 표를 접점/입력 단위/연결 층 3열로 개편(A4-15 해소). 그림은 의도적으로 추가하지 않음 |
