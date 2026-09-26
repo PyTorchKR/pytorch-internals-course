@@ -36,8 +36,8 @@ ML Framework의 발전은 이전 연구와 산업적 성과가 축적된 결과�
 
 > **Q: PyTorch의 경우, ML 컴파일러의 이름이 있을까요?**
 >
-> 컴파일러의 정의를 먼저 살펴봐야 합니다. PyTorch 1.x에도 `torch.jit.trace` 등 컴파일러 유사 기능이 포함되어 있었으나, 당시에는 컴파일러 기능이 프레임워크의 중심이 아니었습니다. PyTorch 2.0에서는 **Dynamo**(torch.jit.trace를 대체), **Inductor**(본격적인 컴파일러), **Triton**(도메인 특화 언어)이 주요 ML 컴파일러 컴포넌트로 작동합니다.
-
+> PyTorch 1.x에도 **TorchScript/JIT**라는 컴파일 스택이 있었으며, `torch.jit.trace`나 `torch.jit.script`를 통해 모델을 컴파일할 수 있었습니다. 다만 일반적인 사용 방식은 연산을 즉시 실행하는 eager mode가 중심이었습니다.
+> PyTorch 2.0에서는 **`torch.compile()`**을 통해 기존 Python 코드에 적은 수정만으로 컴파일 최적화를 적용할 수 있게 되었습니다. 내부적으로 **TorchDynamo**가 연산 그래프를 추출하고, **AOTAutograd**가 역전파 그래프까지 준비하며, 기본 컴파일러 백엔드인 **TorchInductor**가 그래프를 최적화하고 실행 코드를 생성합니다. GPU 코드 생성에는 주로 도메인 특화 언어(DSL)이자 컴파일러인 **Triton**을 활용합니다.
 
 ## 오늘 다룰 주제들
 
@@ -49,15 +49,15 @@ ML Framework의 발전은 이전 연구와 산업적 성과가 축적된 결과�
     - GPGPU: HLSL (2002), CUDA (2007), OpenCL (2008), HSA (2012)
 - Supercomputing - BLAS, MPI 등 고성능 컴퓨팅 기술
     - Fast multiplication - BLAS (1979), cuBLAS (2007), CUTLASS (2018)
-    - Distributed programming - MPI (1992)
+    - Distributed programming - MPI (1994)
 - ML compiler
-    - XLA (Google), TensorRT (Nvidia), TVM (OctoAI), Glow (Meta), etc
+    - XLA (Google), TensorRT (NVIDIA), Apache TVM (OctoAI), Glow (Meta), etc
 - Numerical Computing for Data Science - NumPy로 대표되는 도구 생태계
     - Matlab (1970s), R (1993), NumPy (2005)
 
 **ML Framework 설계의 딜레마(Design Space):**
 - Two (or three) language problems
-- Eager vs. graph mode: "define-and-run" vs. "define-by-run"
+- Eager vs. graph mode: "define-by-run" vs. "define-and-run"
 - Interpretation vs. JIT(Just in Time)/AOT(Ahead of Time) compilation
 
 **PyTorch에 통합된 기술**: 앞에서 소개한 기술들이 PyTorch의 실행 및 컴파일 구조에 어떻게 반영되었는지 살펴봅니다.
@@ -84,7 +84,7 @@ GPU 기반 heterogeneous computing은 GUI와 컴퓨터 게임을 위한 graphics
 
 2000년대 초에는 GPU 프로그래밍에 큰 변화를 가져온 **Shader Programming**이 등장했습니다. 이전에는 GPU가 fixed function만 수행할 수 있었지만, 이제 개발자가 GPU를 프로그래밍 가능한 디바이스로 활용할 수 있게 되었습니다.
 
-- **Nvidia GeForce 3 (2001)** - 최초로 Shader Programming을 지원한 GPU로, 하드웨어적으로 셰이더 기능을 도입했습니다.
+- **NVIDIA GeForce 3 (2001)** - 최초로 Shader Programming을 지원한 GPU로, 하드웨어적으로 셰이더 기능을 도입했습니다.
 - **DirectX 9와 HLSL** - Microsoft는 DirectX 9(2002)에서 High-Level Shading Language(HLSL)를 정의하여 개발자들이 고급 언어로 GPU를 프로그래밍할 수 있도록 지원했습니다.
 
 Programmable shader의 도입으로 개발자가 GPU의 연산을 프로그램으로 기술할 수 있게 되었고, 이후 범용 GPU 계산으로 확장할 기반이 마련되었습니다.
@@ -136,17 +136,20 @@ PyTorch의 `torch.distributed`는 MPI에서 널리 사용되는 rank, process, c
 **표준 라이브러리 BLAS**
 - **BLAS** (Basic Linear Algebra Subprograms, 1979) - 다양한 linear algebra 문제에 적용할 수 있는 low-level API로, Matrix multiplication을 위한 **GEMM**(General Matrix Multiply)을 포함합니다.
 - 각 HW vendor들은 자사 하드웨어에 최적화된 BLAS 구현을 출시합니다:
-  - Nvidia: **cuBLAS** (2007, closed-source), **CUTLASS** (2018, 오픈소스) - cuBLAS는 클로즈드 소스로 제공되지만, CUTLASS는 오픈소스 라이브러리로 누구나 접근 가능합니다.
+  - NVIDIA:
+    - **cuBLAS** (2007, closed-source): NVIDIA GPU에 최적화된 BLAS 구현으로, 클로즈드 소스로 제공
+    - **CUTLASS** (2018, open-source): GEMM 등을 위한 고성능 GPU 커널을 구성하고 사용자 요구에 맞게 특수화할 수 있는 오픈소스 CUDA C++ 템플릿 라이브러리
 
 
 ### ML Compiler
 
 ML Compiler는 정적인 graph로 전환된 ML model을 특정 hardware에 맞게 최적화해주는 컴파일러입니다.
 
-ML Framework으로 개발자들이 표현한 model은 대부분 "동적"입니다. ML compiler를 적용하기 위해서는:
-1. 동적으로 표현된 model을 특정한 "정적" model로 고정하고
-2. 이를 ML compiler가 이해할 수 있는 format으로 전환하여
-3. 최종적으로 HW가 실행할 수 있는 binary를 생성합니다.
+Eager 방식의 ML Framework에서는 model의 연산이 실행 중에 결정됩니다. ML compiler를 적용하는 과정은 다음과 같습니다:
+
+1. model의 전체 또는 일부 연산을 graph로 표현하고
+2. 이를 ML compiler가 이해할 수 있는 중간 표현(IR)으로 변환하여
+3. 최종적으로 HW에서 실행할 수 있는 코드를 생성합니다.
 
 #### On-Device AI에서의 활용
 
@@ -209,7 +212,7 @@ Python은 사용하기 쉽지만 성능 문제가 있습니다. 이를 해결하
 - Modular의 Mojo 프로젝트가 대표적인 시도입니다.
 
 **해결책 #3: 다른 언어로 작성된 모듈과 binding**
-- pybind11을 통한 Python + C++11 결합이 대표적이며, NumPy와 PyTorch가 이 방식을 채택하고 있습니다.
+- C/C++ 모듈을 Python에 연결하며, NumPy는 CPython C API를, PyTorch는 CPython C API와 pybind11을 함께 사용합니다.
 - 추가로 AI 가속기로 offloading하여 성능을 극대화합니다.
 
 
@@ -225,16 +228,16 @@ API 호출 시 graph를 점진적으로 생성합니다. Graph가 완성되면 �
 - Back propagation을 위한 backward graph 생성
 - 성능 향상을 위한 최적화 수행 (예: op fusion)
 
-Eager execution 중에도 graph 자료구조를 사용할 수 있습니다. 예를 들어 autograd가 활성화되면 forward 연산은 즉시 실행되면서 backward 계산에 필요한 동적 autograd graph가 함께 기록됩니다. 이후 backward propagation은 이 graph의 `Function` node를 따라 실행됩니다. 이 동적 autograd graph는 `torch.compile`의 ahead-of-time graph compilation과는 구분해야 합니다.
+Eager execution 중에도 graph 자료구조를 사용할 수 있습니다. 예를 들어 autograd가 활성화되면 forward 연산은 즉시 실행되면서 backward 계산에 필요한 동적 autograd graph가 함께 기록됩니다. 이후 backward propagation은 이 graph의 `Function` node를 따라 실행됩니다. 이 동적 autograd graph는 `torch.compile`의 JIT 방식으로 캡처하여 최적화·컴파일하는 연산 graph와는 목적과 역할이 다릅니다.
 
 #### Graph mode를 접근하는 방법
 
 **TF1의 접근법 (define-and-run)**
-- 개발자에게 명시적으로 graph를 생성하도록 요구
+- 개발자가 graph를 명시적으로 구성한 뒤 실행
 
 **PyTorch, TF2, JAX의 접근법 (define-by-run)**
-- 개발자는 eager mode를 가정하고 model을 작성
-- 개발자가 작성한 eager mode 기반 model로부터 graph를 추출
+- 개발자는 일반적인 코드로 model의 연산을 작성
+- 프레임워크가 코드 분석이나 tracing을 통해 컴파일에 필요한 graph를 추출
 
 TF2와 PyTorch는 Eager, Graph 모두 가능합니다. JAX도 기본적으로는 eager로 실행되지만, `jax.jit`으로 감싼 함수는 트레이싱을 거쳐 그래프로 컴파일됩니다.
 
@@ -309,15 +312,27 @@ optimized_foo(x, y)
 
 PyTorch 1.x와 2.x 모두 eager execution을 기본 실행 방식으로 지원합니다. PyTorch 1.x에서는 `torch.jit.trace`로 graph를 생성할 수 있었고, PyTorch 2.x에서는 eager semantics를 유지하면서 선택적으로 적용하는 `torch.compile`을 도입했습니다. TorchDynamo는 Python bytecode를 분석해 컴파일 가능한 FX graph 구간을 생성합니다.
 
+### Interpretation vs. JIT/AOT Compilation
+
+Eager vs. graph mode가 "graph를 만드는가"의 축이라면, 이 축은 "코드를 언제 기계어로 바꾸는가"의 축입니다. 두 축은 독립적이며, graph mode는 JIT로도 AOT로도 구현할 수 있습니다.
+
+| 방식 | 컴파일 시점 | PyTorch 2.x | 얻는 것 | 치르는 것 |
+|------|------------|-------------|--------|----------|
+| Interpretation | 없음. Python interpreter가 op을 하나씩 실행하고, 각 op은 미리 빌드된 kernel을 호출 | Eager mode | 디버깅, 동적 제어 흐름 | op마다 Python·dispatch 비용, op 간 최적화 불가 |
+| JIT (Just in Time) | 첫 실행 시점. 실제 shape·dtype을 보고 컴파일 | `torch.compile` | 런타임 정보에 특화된 코드, 코드 수정 최소 | warmup 시간, guard 실패 시 재컴파일 |
+| AOT (Ahead of Time) | 실행 전. 배포용 artifact를 생성 | `torch.export`로 graph를 얻고 AOTInductor(`torch._inductor.aoti_compile_and_package`)로 컴파일 | Python 없이 C++ runtime에서 실행, 시작 지연 없음 | 입력 shape 등 가정을 미리 고정해야 함 |
+
+뒤의 "Backend Integration Points" 표는 이 구분을 전제로 hardware 연결 지점을 나눕니다.
+
 
 ### Eager 프로그램에서 실행 그래프를 얻는 관련 기법
 
-Eager mode에서 graph를 추출하는 기법에는 오랜 역사가 있습니다:
+프로그램의 실행 경로와 데이터 의존성을 분석하고 활용하는 기법은 컴파일러와 하드웨어 양쪽에서 발전해 왔습니다.
 
-- **Trace scheduling** for VLIW compiler (1981)
-- **Out-Of-Order Execution** in Pentium Pro (1995)
-- **Trace cache** (1996)
-- **Chrome V8 Engine** (2008)
+- **Trace scheduling** for VLIW compiler (1981): 선택한 실행 경로를 중심으로 명령어를 정적으로 재배치
+- **Out-Of-Order Execution** in Pentium Pro (1995): 데이터 의존성을 지키면서 준비된 명령어부터 실행
+- **Trace cache** (1996): 실행 경로를 따라 나타나는 명령어열을 캐시에 저장
+- **Chrome V8 Engine** (2008): Chrome V8 (2008 출시, 2010 Crankshaft 도입) — 
 
 <img src="/images/01/slide16_1.png" class="rounded shadow-lg" alt="Trace Scheduling paper by Joseph A. Fisher, 1981" />
 
@@ -348,19 +363,21 @@ PyTorch 2.0은 PyTorch 1.0의 특성을 거의 모두 계승(inherit)하면서, 
 - **Heterogeneous computing** as an underneath foundation - CPU와 GPU/NPU 같은 가속기를 함께 쓰는 실행 모델이 프레임워크의 토대. tensor가 device 정보를 가지며, 같은 op이라도 device에 따라 다른 구현이 실행되는 구조의 기반이 됨
 - **MPI-like** distributed programming model - MPI에서 정립된 collective communication 스타일(broadcast, all-reduce 등)의 분산 프로그래밍을 `torch.distributed`로 기본 지원
 - Integration with compute libraries / ML compiler - PyTorch 1.0부터 Eager mode에서는 컴퓨팅 라이브러리를 사용하고, PyTorch 2.0에서는 Graph mode에서 ML 컴파일러와의 통합을 핵심 과제로 다루고 있음
-- Three language layers: Python → C++ → kernel language (예: CUDA, Triton) - 단순한 2개 언어가 아니라 제3 랭귀지 또는 멀티 랭귀지 솔루션. 스크립팅은 Python으로 이루어지지만, 하위 레벨에서는 성능 최적화를 위해 C++로 전환되며, GPU/TPU/NPU 등의 하드웨어에서는 커널 레벨의 최적화 성능을 제공
+- Three language layers: Python → C++ → kernel language (예: CUDA, Triton) - 단순한 2개 언어가 아니라 제3 랭귀지 또는 멀티 랭귀지 솔루션 (Python API + C++ 구현 + CUDA/Triton kernel). 스크립팅은 Python으로 이루어지지만, 하위 레벨에서는 성능 최적화를 위해 C++로 전환되며, GPU/TPU/NPU 등의 하드웨어에서는 커널 레벨의 최적화 성능을 제공
 - **Define-by-run** with graph capturing via TorchDynamo - Eager mode 중심으로 Graph mode를 부드럽게 지원
-- Support both training and inference - Graph mode(컴파일) 경로가 inference뿐 아니라 training까지 지원하게 된 것이 PyTorch 2.0에서 가장 크게 변화한 부분
+- Support both training and inference - Graph mode(컴파일) 경로가 inference뿐 아니라 training까지 쉽게 활용할 수 있게 된 것이 PyTorch 2.0에서 가장 크게 변화한 부분
 
 #### Backend Integration Points
 
 다양한 하드웨어와 원활히 연결될 수 있도록 통합 포인트를 잘 정의하고 있습니다:
 
-| Mode | Integration |
-|------|-------------|
-| Eager mode | As a new dispatch target |
-| Graph mode (JIT & AOT) | As a backend to TorchDynamo |
-| Graph mode (codegen) | As a backend to Inductor |
+| 접점 | 입력 단위 | 연결 층 |
+|------|----------|--------|
+| ① Eager mode | 개별 ATen op | ATen dispatcher의 새 dispatch target |
+| ② Graph mode<br />(JIT: `torch.compile` / AOT: `torch.export`) | FX graph (`ExportedProgram`) | TorchDynamo가 뽑은 graph를 받는 backend |
+| ③ Graph mode (codegen) | Inductor의 loop-level IR | Inductor의 device별 code generator |
+
+①은 2주차(dispatcher), ②는 3주차(Dynamo backend)에서 자세히 다룹니다.
 
 
 ## Q&A
@@ -376,8 +393,9 @@ PyTorch 2.0은 PyTorch 1.0의 특성을 거의 모두 계승(inherit)하면서, 
 > **Q: CUDA와 Triton은 어떻게 다른가요?**
 
 - **라이선스**: CUDA는 proprietary, Triton은 오픈소스
-- **설계 목적**: CUDA는 스레드 단위의 fine-grained 처리, Triton은 코스 그레인한 데이터 블록 단위 처리
-- **프로그래밍 모델**: CUDA는 PTX/SASS 기반, Triton은 Python 데코레이터 형태의 API 제공
-- **최적화 방식**: Triton은 컴파일러가 복잡한 최적화를 처리하는 전략 채택
+- **설계 목적**: CUDA는 범용 GPU 컴퓨팅, Triton은 고성능 텐서 연산 커널 개발
+- **작성 방식**: CUDA C++는 C++ 확장 문법으로, Triton은 Python 기반 DSL과 @triton.jit으로 커널을 작성
+- **프로그래밍 모델**: CUDA C++는 스레드 중심, Triton은 데이터 블록(타일) 중심
+- **최적화 방식**: CUDA C++는 세밀한 직접 제어, Triton은 컴파일러 자동화에 중점
 
 Triton은 단순한 Python API가 아니라 Python syntax를 사용하는 kernel programming DSL입니다. PyTorch Inductor는 NVIDIA GPU용 kernel을 생성할 때 Triton을 주요 code generation backend 중 하나로 사용합니다. 이는 모든 PyTorch operator나 모든 hardware backend가 Triton을 사용한다는 의미는 아닙니다.
