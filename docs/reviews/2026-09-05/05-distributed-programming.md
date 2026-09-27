@@ -84,6 +84,29 @@
 
 ## 한쪽만 제기한 항목 (검토 필요)
 
+반영 현황 (2026-09-27): 16건 중 반영 13, 일치 항목과 함께 해소 3. 근거는 v2.14.0 소스, DeepSpeed/Accelerate main 브랜치 소스, PyTorch FSDP 블로그·tutorial, Ray/Rebellions 공식 문서.
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| Codex A4-2 재게시 코드 `.to(device)` | 함께 해소 | 일치 항목 484-500 수정 시 520-534에도 포함 |
+| Codex A4-5 torchrun 순서 | 함께 해소 | 일치 항목 392 수정 시 본문 단계 목록도 재작성 |
+| Codex A4-12 DDP forward buffer broadcast | 반영 | v2.14는 `forward_sync_buffers`(기본 True, `broadcast_buffers`는 deprecated). "parameter 통신은 없고 buffer broadcast만" 으로 727·823행 수정 |
+| Codex A4-15 "reshard 통신" | 반영 | reshard = full parameter 해제. 통신은 all-gather + reduce-scatter로 |
+| Codex A4-16 2P/3P 단위 | 반영 | P byte, rank당 송신량, (N−1)/N ≈ 1 가정을 명시. "거의 완전히 겹침" → "대부분 겹침". `2(N−1)P/N` 식 자체는 넣지 않음(각주의 ring 설명으로 충분) |
+| Codex A4-17 FSDP 메모리 = P/world_size | 반영 | 상시 상태만 분할, peak에는 현재·prefetch module의 full 버퍼와 activation이 더해짐. 947행 10GB/40GB 예에 "복원 단위는 한 GPU에 들어가야" 조건 추가 |
+| Codex A4-20 DeepSpeed 예제 | 반영 | `training_data`를 안 넘기므로 dataloader는 직접 준비하는 형태로, config에 `"optimizer"` 선언 추가(ZeRO-3는 optimizer 필수: engine.py `zero stage {} requires an optimizer`) |
+| Codex A4-21 ZeRO 통신 시점 | 반영 | `stage_1_and_2.py` `reduce_ready_partitions_and_remove_grads`: `partition_gradients or is_gradient_accumulation_boundary()` → ZeRO-2/3는 매 backward, ZeRO-1은 경계 |
+| Codex A4-23 Accelerate backward | 반영 | `DeepSpeedEngineWrapper.backward`가 `sync_gradients`면 `engine.step()`까지, `DeepSpeedOptimizerWrapper.step/zero_grad`는 `pass`. GradScaler는 fp16 경로, bf16은 scaling 없음 |
+| Codex A4-24 Ray optimizer | 함께 해소 | 일치 항목 1078-1087 |
+| Codex A4-25 FailureConfig | 반영 | 재시도만 담당. `report(checkpoint=...)` 저장과 `get_checkpoint()` 복원 로직이 있어야 재개된다고 명시(Ray fault-tolerance 문서) |
+| Codex A4-26 NVCC | 반영 | compiler driver, kernel은 op 구현의 일부이며 1:1 아님. Q&A는 유지 |
+| Codex A4-27 Rebellions | 반영 | docs.rbln.ai: RSD(Rebellions Scalable Design)로 한 시스템 안 여러 NPU 칩에 분할, 노드 간 언급 없음. 이 범위를 괄호로 명시 |
+| Fable A4-8 FSDP1 deprecated | 반영 | 소스에 클래스 수준 warning 없음, tutorial 배너 "FSDP1 is deprecated". "공식 tutorial은 deprecated로 표시…"로 |
+| Fable A4-14 UCC | 반영 | 내장 4개(Gloo, NCCL, XCCL, MPI) 명시, UCC 행에 `USE_UCC` 빌드 옵션 표기 |
+| Fable A4-17 1.11 beta | 반영(수정) | 리뷰의 "beta"도 부정확. PyTorch 블로그(2022-03) "With PyTorch 1.11 … currently available as a prototype feature" → "prototype 기능으로 편입"으로 |
+| Fable A4-19 dim-0 기본값 | 반영 | "기본적으로", `shard_placement_fn` 언급(v2.14.0 `_fully_shard.py` L103) |
+| Fable A2-9 5주제 문단 | 반영 | 2D DTensor 문단과 3D/CP·EP/torchtitan/FSDP1 문단으로 분리 |
+
 - **Codex A4-2 (high) line 520-534**: 재게시 함수에 `.to(device)` 없음 → CPU tensor로 NCCL broadcast 실패.
 - **Codex A4-5 (high) line 386-409**: torchrun은 agent rendezvous 후 worker spawn. 본문은 spawn 후 worker 전원 rendezvous로 반대.
 - **Codex A4-12 (high) line 727/823**: DDP forward에 buffer broadcast 통신 있음.
