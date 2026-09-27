@@ -12,6 +12,43 @@
 - Codex만 잡은: 404행 "최종 결과만 한 번 DRAM에"(FA1은 K/V block마다 O·통계량 갱신), 552–605행 "메모리를 세 번 읽어야"(순차 baseline 설명이지 HBM 횟수 아님), 607행 점화식에 scaling·causal 범위 없음, 927–937행 "PyTorch만 지원하면 vLLM 동작"(platform plugin·attention backend 필요), 900행 running 큐 = decode 아님(chunked prefill 포함), 1024행 HBM read 하한은 dense·full attention 가정 명시 필요, 3행 강의일 2025 vs 2026 자료 혼재.
 - Fable만 잡은: 653/751행 `[^cublas]`, `[^simt]` 고아 footnote, 725행 "FA v1은 생짜 CUDA"(Apex FMHA/CUTLASS 2.x 기반), 784행 "NVIDIA만 호출 가능"(cuBLAS는 누구나 호출; SASS 작성이 비공개), 434행 PagedAttention을 "attention 효율 기법"(메모리 관리 기법, 커널은 20–26% 느림), 298행 TPS→TPOT/ITL, 838행 CUDA Tile C++ 13.3은 Fable이 needs verification으로 두었으나 출처 검증에서 공식 문서("initial release of CUDA Tile C++ is CUDA 13.3")로 확인 — 강의 원문이 맞음.
 
+## 반영 현황 (2026-09-27)
+
+일치 항목 30행: 반영 25, 부분 반영 5, 보류 0. 한쪽만 제기한 항목은 아직 미검토. 그림은 실제 파일을 열어 확인했고(slide07_2는 원본 PPTX slide 7도 같은 image15.png를 두 번 사용), 수치는 FA2/FA4 논문·GEMM 슬라이드 원문으로 재확인. 행 번호는 리뷰 당시 기준.
+
+| 항목 (리뷰 표기) | 상태 | 비고 |
+|---|---|---|
+| 22-34 도입 | 부분 반영 | 강의자의 세 질문 프레이밍은 유지. "답부터 먼저 드리면(어디까지나 개인적인 생각이지만…)" 자기서술과 "세 질문에 답하다 보면…" 문장만 정리 |
+| 113-149 Self-attention | 부분 반영 | Q/K/V 역할 한 줄 추가, 흐름 재서술 문단 축약, 카드를 그림 순서(내적/scale → softmax → αv 합산 → 출력)로 수정. 나머지 반복은 유지 |
+| 174 slide07_2 = slide06_1 | 반영 | 원본 슬라이드도 같은 그림을 두 번 사용. `attention-{noncausal,causal}-{light,dark}.svg`를 새로 그려 ThemeImage로 교체, "현재 + 이전 단어" |
+| 198, 269 서스펜스형 도입 | 반영 | 사실부터 |
+| 221 `U R A HELP CHAPP` | 반영 | `You are a helpful chatbot`, 두 번째 토큰 `are` (PPTX에도 없는 문자열, 변환 오류) |
+| 294 "유효 곱셈" | 반영 | MFU(Model FLOPs Utilization)로 명시 |
+| 321-331 slide13_1 | 반영 | Wulf & McKee 1995 논문 첫 페이지로 alt·출처 수정, Gholami "AI and Memory Wall" 출처는 slide15_1 아래로 이동 |
+| 345 continuous batching | 반영 | decode step(iteration) 단위 스케줄링으로 |
+| 364, 370-373 speculative decoding | 반영 | target model. 거절 위치에서 target이 자기 토큰 확정("Glitters"), 최소 1토큰 진행 보장, greedy/rejection sampling 단서 |
+| 377-380 그림 alt 뒤바뀜 | 반영 | 18_2(autoregressive baseline)를 왼쪽, 18_1(전체 과정)을 오른쪽에 두고 alt·캡션 수정 |
+| 390 "N 두 배 → 4배" | 반영 | 누적 시간 O(N²), KV cache 메모리 O(N) 분리 |
+| 408-411 slide20_2 | 반영 | GPT-2 attention 시간 막대그래프(≈17ms vs 2ms)로 alt 수정 + 설명 한 문단 |
+| 431-434 logical block | 반영 | request별 logical block 번호 + block table(page table에 해당) 매핑으로 재서술 |
+| 454 "GPU-Aware" | 반영 | IO-aware (122행도 함께) |
+| 460-469 Grid | 반영 | thread block 집합으로 정의. 그림 캡션에 19TB/s·20MB는 SM 합산치, block당 shared memory는 SM당 최대 163KB 명시 |
+| 489-492 tiling.gif | 반영 | 프레임 추출로 확인: 출력 C를 2×2 타일(block)·셀(thread)로 분할하는 애니메이션. alt 수정 |
+| 561-563 softmax | 반영 | 공통 인자 e^{-max} 약분, overflow → inf → NaN |
+| 607-621 점화식 | 반영 | m/d′/o′ 정의와 o₀′ = 0 추가 |
+| 679-731 FA 카드 | 반영 | 25–40%(A100), 50–73%, "Fewer non-matmul FLOPs", MMA·WGMMA 풀이(TMA는 기존 각주) |
+| 737 FA4 | 반영 | 논문 수치(B200: cuDNN 1.3×, Triton 2.7×)로 교체. Hot Chips 수치는 다른 GPU 간 비교임을 명시 |
+| 755-764 slide32_1/2 | 반영 | CPU vs GPU 자원 배분 / V100→B100 세대별 기능 표로 alt·캡션 수정 |
+| 782-784 "Programming Guide 10%" | 반영 | 그림대로 Vanilla 1–10%, Guide 30–50%(fp32), CUTLASS 80–90%, cuBLAS >90%(tf32). "NVIDIA만 호출 가능" → cuBLAS는 누구나 호출, SASS 수준 작성이 어려운 것 |
+| 803-810 Triton 그림 | 반영 | 35_1 = Triton 논문 Fig.3, 36_1 = CUDA vs Triton 비교표, "moat" 인용문에 SemiAnalysis 출처. "Block Programming Model" 고유명사화 해제 |
+| 864-876 slide42_1/43_x | 반영 | 42_1은 Model Support로 설명, 43_1~4는 prefix caching·chunked prefill·dynamic SD·multi-LoRA 각 한 문장 + h-56 2열 |
+| 880, 917-945 약어·hedge | 반영 | TP/PP/EP 풀이. hedge는 절 도입에 한 번으로 모으고 919·922행의 반복 hedge 삭제 |
+| 906-911 엔진 루프·KV block 그림 | 반영 | max-w-lg로 확대, 캡션에 block_size=4 예제·기본값 16·metadata는 CPU 명시 |
+| 963-971 정리 절 | 부분 반영 | "결국" 3회만 정리. 강의자의 마무리 문단은 유지 |
+| 997 "Counting Dots" | 반영 | "행렬곱의 FLOPs 세는 법: 내적 개수 × 2" |
+| 1007 transformer-diagram 기호 | 부분 반영(방향 변경) | 캡션 대신 본문의 B를 그림과 같은 batch(시퀀스 수)로 통일. decode에서는 B = 토큰 수, prefill은 행 수 BT라고 설명 (저자 결정) |
+| 679-731 FA2 "50–70%" | 부분 반영 | 논문 수치 50–73%로 숫자만 |
+
 ## 두 리뷰어가 일치한 항목 (우선 수정 후보)
 
 | line | 문제 | 제안 |
