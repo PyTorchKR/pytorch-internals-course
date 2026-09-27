@@ -46,8 +46,9 @@
 
   <!-- f. [3] → compiled backward 실행 (warm accent) -->
   <path d="M284 380 H332 Q340 380 340 372 V316 Q340 308 348 308 H376" fill="none" stroke="#C89A6E" stroke-width="1.4" marker-end="url(#ctfd-arr-warm)"/>
-  <rect x="288" y="388" width="74" height="14" rx="2" fill="#141210"/>
-  <text x="325" y="398" font-family="'DM Mono', monospace" font-size="8.5" fill="#C89A6E" text-anchor="middle">backward 실행</text>
+  <rect x="286" y="386" width="92" height="24" rx="2" fill="#141210"/>
+  <text x="332" y="395" font-family="'DM Mono', monospace" font-size="7.5" fill="#C89A6E" text-anchor="middle">loss backward 먼저,</text>
+  <text x="332" y="406" font-family="'DM Mono', monospace" font-size="7.5" fill="#C89A6E" text-anchor="middle">→ compiled backward</text>
 
   <!-- g. compiled backward → gradients -->
   <path d="M500 316 V398" fill="none" stroke="#8F8880" stroke-width="1.2" marker-end="url(#ctfd-arr)"/>

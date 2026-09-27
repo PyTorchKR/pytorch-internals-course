@@ -61,7 +61,7 @@ PyTorch + NPU 온라인 모임 #4 | 2025-01-08
 
 1. **Forward Propagation (순전파)**: 입력 데이터를 네트워크에 통과시켜 각 층의 가중치를 사용한 연산을 거쳐 출력값을 계산합니다.
 2. **Loss 계산**: 기대 출력(ground truth)과 네트워크 예측값의 차이를 loss function을 통해 계산합니다.
-3. **Backward Propagation (역전파)**: 손실을 줄이기 위해 loss에서 출발하여 입력층까지 역방향으로 gradient를 계산합니다. 중간층의 모든 가중치에 대한 보정값을 구하는 이 과정을 backpropagation이라 하며, 이것이 자동화된 것이 **Automatic Differentiation**입니다.
+3. **Backward Propagation (역전파)**: 손실을 줄이기 위해 loss에서 출발하여 입력층까지 역방향으로 gradient를 계산합니다. 중간층의 모든 가중치에 대한 보정값을 구하는 이 과정을 backpropagation이라 합니다. 이를 프레임워크가 자동으로 해 주는 것이 **Automatic Differentiation**(AD)인데, AD는 backpropagation보다 넓은 개념이고 backpropagation은 그중 reverse mode를 신경망 학습에 적용한 것입니다.
 4. **Optimizer**: 계산된 gradient를 기반으로 optimizer가 가중치를 조정합니다. 이때 모델 아키텍처 자체는 변하지 않고, 가중치만 업데이트됩니다.
 
 이 과정을 반복하면 손실이 점차 줄어들며, 목표 성능에 수렴하면 학습이 종료됩니다. 이것이 Supervised Learning(지도 학습)의 일반적인 흐름입니다.
@@ -127,7 +127,7 @@ PyTorch는 **Eager Mode**를 기본으로 동작하며, 각 연산이 실행될 
 
 이를 위해 PyTorch는 Dispatcher와 operator overloading을 활용합니다:
 - **Dispatcher**는 연산 요청이 들어오면 해당 연산을 어떤 방식으로 처리할지 결정하고, 적합한 구현(Autograd dispatch key 등)을 호출합니다.
-- **Operator overloading**을 통해 Python의 기본 연산자(예: `+`, `*`, `@`)를 PyTorch 텐서 객체에서 사용할 때, Autograd와 함께 처리되도록 수정된 함수가 실행됩니다.
+- **Operator overloading**은 AD 구현 방식의 이름(Baydin et al.의 분류)으로, 연산이 호출되는 시점에 기록을 남기는 방식을 뜻합니다. PyTorch에서는 `+`, `*`, `@` 같은 연산자뿐 아니라 `torch.matmul` 같은 함수 호출도 dispatcher의 Autograd key에서 같은 방식으로 기록됩니다.
 
 이를 통해 직관적이고 명령형 프로그래밍 스타일로 모델을 만들 수 있습니다.
 
@@ -135,7 +135,7 @@ PyTorch는 **Eager Mode**를 기본으로 동작하며, 각 연산이 실행될 
 
 각 텐서별로 gradient 계산 여부를 선택할 수 있습니다. 딥러닝 모델에서 모든 텐서에 대해 gradient가 필요한 것은 아닙니다. 예를 들어 입력 데이터(input)는 값이 변하지 않으므로 backprop이 필요 없지만, 학습 대상인 weight는 backprop이 필요합니다.
 
-텐서에는 `requires_grad`라는 flag가 있어서, 이 flag가 켜져 있는 텐서들만 computation graph에 연산 기록을 남기게 됩니다. Backpropagation을 실행하기 전에 gradient가 필요한 텐서를 transitive하게 선별하여 연산 비용을 줄이고 불필요한 리소스 낭비를 방지합니다. 이 기능은 학습 중 특정 텐서를 freeze하거나 모델의 일부만 미세 조정(fine-tuning)할 때 유용합니다.
+텐서에는 `requires_grad`라는 flag가 있어서, 입력 중 하나라도 이 flag가 켜져 있으면 그 연산이 computation graph에 기록되고, backward에 필요하면 flag가 꺼진 입력도 함께 저장됩니다. 입력 어디에도 flag가 없는 연산은 기록하지 않습니다. Backpropagation을 실행하기 전에 gradient가 필요한 텐서를 transitive하게 선별하여 연산 비용을 줄이고 불필요한 리소스 낭비를 방지합니다. 이 기능은 학습 중 특정 텐서를 freeze하거나 모델의 일부만 미세 조정(fine-tuning)할 때 유용합니다.
 
 #### 3. Custom Differentiable Function
 
@@ -244,7 +244,7 @@ z.backward()
 
 ### [참고] Forward에서 수행되는 AutoGrad kernel 예제: add
 
-PyTorch v1.13.1 기준으로 `torch/csrc/autograd/generated/VariableType_2.cpp`에는 다음과 같은 `add_Tensor` forward 커널이 생성되어 있습니다. (디버그 전용 `#ifndef NDEBUG` 블록의 storage alias 검증 코드는 핵심 흐름 이해에 지장이 없어 생략했습니다.)
+PyTorch v1.13.1 기준으로 `torch/csrc/autograd/generated/VariableType_2.cpp`에는 다음과 같은 `add_Tensor` forward 커널이 생성되어 있습니다. (디버그 전용 `#ifndef NDEBUG` 블록의 storage alias 검증 코드와 forward-mode AD 블록(`_any_has_forward_grad_result` 관련)은 핵심 흐름 이해에 지장이 없어 생략했습니다.)
 
 ```cpp
 // torch/csrc/autograd/generated/VariableType_2.cpp
@@ -285,7 +285,7 @@ at::Tensor add_Tensor(c10::DispatchKeySet ks, const at::Tensor & self, const at:
 3. `next_edges`를 통해 backward graph를 구성합니다. 마치 computation graph를 만드는 것처럼 역전파 경로를 기록해 둡니다.
 4. 이 모든 기록이 끝난 후에 실제 forward 계산을 수행합니다.
 
-또한 특정 텐서에 `requires_grad=True`가 설정되어 있으면, 그 텐서로부터 영향을 받는 모든 output 텐서들도 자동으로 `requires_grad=True`가 됩니다(단, `torch.no_grad()`나 `torch.inference_mode()` 안에서는 출력의 `requires_grad`가 항상 `False`로 override됩니다). PyTorch가 forward 과정에서 이를 추적하며 자동으로 설정합니다.
+또한 특정 텐서에 `requires_grad=True`가 설정되어 있으면, 그 텐서로부터 영향을 받는 모든 output 텐서들도 자동으로 `requires_grad=True`가 됩니다(단, `torch.no_grad()`나 `torch.inference_mode()` 안에서는 연산 출력의 `requires_grad`가 `False`로 override됩니다. `torch.ones(2, requires_grad=True)`처럼 factory function으로 새로 만든 tensor는 예외로 `True`가 유지됩니다). PyTorch가 forward 과정에서 이를 추적하며 자동으로 설정합니다.
 
 
 ### [참고] Grad Functions
@@ -539,7 +539,7 @@ def backward(self, ge_scalar, tangents_1):
 
 지금까지 설명한 과정을 조금 더 쪼개서 보면, training mode에서 `torch.compile()`이 model의 forward와 backward graph를 compile하는 중심에는 AOTAutograd가 있습니다. AOTAutograd는 functorch 프로젝트에서 시작되어 PyTorch 2.0의 `torch.compile` training path에 통합된 compiler component입니다.[^aotdispatcher] Functionalization, decomposition, joint graph 생성과 partitioning을 담당합니다.
 
-[^aotdispatcher]: PyTorch 2.13 공식 문서에서는 이 컴포넌트를 **AOTDispatcher**로 표기하는 것이 1차 명칭입니다. "AOTAutograd"는 여전히 널리 쓰이는 이름이며, 이 강의에서도 계속 이 이름을 사용합니다.
+[^aotdispatcher]: 공식 문서 일부(예: `torch.compiler_backward`)는 이 컴포넌트를 **AOTDispatcher**라고 부르며 "sometimes known as AOTAutograd"라고 병기합니다. 문서 대부분과 소스 코드는 AOTAutograd를 쓰므로 이 강의에서도 이 이름을 사용합니다.
 
 전체 흐름을 다이어그램으로 정리하면 다음과 같습니다:
 
@@ -559,7 +559,7 @@ Training mode에서는 Dynamo가 생성한 FX Graph가 AOTAutograd로 전달됩�
 3. **각각 따로 Backend Compile**: 분리된 forward graph와 backward graph를 각각 별도로 backend compiler(예: Inductor)에 넘겨 최적화된 형태로 컴파일합니다. Forward와 backward가 서로 다른 최적화를 받을 수 있다는 점이 중요합니다. 다만 backward의 backend lowering은 첫 `backward()` 호출 시점까지 지연됩니다.[^lazy-bw]
 4. **`torch.autograd.Function`으로 wrap**: 최적화된 forward와 backward 연산을 모두 포함하는 하나의 `torch.autograd.Function` 객체로 묶어 반환합니다.
 
-**`torch.compile` 실행 시 동작 흐름**: Autograd가 활성화된 상태(즉 `requires_grad=True`인 tensor가 포함된 상태)에서 `torch.compile`을 호출하면 위의 1~4번 과정이 순차적으로 일어나 최종적으로 forward와 backward를 모두 가진 `torch.autograd.Function`이 반환됩니다. 이때 forward의 backend lowering은 즉시 이루어지지만, backward의 backend lowering은 첫 `backward()` 호출 시점까지 지연됩니다.[^lazy-bw] 이후 training loop에서 이 객체를 호출하면, forward는 이미 컴파일된 형태로, backward는 첫 호출 시점에 lowering을 마친 뒤 그대로 실행되므로 가속된 training이 가능해집니다.
+**`torch.compile` 실행 시 동작 흐름**: Autograd가 활성화된 상태(즉 `requires_grad=True`인 tensor가 포함된 상태)에서 `torch.compile`을 호출하면 우선 원래 모델을 감싼 wrapper(`OptimizedModule`)가 반환되고, 첫 호출 때 위의 1~4번 과정이 순차적으로 일어나 forward와 backward를 모두 가진 `torch.autograd.Function`이 만들어집니다. 이때 forward의 backend lowering은 즉시 이루어지지만, backward의 backend lowering은 첫 `backward()` 호출 시점까지 지연됩니다.[^lazy-bw] 이후 training loop에서 이 객체를 호출하면, forward는 이미 컴파일된 형태로, backward는 첫 호출 시점에 lowering을 마친 뒤 그대로 실행되므로 가속된 training이 가능해집니다.
 
 사용자에게 `torch.compile()`은 model을 compile하는 한 줄로 보이지만, 그 뒤에서는 AOTAutograd가 joint graph 생성 → forward/backward partitioning → 각각의 backend compilation → runtime Autograd 연결을 수행합니다. 다음 절부터 이 과정을 순서대로 살펴봅니다.
 
@@ -775,7 +775,7 @@ def joint_fw_bw(fw_inputs, grad_outs):
 
 `joint_fw_bw`의 입력은 두 종류로 구성됩니다:
 
-- **Forward Input** (`fw_inputs`): 원래 모델이 받는 입력값 그대로.
+- **Forward Input** (`fw_inputs`): 원래 모델이 받는 입력값과, 모델의 parameter·buffer. AOTAutograd는 parameter와 buffer도 flat input으로 앞쪽에 넣어 넘기므로(`aot_autograd.py`의 `num_params_buffers`), 그 gradient가 backward output으로 나옵니다.
 - **Backward Input** (`grad_outs`): Loss로부터 전달되는 최종 gradient 값.
 
 `grad_outs`가 필요한 이유는 backward 계산이 위에서 내려오는 gradient(incoming gradients)에 의존하기 때문입니다. Backward에 필요한 재료는 ① 위에서 내려오는 gradient와 ② forward 중간 단계에서 계산된 tensor들인데, 중간 tensor들은 joint graph 안에 forward 부분으로 이미 포함되어 있으므로 별도 input으로 넘길 필요가 없습니다. 반면 위에서 내려오는 gradient는 graph 바깥에서 들어오는 값입니다 — 학습 루프 관점에서 보면 loss function이 이 FX Graph 밖에 있으므로, loss에서 내려오는 `grad_outs`만큼은 반드시 joint 함수의 input으로 넣어 줘야 최종 gradient를 끝까지 계산할 수 있습니다.
@@ -850,7 +850,7 @@ Batch size가 커질수록 forward 과정의 중간 activation도 함께 커지�
 - **Hugging Face Transformers**: 역사적인 이유로 [Gradient Checkpointing](https://huggingface.co/docs/transformers/grad_checkpointing)이라는 이름을 사용합니다 — `model.gradient_checkpointing_enable()`
 - **PyTorch**: `torch.utils.checkpoint.checkpoint(...)`를 activation checkpointing으로 설명합니다
 
-AOTAutograd 관점에서 중요한 것은, 앞서 강조한 joint graph 덕분에 "forward에서 만들어진 어떤 텐서가 backward의 어떤 입력으로 연결되는가"라는 input-output 관계가 전부 살아 있다는 점입니다. 이 관계를 알고 있으면 Min-Cut partitioner가 "어느 텐서는 저장(save)하고 어느 텐서는 재계산(recompute)하는 것이 더 유리한가"를 전체 그래프 관점에서 판단할 수 있어, activation checkpointing을 보다 자동화되고 효율적으로 적용할 수 있습니다.
+AOTAutograd 관점에서 중요한 것은, 앞서 강조한 joint graph 덕분에 "forward에서 만들어진 어떤 텐서가 backward의 어떤 입력으로 연결되는가"라는 input-output 관계가 전부 살아 있다는 점입니다. 이 관계를 알고 있으면 Min-Cut partitioner가 "어느 텐서는 저장(save)하고 어느 텐서는 재계산(recompute)하는 것이 더 유리한가"를 전체 그래프 관점에서 판단할 수 있어, activation checkpointing을 보다 자동화되고 효율적으로 적용할 수 있습니다. 다만 partitioner가 스스로 재계산 대상으로 삼는 것은 pointwise 같은 값싼 op에 한정되며(`mm`, `convolution` 같은 무거운 op은 제외), `torch.utils.checkpoint`로 사용자가 지정한 구간은 그 지시(`MUST_SAVE`/`MUST_RECOMPUTE` 태그)를 그대로 따릅니다.
 
 
 #### [I 단계] Compiled forward/backward의 Autograd 연결
@@ -959,7 +959,7 @@ A. 좋은 질문입니다. 개념적으로는 "What happens when training with t
 
 **Q5. `torch.compile` 과정에서 Dynamo가 fake tensor로 FX graph만 만들어내는 것인지, 아니면 실제 하드웨어에서 돌아갈 코드까지 생성하는 것인지 헷갈립니다.**
 
-A. Dynamo가 하는 일은 FX graph 캡처까지이고, 하드웨어 코드 생성은 그 뒤에 붙는 backend compiler가 맡습니다. Dynamo에 어떤 backend(예: Inductor, TensorRT 등)를 붙이느냐에 따라 결과가 달라지며, backend가 연결되어 있으면 캡처된 FX graph가 그 backend의 input으로 전달되어 실제 하드웨어에서 실행 가능한 코드까지 생성됩니다. 최종적으로는 이 결과물이 `nn.Module` 형태로 감싸져 사용자에게 돌아오고, 모듈을 실행하면 내부에서 적절한 하드웨어로 dispatch되어 실제 연산이 수행됩니다.
+A. Dynamo가 하는 일은 FX graph 캡처까지이고, 하드웨어 코드 생성은 그 뒤에 붙는 backend compiler가 맡습니다. Dynamo에 어떤 backend(예: Inductor, TensorRT 등)를 붙이느냐에 따라 결과가 달라지며, backend가 연결되어 있으면 캡처된 FX graph가 그 backend의 input으로 전달되어 실제 하드웨어에서 실행 가능한 코드까지 생성됩니다. 사용자에게 돌아오는 것은 원래 대상을 감싼 wrapper로, `nn.Module`을 넣었으면 `OptimizedModule`(역시 `nn.Module`), 함수를 넣었으면 함수 wrapper입니다. 이를 실행하면 내부에서 적절한 하드웨어로 dispatch되어 실제 연산이 수행됩니다.
 
 ## Appendix: Grad Function Codegen 재현 방법
 

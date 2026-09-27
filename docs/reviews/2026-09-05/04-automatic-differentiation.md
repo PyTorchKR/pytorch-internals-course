@@ -70,6 +70,29 @@
 
 ## 한쪽만 제기한 항목 (검토 필요)
 
+반영 현황 (2026-09-27): 15건 중 반영 12, 보류 1, 기각 1, 해당 없음 1. 근거는 torch 2.14 실행과 v2.14.0 소스, Baydin et al. 2018 원문으로 재확인.
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| Codex A4-1 backprop = AD | 반영 | "AD는 더 넓은 개념, backprop은 reverse mode의 적용" 반 문장 추가 |
+| Codex A4-2 flag 켜진 텐서만 기록 | 반영 | 입력 하나라도 flag면 기록, 꺼진 입력도 저장됨(`_saved_other is b` 확인) |
+| Codex A4-3 `PowBackward0`가 2y 반환 | 반영 | 일치 항목 190-207 수정 시 함께 |
+| Codex A4-4 `no_grad` 항상 False | 반영 | factory function 예외 추가 |
+| Codex A4-9 `torch.compile`이 Function 반환 | 반영 | wrapper(`OptimizedModule`/함수) 반환, Function은 첫 호출 때. Q5 답도 수정 |
+| Codex A4-13 `fw_inputs`에 parameter/buffer | 반영 | `num_params_buffers` 근거로 보강 |
+| Codex A4-14 "이미 최적화된 코드" | 반영 | 일치 항목 495 수정 시 함께 |
+| Codex A3-7 interpose SVG 일반화 | 반영 | "기본 경로(Inductor)는 직행하지 않음, custom backend는 FX graph 직접 받음" |
+| Codex A3-6 compile-train-flow SVG | 반영 | [3] 화살표 라벨을 "loss의 eager backward 먼저, 이어서 compiled backward 실행"으로 |
+| Fable A4-9 operator overloading | 반영 | AD 구현 방식 이름임을 명시, `torch.matmul`도 동일 기록 |
+| Fable A4-10 partitioner = AC 대체 | 반영 | 값싼 op만 재계산, 사용자 checkpoint 태그 존중 |
+| Fable A4-13 NDEBUG만 생략 | 반영 | forward-mode AD 블록도 생략했다고 명시 (1.13.1 codegen이 생성함을 확인) |
+| Fable A4-14 stage 이름 | 기각 | 출처 검증대로 v2.13.0·main에 존재 |
+| Fable A4-16 AOTDispatcher 1차 명칭 | 반영 | "일부 문서" (2.14 docs: AOTAutograd 18개 파일 vs AOTDispatcher 2개) |
+| Fable A4-18 HIPS 이름 충돌 논의 | 보류 | 근거를 찾지 못함. 강연자 발언이라 저자 판단 대기 |
+
+원 목록:
+
+
 - **Codex A4-1 (high) line 63**: "backpropagation이 자동화된 것이 AD" → AD가 더 넓은 개념(forward-mode 포함). backprop = reverse-mode AD의 적용.
 - **Codex A4-2 (high) line 132-134**: "flag 켜진 텐서만 기록" → 입력 중 하나라도 `requires_grad`면 기록, `requires_grad=False` 입력도 backward에 필요하면 저장됨.
 - **Codex A4-3 (high) line 202**: "`PowBackward0`가 2y를 반환" → incoming gradient g에 2y를 곱한 값(g·2y=8)을 반환.
