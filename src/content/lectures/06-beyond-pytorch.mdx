@@ -226,9 +226,9 @@ Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 �
 
 > 출처: [https://flashinfer.ai/2024/02/02/introduce-flashinfer.html](https://flashinfer.ai/2024/02/02/introduce-flashinfer.html)
 
-다이어그램에서 화살표는 attention(=토큰 간 의존)을 뜻합니다. Prefill은 수직(레이어 간) + 우상향(KV 전달) 의존성만 있어 같은 레이어 안의 모든 토큰을 가로로 병렬 처리할 수 있는 반면, Decode는 새 토큰을 만들 때마다 직전 토큰의 결과가 입력으로 다시 들어가야 해서 토큰 단위로 순차 처리가 됩니다.
-
 <PrefillDecodeDiagram />
+
+위 위젯에서 세로축은 layer, 화살표는 attention(토큰 간 의존)을 뜻합니다. Prefill은 수직(레이어 간) + 우상향(KV 전달) 의존성만 있어 같은 레이어 안의 모든 토큰을 가로로 병렬 처리할 수 있는 반면, Decode는 새 토큰을 만들 때마다 직전 토큰의 결과가 입력으로 다시 들어가야 해서 토큰 단위로 순차 처리가 됩니다.
 
 #### Q&A
 
