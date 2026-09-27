@@ -570,7 +570,7 @@ Dynamo가 생성하는 FX Graph는 **Torch IR**로 표현되며, 비교적 상�
 
 **2. AOT Autograd** → FxGraph (Aten IR)
 
-Gradient 계산이 필요할 경우 이 단계에서 forward와 backward를 한 graph에 담은 **joint graph**를 만들고, 이를 forward/backward 두 graph로 나누는 **partitioning**을 수행합니다. inference처럼 gradient가 필요 없으면 joint graph 생성과 partitioning만 생략하고, **functionalization**(in-place 연산을 out-of-place로 바꿔 부수효과 제거)과 **decomposition**(복합 op을 더 작은 ATen op으로 분해)은 그대로 거칩니다. 이 과정은 Week 4에서 자세히 다룹니다. Inductor 경로에서 이 단계의 출력은 decomposition이 적용된 Aten IR이며, 더 낮은 Prims IR로 내리는 것은 별도 경로입니다.
+Gradient 계산이 필요할 경우 이 단계에서 forward와 backward를 한 graph에 담은 **joint graph**를 만들고, 이를 forward/backward 두 graph로 나누는 **partitioning**을 수행합니다. inference처럼 gradient가 필요 없으면 joint graph 생성과 partitioning만 생략하고, **functionalization**(in-place 연산을 out-of-place로 바꿔 부수효과 제거)과 **decomposition**(복합 op을 더 작은 ATen op으로 분해)은 그대로 거칩니다. 이 과정은 [Week 4](/lectures/04-automatic-differentiation/#graph-mode-backward의-도전-과제)에서 자세히 다룹니다. Inductor 경로에서 이 단계의 출력은 decomposition이 적용된 Aten IR이며, 더 낮은 Prims IR로 내리는 것은 별도 경로입니다.
 
 **3. Inductor** → Loop-Level IR → kernel 소스
 

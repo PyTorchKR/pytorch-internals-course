@@ -916,7 +916,7 @@ vLLM V1은 scheduler와 execution path를 재설계하고 **`torch.compile`을 �
 
 [^fx-graph]: `torch.fx`가 제공하는 그래프 형태의 IR(intermediate representation). Dynamo가 캡처한 tensor 연산 trace가 이 형태로 저장되어 backend 컴파일러에 전달됩니다 ([Week 3](/lectures/03-graph-mode/#pytorch-20의-해법-torchdynamo) 참고).
 
-Week 3에서 본 그래프 모드·Inductor가 서빙 프레임워크의 기본 경로에 들어와 있습니다. 하드웨어 벤더가 `torch.compile` 백엔드를 제공하면 vLLM의 컴파일 경로를 그대로 쓸 수 있습니다. 다만 attention처럼 custom op으로 남는 kernel은 별도로 제공해야 합니다(뒤의 plugin system 참고).
+[Week 3](/lectures/03-graph-mode/#ir-lowering)에서 본 그래프 모드·Inductor가 서빙 프레임워크의 기본 경로에 들어와 있습니다. 하드웨어 벤더가 `torch.compile` 백엔드를 제공하면 vLLM의 컴파일 경로를 그대로 쓸 수 있습니다. 다만 attention처럼 custom op으로 남는 kernel은 별도로 제공해야 합니다(뒤의 plugin system 참고).
 
 > 참고: [vLLM V1: A Major Upgrade to vLLM's Core Architecture](https://blog.vllm.ai/2025/01/27/v1-alpha-release.html)
 >
