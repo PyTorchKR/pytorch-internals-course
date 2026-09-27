@@ -39,7 +39,7 @@
 <!-- FxGraph 계산 (amber dark) -->
 <rect x="220" y="126" width="135" height="64" rx="8" fill="#633806" stroke="#EF9F27" stroke-width="0.8"/>
 <text x="287" y="150" font-size="14" text-anchor="middle" dominant-baseline="central" fill="#FAC775" font-weight="500">FxGraph 계산</text>
-<text x="287" y="170" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#EF9F27">핵심 연산 단계</text>
+<text x="287" y="170" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#EF9F27">compiled graph 실행</text>
 
 <!-- Arrow: FxGraph → Graph Break -->
 <line x1="287" y1="190" x2="287" y2="276" stroke="#888780" stroke-width="1.5" marker-end="url(#arrow)"/>
@@ -66,17 +66,17 @@
 <!-- Resumed function selected (purple dark) -->
 <rect x="428" y="278" width="178" height="64" rx="10" fill="#332C7A" stroke="#9A93F0" stroke-width="1"/>
 <text x="517" y="302" font-size="14" text-anchor="middle" dominant-baseline="central" fill="#CECBF6" font-weight="500">Resumed function</text>
-<text x="517" y="322" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#AFA9EC">선택 및 실행</text>
+<text x="517" y="322" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#AFA9EC">(분기 A)</text>
 
 <!-- Resumed function alt (purple dark, dimmed) -->
 <rect x="428" y="370" width="178" height="64" rx="10" fill="#332C7A" stroke="#7F77DD" stroke-width="0.8" opacity="0.7"/>
 <text x="517" y="394" font-size="14" text-anchor="middle" dominant-baseline="central" fill="#CECBF6" font-weight="500" opacity="0.45">Resumed function</text>
-<text x="517" y="414" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#AFA9EC" opacity="0.45">대안 후보</text>
+<text x="517" y="414" font-size="12" text-anchor="middle" dominant-baseline="central" fill="#AFA9EC" opacity="0.45">(분기 B)</text>
 
 <!-- Dashed link between two resume boxes -->
 <line x1="517" y1="342" x2="517" y2="370" stroke="#534AB7" stroke-width="1" stroke-dasharray="3 2"/>
 
 <!-- Repeat loop arrow -->
 <path d="M 606 310 L 636 310 L 636 35 L 287 35 L 287 50" fill="none" stroke="#444441" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
-<text x="460" y="28" font-size="11" text-anchor="middle" fill="#B4B2A9">↻ 새 프레임 생성 후 반복</text>
+<text x="460" y="28" font-size="11" text-anchor="middle" fill="#B4B2A9">새 frame에서 반복</text>
 </svg>
