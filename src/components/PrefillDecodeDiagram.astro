@@ -466,10 +466,15 @@
     s += '<path class="pd-line" d="M' + (DX[1] + CW / 2) + ',' + ly(3) + ' L' + (DX[1] + CW / 2) + ',68"/>';
 
     // Autoregressive feedback arcs (right-angle Manhattan routing)
-    const fbEnd = ly(0) + CH + 22;
-    const fb1 = 'M ' + (PX[3] + CW / 2) + ' 52 L ' + (PX[3] + CW / 2) + ' 30 L 421 30 L 421 ' + fbEnd + ' L ' + (DX[0] + CW / 2) + ' ' + fbEnd;
+    // Bottom run sits below the token labels; fb-2 goes around the right of the decode block
+    // so that neither arc crosses the "Decode" header or the a / lot labels.
+    const lblBottom = ly(0) + CH + 30;      // token label baseline
+    const fbEnd = lblBottom + 12;           // horizontal run under the labels
+    const fbStub = lblBottom + 5;           // short vertical stub up to the label
+    const fbRight = DX[1] + CW + 16;        // vertical run right of the last decode column
+    const fb1 = 'M ' + (PX[3] + CW / 2) + ' 52 L ' + (PX[3] + CW / 2) + ' 30 L 421 30 L 421 ' + fbEnd + ' L ' + (DX[0] + CW / 2) + ' ' + fbEnd + ' L ' + (DX[0] + CW / 2) + ' ' + fbStub;
     s += '<path class="pd-fb" id="fb-1" d="' + fb1 + '"/>';
-    const fb2 = 'M ' + (DX[0] + CW / 2) + ' 52 L ' + (DX[0] + CW / 2) + ' 8 L 530 8 L 530 ' + fbEnd + ' L ' + (DX[1] + CW / 2) + ' ' + fbEnd;
+    const fb2 = 'M ' + (DX[0] + CW / 2) + ' 52 L ' + (DX[0] + CW / 2) + ' 0 L ' + fbRight + ' 0 L ' + fbRight + ' ' + fbEnd + ' L ' + (DX[1] + CW / 2) + ' ' + fbEnd + ' L ' + (DX[1] + CW / 2) + ' ' + fbStub;
     s += '<path class="pd-fb" id="fb-2" d="' + fb2 + '"/>';
 
     // Cells
@@ -496,11 +501,6 @@
     s += '<text class="pd-lbl-out" id="out-a" x="' + (PX[3] + CW / 2) + '" y="62">a</text>';
     s += '<text class="pd-lbl-out" id="out-lot" x="' + (DX[0] + CW / 2) + '" y="62">lot</text>';
     s += '<text class="pd-lbl-out" id="out-dot" x="' + (DX[1] + CW / 2) + '" y="62">.</text>';
-
-    // Phase tags below
-    const phaseTagY = tokLabelY + 22;
-    s += '<text class="pd-lbl-tag" x="236" y="' + phaseTagY + '">Parallel</text>';
-    s += '<text class="pd-lbl-tag" x="530" y="' + phaseTagY + '">Sequential</text>';
 
     svgRoot.innerHTML = s;
 
