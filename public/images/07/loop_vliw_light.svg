@@ -126,6 +126,7 @@
 <text x="280" y="267" fill="#2C2C2A" font-size="11">iteration 1 (레지스터 세트 B)</text>
 <rect x="450" y="256" width="14" height="14" rx="3" fill="#EDE7FE" stroke="#7C4DFF"/>
 <text x="470" y="267" fill="#2C2C2A" font-size="11">iteration 2 (레지스터 세트 A)</text>
-<text x="70" y="290" fill="#5F5E5A" font-size="12">세트 A = s2, s3, t1, t2, t3 / 세트 B = s4, s5, t4, t5, t6. s3처럼 6 cycle을 사는 값은 II(3 cycle)보다 오래 살아남으므로 짝수·홀수 iteration이 다른 레지스터를 써야 한다</text>
-<text x="70" y="308" fill="#5F5E5A" font-size="12">(2× unroll, modulo variable expansion). 컴파일러가 이 표를 미리 만들어 두면 하드웨어는 매 cycle 한 열(VLIW 명령어 하나)씩 그대로 실행하고, blt는 kernel 반복 횟수를 세는 counter로 대체된다.</text>
+<text x="70" y="290" fill="#5F5E5A" font-size="12">세트 A = s2, s3, t1, t2, t3 / 세트 B = s4, s5, t4, t5, t6</text>
+<text x="70" y="308" fill="#5F5E5A" font-size="12">s3는 6 cycle 동안 살아 있어 II(3)보다 길다 → iteration마다 세트를 번갈아 씀 (2× unroll, modulo variable expansion)</text>
+<text x="70" y="326" fill="#5F5E5A" font-size="12">blt 대신 kernel 반복 횟수 counter</text>
 </svg>

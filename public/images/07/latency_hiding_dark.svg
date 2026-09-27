@@ -5,7 +5,6 @@
     </marker>
   </defs>
 
-  <text x="40" y="45" font-size="20" font-weight="500" fill="#D3D1C7">Latency Hiding &amp; Parallelism</text>
 
   <rect x="60" y="100" width="140" height="40" rx="4" fill="#444441" stroke="#B4B2A9" stroke-width="0.5"/>
   <rect x="210" y="100" width="140" height="40" rx="4" fill="#444441" stroke="#B4B2A9" stroke-width="0.5"/>
@@ -14,8 +13,7 @@
   <line x1="50" y1="180" x2="525" y2="180" stroke="#9c9a92" stroke-width="1" marker-end="url(#arrow)"/>
   <text x="495" y="200" font-size="14" fill="#9c9a92">time</text>
 
-  <text x="560" y="160" font-size="13" fill="#B4B2A9">Latency가 Throughput에</text>
-  <text x="560" y="180" font-size="13" fill="#B4B2A9">직접적인 영향을 줌</text>
+  <text x="560" y="170" font-size="13" fill="#B4B2A9">Latency가 Throughput 결정</text>
 
   <rect x="20" y="290" width="780" height="230" rx="12" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="8 4"/>
 
@@ -26,7 +24,5 @@
   <line x1="50" y1="480" x2="525" y2="480" stroke="#9c9a92" stroke-width="1" marker-end="url(#arrow)"/>
   <text x="495" y="500" font-size="14" fill="#9c9a92">time</text>
 
-  <text x="560" y="380" font-size="13" fill="#B4B2A9">얼마나 빠르게 새로운 task를</text>
-  <text x="560" y="400" font-size="13" fill="#B4B2A9">시작할 수가 있는가가</text>
-  <text x="560" y="420" font-size="13" fill="#B4B2A9">Throughput을 결정</text>
+  <text x="560" y="400" font-size="13" fill="#B4B2A9">시작 간격이 Throughput 결정</text>
 </svg>
