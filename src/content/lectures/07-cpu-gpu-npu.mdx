@@ -421,7 +421,7 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
 
 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '12px', margin: '24px 0', flexWrap: 'wrap' }}>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '220px' }}>
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '220px', flexShrink: 0 }}>
     <pre style={{ background: 'rgba(125, 125, 125, 0.12)', border: '1px solid rgba(125, 125, 125, 0.3)', padding: '8px 12px', fontSize: '0.7em', margin: 0, borderRadius: '4px', lineHeight: '1.4' }}>{`loop: slli  s2, s1, 2     # 1
       add   s3, s0, s2    # 2
       lw    t1, 0(s3)     # 3
@@ -433,52 +433,49 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>sequential code로부터</div>
   </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'center' }}>
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'center', flexShrink: 0 }}>
     <div style={{ fontSize: '0.85em', marginBottom: '4px', textAlign: 'center', whiteSpace: 'nowrap' }}>branch<br/>prediction</div>
     <div style={{ fontSize: '2em', opacity: 0.6 }}>⇒</div>
   </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '220px' }}>
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
     <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"재배치할 명령어 창이 넓어짐"</div>
-    <pre style={{ background: 'rgba(59, 130, 246, 0.12)', border: '1px solid rgba(59, 130, 246, 0.3)', padding: '8px 12px', fontSize: '0.7em', margin: 0, borderRadius: '4px', lineHeight: '1.4' }}>{`slli  s2, s1, 2     # 1
-add   s3, s0, s2    # 2
-lw    t1, 0(s3)     # 3
-mul   t2, t1, t1    # 4
-add   t3, t2, t1    # 5
-sw    t3, 0(s3)     # 6
-addi  s1, s1, 1     # 7`}</pre>
-    <pre style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '8px 12px', fontSize: '0.7em', margin: '4px 0 0 0', borderRadius: '4px', lineHeight: '1.4' }}>{`slli  s2, s1, 2     # 1
-add   s3, s0, s2    # 2
-lw    t1, 0(s3)     # 3
-mul   t2, t1, t1    # 4
-add   t3, t2, t1    # 5
-sw    t3, 0(s3)     # 6
-addi  s1, s1, 1     # 7`}</pre>
-    <div style={{ fontSize: '1.2em', opacity: 0.6 }}>⋮</div>
-    <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>branch prediction을 통해<br/>speculative trace를 만들고</div>
+    <ThemeImage lightSrc="/images/07/loop_trace_deps_light.svg" darkSrc="/images/07/loop_trace_deps_dark.svg" alt="speculative trace 두 iteration 사이의 의존: 빨간 점선은 같은 이름 s2, t1을 다시 써서 생기는 False Dependency, 초록 실선은 addi s1에서 다음 iteration의 slli로 값이 넘어가는 True Dependency" class="w-full" />
+    <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>speculative trace를 만들면<br/>같은 이름을 다시 쓰는 곳에 가짜 의존(빨강)이 생기고</div>
   </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'center' }}>
-    <div style={{ fontSize: '0.85em', marginBottom: '4px', textAlign: 'center', whiteSpace: 'nowrap' }}>register<br/>renaming</div>
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexBasis: '100%', margin: '4px 0' }}>
+    <div style={{ fontSize: '0.85em', marginBottom: '2px', textAlign: 'center' }}>register renaming</div>
+    <div style={{ fontSize: '2em', opacity: 0.6, lineHeight: 1 }}>⇓</div>
+  </div>
+
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
+    <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"값을 쓸 때마다 새 이름을 주면 가짜 의존이 사라짐"</div>
+    <ThemeImage lightSrc="/images/07/loop_trace_renamed_light.svg" darkSrc="/images/07/loop_trace_renamed_dark.svg" alt="renaming 후 trace: iteration i+1이 쓰는 값이 s2′, t1′처럼 새 이름을 받아 False Dependency가 사라지고, 두 iteration 사이에는 s1′ 하나만 남음" class="w-full" />
+    <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>renaming 후에는<br/>값이 넘어가는 s1′ 하나만 남는다</div>
+  </div>
+
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'center', flexShrink: 0 }}>
+    <div style={{ fontSize: '0.85em', marginBottom: '4px', textAlign: 'center', whiteSpace: 'nowrap' }}>data-flow<br/>graph</div>
     <div style={{ fontSize: '2em', opacity: 0.6 }}>⇒</div>
   </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '260px' }}>
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
     <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"의존 경로가 없는 명령어는 병렬 처리 가능"</div>
-    <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 목적지 레지스터의 물리 매핑(예: slli s2→p1), edge 이름은 그 edge로 전달되는 값. 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이를 잇는 값은 루프 카운터 s1(p6) 하나뿐" class="w-full" />
-    <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>register renaming을 한 후,<br/>data-flow graph로 전환</div>
+    <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 그 명령어가 만드는 값(slli s2, slli s2′ …), edge 이름은 그 edge로 전달되는 값. iteration 사이를 잇는 값은 루프 카운터 s1′ 하나뿐" class="w-full" />
+    <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>남은 의존만 그리면<br/>data-flow graph</div>
   </div>
 </div>
 
 각 단계를 풀어 보면 다음과 같습니다.
 
 1. **Sequential code로부터 출발** - ISA는 여전히 "위에서 아래로 차례차례 실행" 의미를 가진 보통의 명령어 시퀀스입니다(`slli → add → lw → … → blt`).
-2. **Branch Prediction으로 speculative trace 생성** - 루프 끝의 `blt`를 만나면 Branch Predictor가 "이번에도 Taken일 것"이라 예측하고, 그 결과를 받은 것처럼 다음 iteration의 명령어들을 추측해서 미리 펼쳐 둡니다. 이렇게 펼쳐진 직선형 명령어 흐름을 **speculative trace**라고 부릅니다. 분기 명령어 자체는 남아서 나중에 예측이 맞았는지 검증하지만, 그 결과를 기다리지 않고 다음 명령어들을 미리 가져와 두므로 재배치할 수 있는 명령어 창이 훨씬 넓어집니다.
-3. **Register Renaming → Data-flow graph 전환** - 펼쳐진 trace에는 같은 레지스터 이름이 iteration마다 반복 등장하지만, 하드웨어가 이름을 바꿔 주면 False Dependency가 사라집니다. 그 결과 명령어들 사이에는 오직 True Dependency만 남고, 전체 코드는 의존 관계를 표현하는 **data-flow graph(DAG)** 형태로 정리됩니다. 이 DAG에서 서로 의존 경로가 없는 명령어들은 동시에 실행해도 결과가 같기 때문에, 자연스럽게 병렬 처리가 가능해집니다.
+2. **Branch Prediction으로 speculative trace 생성** - 루프 끝의 `blt`를 만나면 Branch Predictor가 "이번에도 Taken일 것"이라 예측하고, 그 결과를 받은 것처럼 다음 iteration의 명령어들을 추측해서 미리 펼쳐 둡니다. 이렇게 펼쳐진 직선형 명령어 흐름을 **speculative trace**라고 부릅니다. 분기 명령어 자체는 남아서 나중에 예측이 맞았는지 검증하지만, 그 결과를 기다리지 않고 다음 명령어들을 미리 가져와 두므로 재배치할 수 있는 명령어 창이 훨씬 넓어집니다. 다만 펼쳐 놓고 보면 iteration i+1의 `slli s2`는 iteration i의 `add s3, s0, s2`가 `s2`를 다 읽기 전에는 `s2`를 덮어쓸 수 없고, `t1`도 같습니다. 값이 아니라 이름이 겹쳐서 생기는 이 관계가 False Dependency(그림의 빨간 점선)입니다. 값이 실제로 넘어가는 True Dependency는 `addi s1`에서 다음 iteration의 `slli`로 가는 `s1` 하나(초록 실선)뿐입니다.
+3. **Register Renaming → Data-flow graph 전환** - 하드웨어가 값을 쓸 때마다 새 이름을 붙입니다. 그림에서는 iteration i+1이 만드는 값을 `s2′`, `t1′`처럼 프라임으로 구분했고, iteration i의 `addi`가 만드는 새 `s1`은 `s1′`입니다. 이름이 겹치지 않으니 빨간 False Dependency가 사라지고, 명령어 사이에는 True Dependency만 남습니다. 남은 의존 관계만 그리면 **data-flow graph(DAG)** 가 되고, 서로 의존 경로가 없는 명령어들은 동시에 실행해도 결과가 같으므로 병렬로 처리할 수 있습니다.
 
 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', margin: '16px 0' }}>
-  <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 목적지 레지스터의 물리 매핑(예: slli s2→p1), edge 이름은 그 edge로 전달되는 값. 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이를 잇는 값은 루프 카운터 s1(p6) 하나뿐" class="w-full max-w-3xl mx-auto" />
-  <div style={{ fontSize: '0.9em', opacity: 0.8, maxWidth: '48rem' }}>위 루프 두 iteration을 renaming한 뒤의 data-flow graph. 노드의 <code>s2→p1</code>은 architectural register <code>s2</code>가 이번에는 physical register <code>p1</code>에 매핑됐다는 뜻이고, edge에 적힌 이름은 그 edge로 전달되는 값이다. 같은 이름 <code>s2</code>, <code>s3</code>, <code>t1</code>…이 iteration마다 다른 physical register(<code>p1</code>…<code>p5</code>, <code>p7</code>…<code>p11</code>)를 받으므로, renaming 전에 iteration i+1의 <code>slli s2</code>가 iteration i의 <code style={{ whiteSpace: 'nowrap' }}>add s3, s0, s2</code>가 <code>s2</code>를 다 읽을 때까지 기다려야 했던 False Dependency가 사라진다. 두 열을 잇는 값은 루프 카운터 <code>s1</code>(<code>p6</code>) 하나뿐이고, 그 아래 명령어들은 두 iteration에서 동시에 실행될 수 있다.</div>
+  <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 그 명령어가 만드는 값(slli s2, slli s2′ …), edge 이름은 그 edge로 전달되는 값. iteration 사이를 잇는 값은 루프 카운터 s1′ 하나뿐" class="w-full max-w-3xl mx-auto" />
+  <div style={{ fontSize: '0.9em', opacity: 0.8, maxWidth: '48rem' }}>위 루프 두 iteration을 renaming한 뒤의 data-flow graph. 노드는 명령어와 그 명령어가 만드는 값이고, edge에 적힌 이름은 그 edge로 전달되는 값이다. iteration i+1이 만드는 값은 <code>s2′</code>, <code>t1′</code>처럼 새 이름을 받으므로 iteration i의 <code>s2</code>, <code>t1</code>과 저장 공간이 겹치지 않는다. 두 열을 잇는 값은 루프 카운터 <code>s1′</code> 하나뿐이고, 그 아래 명령어들은 두 iteration에서 동시에 실행될 수 있다.</div>
 </div>
 
 #### 어떻게 하드웨어는 가능한가? Physical Register
@@ -488,7 +485,7 @@ addi  s1, s1, 1     # 7`}</pre>
 - **Architectural Register (논리 레지스터)** - ISA가 노출하는, 소프트웨어가 보는 레지스터 이름들(`s0`, `s1`, `t0`, `t1`, …). 그 개수는 ISA에 의해 고정됩니다.
 - **Physical Register (물리 레지스터)** - 칩 위에 실제로 존재하는 저장 장치들. 보통 수 배에서 10배 이상 많습니다(x86-64는 architectural 16개에 physical 수백 개).
 
-OOO Processor는 명령어가 들어올 때마다 코드에 적힌 Architectural Register 이름을, 그 시점에 비어 있는 Physical Register 중 하나에 매핑합니다. 그리고 그 명령어가 같은 Architectural 이름을 읽을 때는, 매핑 테이블을 따라가서 올바른 값이 들어 있는 Physical Register를 가리키도록 만듭니다. 이름은 같은 `t1`이어도 iteration 1의 `t1`과 iteration 2의 `t1`은 서로 다른 Physical Register에 들어갑니다.
+OOO Processor는 명령어가 들어올 때마다 코드에 적힌 Architectural Register 이름을, 그 시점에 비어 있는 Physical Register 중 하나에 매핑합니다. 그리고 그 명령어가 같은 Architectural 이름을 읽을 때는, 매핑 테이블을 따라가서 올바른 값이 들어 있는 Physical Register를 가리키도록 만듭니다. 이름은 같은 `t1`이어도 iteration i의 `t1`과 iteration i+1의 `t1`은 서로 다른 Physical Register에 들어갑니다. 앞 그림에서 `t1`과 `t1′`으로 구분해 그린 것이 바로 이 두 Physical Register입니다.
 
 모든 명령어에 대해 cycle마다 이 매핑을 하면, 하드웨어 안에는 Renaming이 끝난 data-flow graph가 만들어집니다. 이 그래프에서 입력이 준비된 명령어는 원래 코드 순서와 무관하게(out-of-order) 실행됩니다. Out-of-Order Processor라는 이름이 여기서 나왔습니다.
 
