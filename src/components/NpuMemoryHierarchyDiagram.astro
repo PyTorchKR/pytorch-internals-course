@@ -47,6 +47,7 @@ const unitArray = Array.from({ length: units });
     <span class="npu-mh-dma-card npu-mh-dma-card-3"></span>
     <span class="npu-mh-dma-card npu-mh-dma-card-2"></span>
     <span class="npu-mh-dma-card npu-mh-dma-card-1">L1 DMA</span>
+    <span class="npu-mh-dma-note">Scratchpad ⇅ Compute Unit</span>
   </div>
   <div class="npu-mh-interconnect">Interconnect</div>
 
@@ -64,6 +65,7 @@ const unitArray = Array.from({ length: units });
     <span class="npu-mh-dma-card npu-mh-dma-card-3"></span>
     <span class="npu-mh-dma-card npu-mh-dma-card-2"></span>
     <span class="npu-mh-dma-card npu-mh-dma-card-1">L2 DMA</span>
+    <span class="npu-mh-dma-note">DRAM ⇅ Scratchpad</span>
   </div>
   <div class="npu-mh-memory-wall">Memory Wall</div>
 
@@ -107,8 +109,18 @@ const unitArray = Array.from({ length: units });
   .npu-mh-dma-stack {
     grid-column: 1;
     position: relative;
-    width: 80px;
+    width: 150px;
     height: 44px;
+  }
+
+  .npu-mh-dma-note {
+    position: absolute;
+    left: 0;
+    top: 46px;
+    width: 150px;
+    font-size: 0.68em;
+    opacity: 0.75;
+    white-space: nowrap;
   }
 
   .npu-mh-dma-card {

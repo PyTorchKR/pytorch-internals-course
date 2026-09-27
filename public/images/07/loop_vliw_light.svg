@@ -1,43 +1,131 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="310" viewBox="0 0 800 310"
-  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
-
-  <g font-family="ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace"
-     font-size="14" fill="#2C2C2A" xml:space="preserve">
-
-    <text x="60" y="40">sw      t3, 0(s3)</text>
-    <text x="240" y="40">mul     t2, t1, t1</text>
-    <text x="420" y="40">slli    s2, s1, 2</text>
-    <text x="60" y="60">addi    s1, s1, 1</text>
-    <text x="240" y="60">add     t3, t2, t1</text>
-    <text x="420" y="60">add     s3, s0, s2</text>
-
-    <text x="60" y="100">sw      t3, 0(s3)</text>
-    <text x="240" y="100">mul     t2, t1, t1</text>
-    <text x="420" y="100">slli    s2, s1, 2</text>
-    <text x="60" y="120">addi    s1, s1, 1</text>
-    <text x="240" y="120">add     t3, t2, t1</text>
-    <text x="420" y="120">add     s3, s0, s2</text>
-
-    <text x="60" y="160">sw      t3, 0(s3)</text>
-    <text x="240" y="160">mul     t2, t1, t1</text>
-    <text x="420" y="160">slli    s2, s1, 2</text>
-    <text x="60" y="180">addi    s1, s1, 1</text>
-    <text x="240" y="180">add     t3, t2, t1</text>
-    <text x="420" y="180">add     s3, s0, s2</text>
-
-    <text x="60" y="220">sw      t3, 0(s3)</text>
-    <text x="240" y="220">mul     t2, t1, t1</text>
-    <text x="420" y="220">slli    s2, s1, 2</text>
-    <text x="60" y="240">addi    s1, s1, 1</text>
-    <text x="240" y="240">add     t3, t2, t1</text>
-    <text x="420" y="240">add     s3, s0, s2</text>
-  </g>
-
-  <rect x="50" y="26" width="525" height="40" rx="6" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="6 3"/>
-
-  <g fill="#2C2C2A">
-    <circle cx="317" cy="265" r="2"/>
-    <circle cx="317" cy="275" r="2"/>
-    <circle cx="317" cy="285" r="2"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1322 344" font-family="-apple-system, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-size="12">
+<text x="70" y="26" font-size="14" font-weight="600" fill="#2C2C2A">VLIW modulo schedule: II = 3, functional unit 4개, lw·mul latency 2 cycle</text>
+<text x="114.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c0</text>
+<text x="202.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c1</text>
+<text x="290.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c2</text>
+<text x="378.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c3</text>
+<text x="466.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c4</text>
+<text x="554.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c5</text>
+<text x="642.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c6</text>
+<text x="730.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c7</text>
+<text x="818.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c8</text>
+<text x="906.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c9</text>
+<text x="994.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c10</text>
+<text x="1082.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c11</text>
+<text x="1170.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c12</text>
+<text x="1258.0" y="62" text-anchor="middle" fill="#5F5E5A" font-size="11">c13</text>
+<text x="62" y="92.0" text-anchor="end" fill="#2C2C2A" font-weight="600">ALU 0</text>
+<rect x="70" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="158" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="246" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="334" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="422" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="510" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="598" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="686" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="774" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="862" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="950" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1038" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1126" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1214" y="70" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<text x="62" y="128.0" text-anchor="end" fill="#2C2C2A" font-weight="600">ALU 1</text>
+<rect x="70" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="158" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="246" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="334" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="422" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="510" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="598" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="686" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="774" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="862" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="950" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1038" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1126" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1214" y="106" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<text x="62" y="164.0" text-anchor="end" fill="#2C2C2A" font-weight="600">MEM</text>
+<rect x="70" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="158" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="246" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="334" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="422" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="510" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="598" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="686" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="774" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="862" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="950" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1038" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1126" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1214" y="142" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<text x="62" y="200.0" text-anchor="end" fill="#2C2C2A" font-weight="600">MUL</text>
+<rect x="70" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="158" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="246" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="334" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="422" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="510" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="598" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="686" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="774" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="862" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="950" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1038" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1126" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="1214" y="178" width="88" height="36" fill="none" stroke="#888780" stroke-width="0.5"/>
+<rect x="72" y="72" width="84" height="32" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.2"/>
+<text x="114.0" y="92.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">slli s2,s1,2</text>
+<rect x="160" y="72" width="84" height="32" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.2"/>
+<text x="202.0" y="92.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">add s3,s0,s2</text>
+<rect x="248" y="144" width="84" height="32" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.2"/>
+<text x="290.0" y="164.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">lw t1,0(s3)</text>
+<rect x="248" y="108" width="84" height="32" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.2"/>
+<text x="290.0" y="128.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">addi s1,s1,1</text>
+<rect x="424" y="180" width="84" height="32" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.2"/>
+<text x="466.0" y="200.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">mul t2,t1,t1</text>
+<rect x="600" y="108" width="84" height="32" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.2"/>
+<text x="642.0" y="128.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">add t3,t2,t1</text>
+<rect x="688" y="144" width="84" height="32" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.2"/>
+<text x="730.0" y="164.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">sw t3,0(s3)</text>
+<rect x="336" y="72" width="84" height="32" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="378.0" y="92.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">slli s4,s1,2</text>
+<rect x="424" y="72" width="84" height="32" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="466.0" y="92.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">add s5,s0,s4</text>
+<rect x="512" y="144" width="84" height="32" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="554.0" y="164.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">lw t4,0(s5)</text>
+<rect x="512" y="108" width="84" height="32" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="554.0" y="128.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">addi s1,s1,1</text>
+<rect x="688" y="180" width="84" height="32" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="730.0" y="200.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">mul t5,t4,t4</text>
+<rect x="864" y="108" width="84" height="32" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="906.0" y="128.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">add t6,t5,t4</text>
+<rect x="952" y="144" width="84" height="32" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="994.0" y="164.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">sw t6,0(s5)</text>
+<rect x="600" y="72" width="84" height="32" rx="4" fill="#EDE7FE" stroke="#7C4DFF" stroke-width="1.2"/>
+<text x="642.0" y="92.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">slli s2,s1,2</text>
+<rect x="688" y="72" width="84" height="32" rx="4" fill="#EDE7FE" stroke="#7C4DFF" stroke-width="1.2"/>
+<text x="730.0" y="92.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">add s3,s0,s2</text>
+<rect x="776" y="144" width="84" height="32" rx="4" fill="#EDE7FE" stroke="#7C4DFF" stroke-width="1.2"/>
+<text x="818.0" y="164.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">lw t1,0(s3)</text>
+<rect x="776" y="108" width="84" height="32" rx="4" fill="#EDE7FE" stroke="#7C4DFF" stroke-width="1.2"/>
+<text x="818.0" y="128.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">addi s1,s1,1</text>
+<rect x="952" y="180" width="84" height="32" rx="4" fill="#EDE7FE" stroke="#7C4DFF" stroke-width="1.2"/>
+<text x="994.0" y="200.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">mul t2,t1,t1</text>
+<rect x="1128" y="108" width="84" height="32" rx="4" fill="#EDE7FE" stroke="#7C4DFF" stroke-width="1.2"/>
+<text x="1170.0" y="128.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">add t3,t2,t1</text>
+<rect x="1216" y="144" width="84" height="32" rx="4" fill="#EDE7FE" stroke="#7C4DFF" stroke-width="1.2"/>
+<text x="1258.0" y="164.0" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#2C2C2A">sw t3,0(s3)</text>
+<rect x="598" y="68" width="264" height="148" rx="6" fill="none" stroke="#EF9F27" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="730.0" y="232" text-anchor="middle" fill="#EF9F27" font-size="11" font-weight="600">kernel: 이 3 cycle 패턴을 반복. iteration 3개가 동시에 진행</text>
+<text x="334" y="232" text-anchor="middle" fill="#5F5E5A" font-size="11">prologue (파이프라인 채우기)</text>
+<text x="1126" y="232" text-anchor="middle" fill="#5F5E5A" font-size="11">epilogue (비우기)</text>
+<rect x="70" y="256" width="14" height="14" rx="3" fill="#DCEBFA" stroke="#378ADD"/>
+<text x="90" y="267" fill="#2C2C2A" font-size="11">iteration 0 (레지스터 세트 A)</text>
+<rect x="260" y="256" width="14" height="14" rx="3" fill="#E1F5EE" stroke="#0F6E56"/>
+<text x="280" y="267" fill="#2C2C2A" font-size="11">iteration 1 (레지스터 세트 B)</text>
+<rect x="450" y="256" width="14" height="14" rx="3" fill="#EDE7FE" stroke="#7C4DFF"/>
+<text x="470" y="267" fill="#2C2C2A" font-size="11">iteration 2 (레지스터 세트 A)</text>
+<text x="70" y="290" fill="#5F5E5A" font-size="12">세트 A = s2, s3, t1, t2, t3 / 세트 B = s4, s5, t4, t5, t6. s3처럼 6 cycle을 사는 값은 II(3 cycle)보다 오래 살아남으므로 짝수·홀수 iteration이 다른 레지스터를 써야 한다</text>
+<text x="70" y="308" fill="#5F5E5A" font-size="12">(2× unroll, modulo variable expansion). 컴파일러가 이 표를 미리 만들어 두면 하드웨어는 매 cycle 한 열(VLIW 명령어 하나)씩 그대로 실행하고, blt는 kernel 반복 횟수를 세는 counter로 대체된다.</text>
 </svg>

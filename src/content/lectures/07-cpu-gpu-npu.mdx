@@ -190,7 +190,7 @@ Latency Hiding의 가장 기본적인 형태는 명령어 수준의 파이프라
 
 지금까지 본 파이프라이닝은 항상 이상적인 x5 Throughput을 보여주는 것처럼 묘사했지만, 실제로는 그렇지 않은 경우가 종종 있습니다. **파이프라인 버블(Bubble)** 또는 파이프라인 스톨(Stall)이라고 부르는 현상이 그것입니다. 이 상황에서는 파이프라인의 어느 stage를 채우지 못해, 그 cycle을 통째로 낭비하게 됩니다.
 
-<img src="/images/07/slide16_1.png" alt="레지스터 의존성에 의한 Data Hazard와 Bypass Logic(Forwarding)" />
+<ThemeImage lightSrc="/images/07/pipeline_hazard_light.svg" darkSrc="/images/07/pipeline_hazard_dark.svg" alt="5-stage 표로 본 data hazard: add의 EX 결과를 다음 sw의 EX로 forwarding하면 bubble이 없고, lw 뒤의 mul은 forwarding으로도 bubble 하나가 남는다" class="w-full max-w-4xl mx-auto" />
 
 버블이 발생하는 원인 중 대표적인 것이 레지스터 간 의존성에 의한 Data Hazard입니다. 앞 명령어가 아직 결과를 레지스터에 쓰지 않았는데, 뒤 명령어가 그 값을 읽어야 하는 상황이 그것입니다.
 
@@ -202,7 +202,7 @@ Data Hazard가 발생할 수 있는 상황을 하드웨어가 더 복잡한 로�
 
 Bypass Logic으로 상당수의 Data Hazard를 해결할 수 있다고 했지만, 파이프라이닝에서 완벽하게 숨기기가 어려운 대표적인 케이스가 하나 있습니다. 바로 Branch(분기) 명령어입니다.
 
-<img src="/images/07/slide17_1.png" alt="파이프라인에서 분기 결과가 늦게 결정되어 발생하는 Branch Latency 문제" />
+<ThemeImage lightSrc="/images/07/pipeline_branch_light.svg" darkSrc="/images/07/pipeline_branch_dark.svg" alt="5-stage 표로 본 branch latency: blt의 방향과 target이 EX에서 정해질 때까지 IF 슬롯 2개가 bubble이 되고, 그 뒤에야 loop의 slli를 fetch한다" class="w-full max-w-4xl mx-auto" />
 
 문제의 구조는 이렇습니다. 파이프라인의 첫 단계는 IF(Instruction Fetch)인데, Fetch를 하려면 instruction 메모리의 어느 주소에 다음 명령어가 있는지를 알아야 합니다. 그런데 Branch 명령어를 만나면 그 다음 명령어가 어디에 있는지가 분기 조건과 분기 대상 주소가 계산되어야 비로소 결정됩니다. 그리고 그 계산은 보통 파이프라인의 후반 스테이지에서 일어납니다.
 
@@ -465,7 +465,7 @@ addi  s1, s1, 1     # 7`}</pre>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '260px' }}>
     <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"의존 경로가 없는 명령어는 병렬 처리 가능"</div>
-    <img src="/images/07/slide24_4.png" alt="Data-flow graph" style={{ maxWidth: '100%' }} />
+    <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph: 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이에는 addi(s1)→slli 하나만 남는다" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>register renaming을 한 후,<br/>data-flow graph로 전환</div>
   </div>
 </div>
@@ -475,6 +475,11 @@ addi  s1, s1, 1     # 7`}</pre>
 1. **Sequential code로부터 출발** - ISA는 여전히 "위에서 아래로 차례차례 실행" 의미를 가진 보통의 명령어 시퀀스입니다(`slli → add → lw → … → blt`).
 2. **Branch Prediction으로 speculative trace 생성** - 루프 끝의 `blt`를 만나면 Branch Predictor가 "이번에도 Taken일 것"이라 예측하고, 그 결과를 받은 것처럼 다음 iteration의 명령어들을 추측해서 미리 펼쳐 둡니다. 이렇게 펼쳐진 직선형 명령어 흐름을 **speculative trace**라고 부릅니다. 분기 명령어 자체는 남아서 나중에 예측이 맞았는지 검증하지만, 그 결과를 기다리지 않고 다음 명령어들을 미리 가져와 두므로 재배치할 수 있는 명령어 창이 훨씬 넓어집니다.
 3. **Register Renaming → Data-flow graph 전환** - 펼쳐진 trace에는 같은 레지스터 이름이 iteration마다 반복 등장하지만, 하드웨어가 이름을 바꿔 주면 False Dependency가 사라집니다. 그 결과 명령어들 사이에는 오직 True Dependency만 남고, 전체 코드는 의존 관계를 표현하는 **data-flow graph(DAG)** 형태로 정리됩니다. 이 DAG에서 서로 의존 경로가 없는 명령어들은 동시에 실행해도 결과가 같기 때문에, 자연스럽게 병렬 처리가 가능해집니다.
+
+<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', margin: '16px 0' }}>
+  <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph: 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이에는 addi(s1)→slli 하나만 남는다" class="w-full max-w-3xl mx-auto" />
+  <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>위 루프 두 iteration을 renaming한 뒤의 data-flow graph. 두 열 사이의 edge는 s1 하나뿐이다</div>
+</div>
 
 #### 어떻게 하드웨어는 가능한가? Physical Register
 
@@ -500,7 +505,7 @@ OOO Processor는 명령어가 들어올 때마다 코드에 적힌 Architectural
     alt="Loop Pipeline"
     class="h-36 mx-auto"
   />
-  <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>매 cycle 3개의 instruction을 수행</div>
+  <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>점선 상자 = 2 cycle 동안 서로 다른 iteration의 명령어 6개(cycle당 3개)가 함께 실행됨</div>
 </div>
 
 여러 iteration의 루프 본문이 살짝씩 밀려서 나란히 진행되고, 같은 시점(cycle)을 기준으로 슬라이스를 떠 보면 서로 다른 iteration의 명령어들이 동시에 수행되고 있는 모습이 됩니다.
@@ -558,10 +563,10 @@ VLIW는 여기에 정반대 방향의 답을 내놓습니다. OOO와 똑같은 �
   <ThemeImage
     lightSrc="/images/07/loop_vliw_light.svg"
     darkSrc="/images/07/loop_vliw_dark.svg"
-    alt="VLIW Loop Pipeline"
-    class="h-36 mx-auto"
+    alt="VLIW modulo schedule: II=3, ALU 2개·MEM·MUL 4개 유닛에 4 iteration의 명령어를 배치한 표. prologue, 3 cycle마다 반복되는 kernel, epilogue로 나뉘고 짝수·홀수 iteration이 레지스터 세트 A/B를 번갈아 쓴다"
+    class="w-full max-w-5xl mx-auto"
   />
-  <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>VLIW: 컴파일 타임에 미리 결정된 Loop Pipeline을 하드웨어가 그대로 반복</div>
+  <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>VLIW: 컴파일러가 미리 만든 modulo schedule(II = 3). kernel 구간을 하드웨어가 그대로 반복</div>
 </div>
 
 생긴 모습은 OOO 때 본 그림과 닮아 있지만, 이 파이프라인을 누가 만들어 내느냐가 결정적으로 다릅니다. OOO에서는 매 cycle 하드웨어가 동적으로 그려내던 그림을, VLIW에서는 컴파일러가 미리 그려서 ISA 차원에서 하드웨어에 던져 줍니다. 하드웨어는 그 모양을 그대로 반복 실행하면 되기 때문에, 하드웨어가 훨씬 단순해지고 실행 효율성도 더 좋을 수 있습니다.
@@ -960,6 +965,8 @@ Google TPU는 이 비교에 사용할 수 있는 한 사례입니다. TPU genera
 
 <NpuMemoryHierarchyDiagram onChipLabel="Scratchpad" />
 
+<div class="text-xs text-center -mt-2 mb-4">설명용으로 단순화한 구조입니다. L2 DMA는 DRAM과 Scratchpad 사이를, L1 DMA는 Scratchpad와 Compute Unit의 로컬 버퍼 사이를 옮깁니다.</div>
+
 전반적인 그림 자체는 사실 GPU나 NPU나 크게 다르지 않습니다. 위쪽에 연산을 담당하는 Compute Unit들이 있고, 그 사이를 잇는 Interconnect가 있고, 빠른 온칩 메모리가 있고, 비용이 큰 오프칩 경계를 넘어 DRAM이 있는, 앞 절의 Memory Wall 그림과 같은 형태입니다.
 
 차이는 작아 보이지만 본질적입니다. NPU의 그림에서는 공통적인 두 가지 특징이 발견됩니다.
@@ -978,7 +985,7 @@ NPU의 내부 구조를 위 Memory Hierarchy 그림이 아니라 명령어 관�
 <ThemeImage
     lightSrc="/images/07/command_processor_arch_light.svg"
     darkSrc="/images/07/command_processor_arch_dark.svg"
-    alt="NPU Architecture as Horizontal Encoding"
+    alt="NPU 명령 관점 구조: Command Processor가 command stream을 Compute Unit·L1 DMA·L2 DMA별 command queue에 나눠 넣고, Sync Network가 유닛 사이의 signal/wait를 전달"
     class="h-36 mx-auto"
 />
 
@@ -991,7 +998,7 @@ NPU의 내부 구조를 위 Memory Hierarchy 그림이 아니라 명령어 관�
 <ThemeImage
     lightSrc="/images/07/npu_compiler_light.svg"
     darkSrc="/images/07/npu_compiler_dark.svg"
-    alt="NPU Compiler"
+    alt="NPU compiler: 모델 그래프와 아키텍처 정보(Compute Unit, Command Processor, DMA, Scratchpad)를 입력으로 받아 유닛별 command queue를 생성"
     class="h-36 mx-auto"
 />
 

@@ -12,6 +12,43 @@
 - Codex만 잡은 high: 81행 무어의 법칙 "18개월"(2년), 605–660행 vertical/horizontal microcode를 RISC/VLIW ISA에 1:1 대응시킨 것, 1012행 "GPU는 HW가 작업 분할"(tile/thread/block 분할은 SW), 968–973행 "NPU는 모든 동작이 DMA 명시" 과장, 734행 systolic array vs VLIW를 배타적 선택지로.
 - Fable만 잡은: 1044–1048행 고아 footnote(`[^mbarrier]`, `[^cta]`) 미참조, 1040행 "Blackwell이 SW pipeline을 HW 지원"(TMEM·single-thread MMA 추가일 뿐), 673행 "거의 모든 컴파일러가 Iterative MS"(LLVM/GCC는 Swing MS), 1075행 matmul worklog 원저자(Pranjal Shankhdhar) 크레딧 누락.
 
+## 반영 현황 (2026-09-27)
+
+일치 항목 31행: 반영 27, 부분 반영 4, 보류 0. 한쪽만 제기한 항목은 아직 미검토(단, 같은 자리를 고치면서 함께 해소된 것: Codex A4-1 무어의 법칙 2년, Fable A4-2 renaming은 물리 레지스터, Fable A4-6 branch prediction, Fable A4-7 Swing MS, Fable A4-8 Pranjal 크레딧, Fable A4-12 Dennard, Fable A4-14 Occupancy 비율, Fable A4-9/A4-10/A4-11 표현). 그림은 실제 파일을 열어 확인했고 새 그림 5장은 SVG로 그려 light/dark 렌더링을 확인했다. 행 번호는 리뷰 당시 기준.
+
+| 항목 (리뷰 표기) | 상태 | 비고 |
+|---|---|---|
+| 79 slide07_1 | 반영 | OOO 코어 블록도로 alt 수정, "ISA에 드러나는 블록은 없다" 한 문장 |
+| 90 메타 설명 | 반영 | 두 문장으로 |
+| 121, 178 등 음차 | 부분 반영 | instruction/data-flow/sequential/trade-off로 통일. 눈에 띄는 곳만, 전수 치환은 안 함 |
+| 176 MIPS | 반영 | RISC-V 5-Stage로 제목·alt 수정 |
+| 193 / 205 slide16_1 = slide17_1 | 반영 | `pipeline_hazard_{light,dark}.svg`(add→sw forwarding, lw→mul load-use bubble), `pipeline_branch_{light,dark}.svg`(blt EX까지 IF 2 슬롯 bubble, BTB 설명)로 교체 |
+| 211/233/289 "6~7개 중 하나" | 반영 | 233행만 남기고 211·289는 참조로 |
+| 266-280 절 정리 5중 | 부분 반영 | "한 줄로 요약" 인용 블록만 삭제. 표와 메타 관찰(①번 접근)은 강의자의 정리라 유지 |
+| 296-328 루프 의미·"unroll" | 반영 | Python 대응식과 레지스터 역할 설명 추가, "두 iteration의 trace"로 |
+| 416-420 / 485 "SW로는 표현 불가" | 반영 | unrolling + modulo variable expansion, rotating register 한 단락. 한계는 ISA 레지스터 수. 414행 renaming도 "다른 저장 공간"으로 |
+| 472 slide24_4 DFG | 반영 | `loop_dfg_{light,dark}.svg`: 루프 7개 노드 × 2 iteration, renaming 후 p1…p12, iteration 사이 edge는 s1 하나. 3단계 흐름 안에는 축소본, 아래에 전체 크기 |
+| 480-481 분기·topological order | 반영 | 분기는 남아 검증됨, "의존 경로 없는 명령어" |
+| 501-572 loop_pipeline·loop_vliw | 반영 | `loop_vliw` 재작성: II=3, ALU 2·MEM·MUL, lw·mul latency 2, 3 iteration, prologue/kernel/epilogue, 레지스터 세트 A/B(2× unroll). `loop_pipeline`은 캡션을 점선 상자(2 cycle 6개)에 맞춤 |
+| 520/537/684 "Reservation Table" | 반영 | Reservation Station(Tomasulo), RAT/rename map으로 통일(547·703행 포함) |
+| 541-559 OOO 재서술 | 부분 반영 | 한 문장으로 축약, loop_pipeline 그림은 "OOO의 동적 파이프라인"으로 한 번 유지 |
+| 666 slide33_1 | 반영 | 교체 대신 캡션에 "같은 저자의 1992년 MICRO-25 논문 첫 페이지" 명시 |
+| 682-684 II/MRT | 반영 | II·MRT 정의 한 줄, 두 그림이 다른 예제임을 명시, Download 버튼 crop |
+| 686-704 "Extreme VLIW" | 반영 | 제목 CGRA, 35_2(구조도) 먼저·35_1(reservation table) 설명 추가·35_3 삭제, PACT 2008 출처 |
+| 742-750 "Thread-Level Pipelining" | 부분 반영 | 강의 프레임이라 제목 유지, 첫 문단에 hardware multithreading/TLP 병기. 표 라벨은 동적/정적 스케줄링으로 |
+| 786-799 Memory Wall·SMT | 반영 | 41_2를 multithreading 절로 옮기고 HEP/Tera 문장, 42_1에 C/M·coarse/fine-grained, 42_2에 SMT 설명, 41_1 alt |
+| 790-794, 804/808 중복 | 반영 | 각 1문장 |
+| 837 SIMT | 반영 | thread별 PC·주소, divergence mask, warp 발행. latency hiding은 별개 |
+| 856-858 Occupancy | 반영 | 사실부터. resident/max 비율, 8/64 = 12.5%, 255 |
+| 876 slide47_1 | 반영 | Int8 TOPS + 수치 표현·명령·공정·sparsity 곱임을 alt·본문에 |
+| 905 slide49_1 | 반영 | "Latency Hiding 메커니즘" 절로 이동, alt 수정 |
+| 962-969 NPU 메모리 계층 | 반영 | 컴포넌트에 "Scratchpad ⇅ Compute Unit", "DRAM ⇅ Scratchpad" 주석, 본문 한 문장 |
+| 979-997 NPU SVG 두 장 | 반영 | 유닛명 통일(Compute Unit/Command Proc./DMA/Scratchpad), 큐 라벨과 load→compute→store 예시, "4 MB" 삭제 |
+| 1022-1056 용어 | 반영 | tile/MMA/warp-group/epilogue 정의를 절 첫머리로. "10배" 수치 삭제 |
+| 1044-1048 고아 footnote | 반영 | `[^mbarrier]`, `[^cta]` 참조 삽입 |
+| 1077-1089 용어 | 반영 | persistent kernel·cluster/multicast·Hilbert curve 각주 3개, 원저자 Pranjal Shankhdhar 크레딧과 링크 |
+| 1104 latency hiding ≡ bandwidth | 반영 | Little's law 인과로 |
+
 ## 두 리뷰어가 일치한 항목 (우선 수정 후보)
 
 | line | 문제 | 제안 |

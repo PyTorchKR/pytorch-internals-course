@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 430" font-family="-apple-system, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-size="13">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#E07A6A"/></marker></defs>
+<text x="20" y="46" font-size="14" font-weight="600" fill="#D3D1C7">Data hazard와 forwarding: add가 만든 t3를 바로 다음 sw가 읽는다</text>
+<text x="281.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 1</text>
+<text x="343.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 2</text>
+<text x="405.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 3</text>
+<text x="467.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 4</text>
+<text x="529.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 5</text>
+<text x="591.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 6</text>
+<text x="653.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 7</text>
+<text x="715.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 8</text>
+<text x="777.0" y="72" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 9</text>
+<text x="20" y="102.0" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">add  t3, t2, t1</text>
+<rect x="252" y="82" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="281.0" y="102.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">IF</text>
+<rect x="314" y="82" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="343.0" y="102.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">ID</text>
+<rect x="376" y="82" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="405.0" y="102.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">EX</text>
+<rect x="438" y="82" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="467.0" y="102.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">MEM</text>
+<rect x="500" y="82" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="529.0" y="102.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">WB</text>
+<text x="20" y="138.0" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">sw   t3, 0(s3)</text>
+<rect x="314" y="118" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="343.0" y="138.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">IF</text>
+<rect x="376" y="118" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="405.0" y="138.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">ID</text>
+<rect x="438" y="118" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="467.0" y="138.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">EX</text>
+<rect x="500" y="118" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="529.0" y="138.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">MEM</text>
+<rect x="562" y="118" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="591.0" y="138.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">WB</text>
+<path d="M 405.0 112 C 405.0 130, 467.0 100, 467.0 118" fill="none" stroke="#E07A6A" stroke-width="2" marker-end="url(#ah)"/>
+<text x="474.0" y="117.0" fill="#E07A6A" font-size="11">forwarding</text>
+<text x="20" y="170" fill="#B4B2A9" font-size="12">add의 EX 결과(cycle 3)가 레지스터에 써지는 WB(cycle 5)를 기다리지 않고, sw의 EX(cycle 4)로 곧장 forwarding된다. bubble 없음.</text>
+<text x="20" y="216" font-size="14" font-weight="600" fill="#D3D1C7">Load-use hazard: lw가 읽어 온 t1을 바로 다음 mul이 쓴다</text>
+<text x="281.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 1</text>
+<text x="343.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 2</text>
+<text x="405.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 3</text>
+<text x="467.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 4</text>
+<text x="529.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 5</text>
+<text x="591.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 6</text>
+<text x="653.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 7</text>
+<text x="715.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 8</text>
+<text x="777.0" y="242" text-anchor="middle" fill="#B4B2A9" font-size="11">cycle 9</text>
+<text x="20" y="272.0" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">lw   t1, 0(s3)</text>
+<rect x="252" y="252" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="281.0" y="272.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">IF</text>
+<rect x="314" y="252" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="343.0" y="272.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">ID</text>
+<rect x="376" y="252" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="405.0" y="272.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">EX</text>
+<rect x="438" y="252" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="467.0" y="272.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">MEM</text>
+<rect x="500" y="252" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="529.0" y="272.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">WB</text>
+<text x="20" y="308.0" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">mul  t2, t1, t1</text>
+<rect x="314" y="288" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="343.0" y="308.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">IF</text>
+<rect x="376" y="288" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="405.0" y="308.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">ID</text>
+<rect x="438" y="288" width="58" height="30" rx="4" fill="#4A2A2A" stroke="#E07A6A" stroke-dasharray="4 3"/>
+<text x="467.0" y="308.0" text-anchor="middle" fill="#E07A6A" font-size="11">bubble</text>
+<rect x="500" y="288" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="529.0" y="308.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">EX</text>
+<rect x="562" y="288" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="591.0" y="308.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">MEM</text>
+<rect x="624" y="288" width="58" height="30" rx="4" fill="#444441" stroke="#B4B2A9"/>
+<text x="653.0" y="308.0" text-anchor="middle" fill="#D3D1C7" font-weight="600">WB</text>
+<path d="M 467.0 282 C 467.0 300, 529.0 270, 529.0 288" fill="none" stroke="#E07A6A" stroke-width="2" marker-end="url(#ah)"/>
+<text x="536.0" y="287.0" fill="#E07A6A" font-size="11">forwarding</text>
+<text x="20" y="340" fill="#B4B2A9" font-size="12">lw의 데이터는 MEM(cycle 4)이 끝나야 나오므로 mul의 EX는 cycle 5로 밀린다. forwarding으로도 한 cycle stall은 피할 수 없다.</text>
+</svg>
