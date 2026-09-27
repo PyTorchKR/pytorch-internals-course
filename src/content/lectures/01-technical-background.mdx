@@ -30,7 +30,7 @@ ML Framework은 AI Ecosystem에서 다음과 같은 역할을 합니다:
 
 이처럼 ML Framework에는 다양한 기술적인 background가 혼재되어 있습니다.
 
-PyTorch, TensorFlow, JAX 등의 ML Framework은 모델을 기술하는 것에서 나아가 GPU와 같은 AI 가속기를 효과적으로 활용하는 것이 핵심입니다. 프로그래밍 언어적 성격으로 모델을 직접 작성하고 제공하며, 컴파일러 역할로 AI 가속기에 그대로 매핑하는 대신 트랜스포메이션 과정을 통해 하드웨어 타겟에 최적화합니다.
+PyTorch, TensorFlow, JAX 같은 ML Framework은 모델을 기술하는 데 그치지 않고, GPU 같은 AI 가속기에서 모델을 효율적으로 실행해야 합니다. 프로그래밍 언어적 성격으로 모델을 직접 작성하고 제공하며, 컴파일러 역할로 AI 가속기에 그대로 매핑하는 대신 트랜스포메이션 과정을 통해 하드웨어 타겟에 최적화합니다.
 
 ML Framework의 발전은 이전 연구와 산업적 성과가 축적된 결과입니다. 서로 다른 분야에서 발전한 기술적 흐름이 합쳐져 지금의 ML Framework를 구성하고 있습니다.
 
@@ -71,7 +71,7 @@ ML Framework은 서로 다른 뿌리를 가진 네 가지 기술적 흐름 위�
 
 Heterogeneous Computing은 CPU와 GPU를 함께 활용하여 더 빠르게 계산할 수 있도록 해주는 시스템입니다. 일반적으로 CPU가 수행하던 계산 중 일부를 GPU에게 offloading하여 성능을 향상시키는 방식입니다.
 
-ML Framework은 GPU와 같은 AI 가속기를 효과적으로 활용해야 하므로, CPU와 AI 가속기를 결합하여 사용하는 Heterogeneous Computing이 그 바탕이 되는 배경 기술입니다.
+ML Framework은 GPU 같은 AI 가속기를 써야 하므로, CPU와 AI 가속기를 함께 쓰는 Heterogeneous Computing 위에서 동작합니다.
 
 #### Graphics에서의 시작
 
@@ -114,7 +114,7 @@ OpenCL과 HSA도 heterogeneous computing을 지원하지만, NVIDIA GPU 기반 M
 - **인터넷 서비스**는 독립적이고 간단한 계산을 대량으로 처리하는 데 중점을 둡니다.
 - **슈퍼컴퓨팅**은 하나의 계산을 여러 컴퓨터에 분할하는 경우가 많아 작업 사이의 통신과 동기화가 필요합니다. 한 작업의 실패가 전체 job에 영향을 줄 수 있으므로 fault handling이 중요합니다.
 
-머신러닝의 경우에도 인퍼런스는 독립적인 작업이 많지만, 대규모 분산 학습에서는 하나의 작업이 매우 크기 때문에 fault 처리가 더욱 중요해집니다.
+머신러닝에서도 추론은 독립적인 작업이 많지만, 대규모 분산 학습은 하나의 작업이 매우 크기 때문에 fault 처리가 더 중요합니다.
 
 #### 병렬/분산 프로그래밍 모델
 
@@ -128,7 +128,7 @@ PyTorch의 `torch.distributed`는 MPI에서 널리 사용되는 rank, process, c
 
 **Matrix Multiplication**은 과학 계산과 머신러닝에서 자주 사용되는 핵심 선형대수 연산입니다. BLAS는 matrix multiplication뿐 아니라 vector 및 matrix 연산을 함께 정의합니다.
 
-매트릭스 곱셈의 연산량은 매트릭스 크기에 따라 N³에 비례하기 때문에, 이를 얼마나 빠르게 처리할 수 있는지가 전체 시스템의 성능에 큰 영향을 미칩니다.
+행렬 곱셈의 연산량은 행렬 크기에 따라 N³에 비례하므로, 이를 얼마나 빨리 처리하느냐가 전체 시스템 성능을 크게 좌우합니다.
 
 **최적화 기술:**
 - Algorithmic efficiency 측면: Strassen algorithm, DeepMind의 AlphaTensor 등
@@ -137,7 +137,7 @@ PyTorch의 `torch.distributed`는 MPI에서 널리 사용되는 rank, process, c
 - **BLAS** (Basic Linear Algebra Subprograms, 1979) - 다양한 linear algebra 문제에 적용할 수 있는 low-level API로, Matrix multiplication을 위한 **GEMM**(General Matrix Multiply)을 포함합니다.
 - 각 HW vendor들은 자사 하드웨어에 최적화된 BLAS 구현을 출시합니다:
   - NVIDIA:
-    - **cuBLAS** (2007, closed-source): NVIDIA GPU에 최적화된 BLAS 구현으로, 클로즈드 소스로 제공
+    - **cuBLAS** (2007, closed-source): NVIDIA GPU에 최적화된 BLAS 구현
     - **CUTLASS** (2018, open-source): GEMM 등을 위한 고성능 GPU 커널을 구성하고 사용자 요구에 맞게 특수화할 수 있는 오픈소스 CUDA C++ 템플릿 라이브러리
 
 
@@ -157,7 +157,7 @@ Eager 방식의 ML Framework에서는 model의 연산이 실행 중에 결정됩
 
 #### 서버에서의 활용 확대
 
-서버에서도 점점 활성화되고 있는 추세입니다:
+서버용 가속기에서도 ML compiler를 씁니다:
 
 | 하드웨어 | 프레임워크 | 컴파일러 |
 |---------|-----------|---------|
@@ -192,7 +192,7 @@ Data scientist들은 특정 프로그래밍 언어 자체보다는, 이미 존�
 
 SAS (1966), SPSS (1968), Matlab (1970s), R (1993) 등이 선구적인 역할을 했으나, NumPy (2005)의 등장과 함께 Python이 대세로 자리잡았습니다. SciPy, Matplotlib, pandas, scikit-learn 등의 생태계가 형성되었고, Jupyter의 등장으로 더욱 많은 사람들이 쉽게 접근할 수 있게 되었습니다.
 
-ML도 사용성 측면에서 같은 추세를 보이고 있습니다. NumPy는 TensorFlow와 PyTorch의 API 설계와도 밀접한 관련이 있으며, 특히 텐서 연산 처리 방식에서 공통점이 많습니다.
+ML Framework도 사용성에서 같은 길을 따랐습니다. TensorFlow와 PyTorch의 tensor API는 NumPy와 공통점이 많습니다.
 
 NumPy API는 PyTorch의 tensor API 설계에 영향을 주었고, NumPy 창시자 Travis Oliphant가 설립한 Quansight도 PyTorch 2.x 개발에 기여했습니다. `torch.compile`은 일부 NumPy 프로그램을 TorchDynamo로 분석하고 PyTorch 연산으로 변환한 뒤 Inductor backend로 컴파일할 수 있습니다. NVIDIA GPU에서는 Inductor가 일반적으로 Triton kernel 등을 생성하며, 지원 범위는 사용하는 NumPy 연산에 따라 달라집니다.
 
@@ -239,7 +239,7 @@ Eager execution 중에도 graph 자료구조를 사용할 수 있습니다. 예�
 - 개발자는 일반적인 코드로 model의 연산을 작성
 - 프레임워크가 코드 분석이나 tracing을 통해 컴파일에 필요한 graph를 추출
 
-TF2와 PyTorch는 Eager, Graph 모두 가능합니다. JAX도 기본적으로는 eager로 실행되지만, `jax.jit`으로 감싼 함수는 트레이싱을 거쳐 그래프로 컴파일됩니다.
+TF2와 PyTorch는 Eager, Graph 모두 가능합니다. JAX도 기본적으로는 eager로 실행되지만, `jax.jit`으로 감싼 함수는 tracing을 거쳐 그래프로 컴파일됩니다.
 
 
 ### TF1 vs. PyTorch 코드 비교
@@ -266,12 +266,12 @@ y = x1 + x2
 print(y)
 ```
 
-PyTorch의 eager mode에서는 각 줄의 연산이 즉시 수행되며, `y`는 `+`가 실행된 결과를 바로 가지고 있습니다. 별도의 그래프 실행 과정이 필요 없으며, 코드 한 줄 한 줄이 실시간으로 계산됩니다.
+PyTorch의 eager mode에서는 각 줄의 연산이 즉시 수행되고, `y`에는 `+`의 결과가 바로 들어 있습니다. 별도의 그래프 실행 단계는 없습니다.
 
 
 ### Graph Capture: TF2와 PyTorch 비교
 
-그래프 모드에서는 어떻게 그래프를 뽑아낼 것인가가 핵심 문제입니다. TF1은 프로그래머들에게 명시적으로 그래프를 그려달라고 요청했지만, TF2나 PyTorch는 eager 모드로 모델을 만들어주면 거기서 자체적으로 그래프를 뽑아내는 방식을 사용합니다.
+그래프 모드에서는 그래프를 어떻게 얻을지부터 정해야 합니다. TF1은 개발자가 그래프를 직접 구성하게 했고, TF2와 PyTorch는 eager 모드로 작성한 코드에서 프레임워크가 그래프를 추출합니다.
 
 #### TF2
 
@@ -288,7 +288,7 @@ y = tf.random.uniform((3, 4))
 foo(x, y)
 ```
 
-TF2는 기본이 eager 모드이며, `@tf.function` 데코레이터를 붙인 함수를 처음 호출하는 시점에 함수 내부의 연산들이 트레이싱되어 그래프로 캡처됩니다. 개발자는 eager 스타일로 코드를 작성하고, 프레임워크가 그래프 추출을 담당하는 define-by-run 구조입니다.
+TF2는 기본이 eager 모드이며, `@tf.function` 데코레이터를 붙인 함수를 처음 호출하는 시점에 함수 내부 연산이 trace되어 그래프로 캡처됩니다. 개발자는 eager 스타일로 코드를 작성하고, 프레임워크가 그래프 추출을 담당하는 define-by-run 구조입니다.
 
 #### PyTorch 1 & 2
 
@@ -351,7 +351,7 @@ PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파�
 
 PyTorch는 앞에서 설명한 numerical computing API, heterogeneous execution, distributed communication, graph capture 및 compiler backend를 하나의 framework에서 제공합니다.
 
-**vLLM**은 이러한 통합 구조를 활용하는 사례입니다. vLLM의 hardware plugin은 가능한 경우 device-specific 기능을 PyTorch backend와 custom operator로 제공하고, 상위 serving engine은 공통 PyTorch interface를 사용합니다. 이를 PyTorch가 여러 framework와 hardware backend 사이의 공통 interface인 "Narrow Waist" 역할을 한다고 설명할 수 있습니다.
+**vLLM**은 이러한 통합 구조를 활용하는 사례입니다. vLLM의 hardware plugin은 가능한 경우 device-specific 기능을 PyTorch backend와 custom operator로 제공하고, 상위 serving engine은 공통 PyTorch interface를 사용합니다. 이 구조에서 PyTorch는 여러 framework와 hardware backend 사이의 공통 interface, 곧 "Narrow Waist" 역할을 합니다.
 
 
 ### PyTorch 2.0
@@ -369,7 +369,7 @@ PyTorch 2.0은 PyTorch 1.0의 특성을 거의 모두 계승(inherit)하면서, 
 
 #### Backend Integration Points
 
-다양한 하드웨어와 원활히 연결될 수 있도록 통합 포인트를 잘 정의하고 있습니다:
+PyTorch에서 새 hardware backend를 연결하는 지점은 세 곳입니다:
 
 | 접점 | 입력 단위 | 연결 층 |
 |------|----------|--------|

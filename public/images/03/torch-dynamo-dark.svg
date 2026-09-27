@@ -7,7 +7,7 @@
 
   <!-- Compilation header -->
   <text x="40" y="24" font-size="14" font-weight="500" fill="#F1EFE8">Compilation</text>
-  <text x="154" y="24" font-size="12" fill="#B4B2A9">— bytecode에서 graph break를 찾아 각 구간을 FX 그래프로 컴파일</text>
+  <text x="154" y="24" font-size="12" fill="#B4B2A9">bytecode를 graph break로 나누고 구간마다 FX graph로 컴파일</text>
 
   <!-- Break arrows -->
   <text x="193" y="48" font-size="12" text-anchor="middle" fill="#B4B2A9">Break</text>
@@ -56,7 +56,7 @@
 
   <!-- Execution header -->
   <text x="40" y="176" font-size="14" font-weight="500" fill="#F1EFE8">Execution</text>
-  <text x="131" y="176" font-size="12" fill="#B4B2A9">— 실행 시점에 guard를 검사하고 통과하면 컴파일된 trace를 실행</text>
+  <text x="131" y="176" font-size="12" fill="#B4B2A9">실행 시점에 guard를 검사하고 통과하면 컴파일된 trace를 실행</text>
 
   <!-- Check arrows -->
   <text x="53"  y="200" font-size="12" text-anchor="middle" fill="#85B7EB">Check</text>

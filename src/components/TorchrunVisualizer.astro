@@ -350,7 +350,7 @@ const ringPath = 'M 54 154 L 123 154 L 192 154 L 261 154 L 261 310 L 192 310 L 1
     },
     {
       title: '3. Worker spawn + 환경변수 설정',
-      desc: 'agent가 nproc_per_node=8만큼 worker process를 띄우면서 RANK, LOCAL_RANK, WORLD_SIZE, MASTER_ADDR, MASTER_PORT를 환경변수로 넣어 줍니다. worker는 이 값을 읽기만 하면 됩니다.',
+      desc: 'agent가 nproc_per_node=8만큼 worker process를 띄우면서 RANK, LOCAL_RANK, WORLD_SIZE, MASTER_ADDR, MASTER_PORT를 환경변수로 넣어 줍니다. worker는 이 환경변수에서 자기 rank를 읽습니다.',
       classes: ['rdzv-agents', 'spawned', 'ranks-shown'],
     },
     {

@@ -15,7 +15,7 @@
 
   <!-- ══ Zone: torch.autograd.Function (painted first) ══ -->
   <rect x="356" y="120" width="288" height="224" rx="10" fill="#FBFAF8" stroke="#4A3E38" stroke-width="1.2"/>
-  <text x="380" y="144" font-family="'DM Mono', monospace" font-size="9.5" font-weight="500" letter-spacing="1.5" fill="#4A3E38">TORCH.AUTOGRAD.FUNCTION</text>
+  <text x="380" y="144" font-family="'DM Mono', monospace" font-size="9.5" font-weight="500" fill="#4A3E38">torch.autograd.Function</text>
   <text x="380" y="160" font-family="'DM Mono', monospace" font-size="9" fill="#8A8078">forward + backward를 가진 하나의 custom Op</text>
 
   <!-- ══ Arrows (behind node boxes) ══ -->
@@ -42,7 +42,7 @@
   <!-- e. [2] → compiled backward : grad_fn 연결 (dashed) -->
   <path d="M284 280 H344 Q352 280 352 288 V288 Q352 296 360 296 H376" fill="none" stroke="#8A8078" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#ctf-arr)"/>
   <rect x="292" y="262" width="48" height="12" rx="2" fill="#FFFFFF"/>
-  <text x="316" y="271" font-family="'DM Mono', monospace" font-size="8.5" fill="#8A8078" text-anchor="middle" letter-spacing="0.5">GRAD_FN</text>
+  <text x="316" y="271" font-family="'DM Mono', monospace" font-size="8.5" fill="#8A8078" text-anchor="middle">grad_fn</text>
 
   <!-- f. [3] → compiled backward 실행 (warm accent) -->
   <path d="M284 380 H332 Q340 380 340 372 V316 Q340 308 348 308 H376" fill="none" stroke="#9A7B68" stroke-width="1.4" marker-end="url(#ctf-arr-warm)"/>
