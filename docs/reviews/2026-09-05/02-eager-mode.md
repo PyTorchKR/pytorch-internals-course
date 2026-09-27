@@ -21,6 +21,39 @@
 - Fable만 잡은 high: 48행 "`gemm_internal`이 v2.13에서 추가" → v2.5.0에 이미 74회 등장(v2.2.0에는 0). 그리고 `gemm<float>`(#0) 내부 호출이라 스택에 안 보임.
 - Codex만 잡은 high: 322행 `CompositeImplicitAutograd`는 alias key라 runtime key set에서 "선택"되지 않음. 672행 cuBLASLt 경로는 `cublasLtMatmul`(직전 코드가 `gemm_and_bias`). 728행 `clone`은 `empty_strided` 후 `copy_`. 736행 "clone 안 하면 대부분 view" → 산술 연산도 새 storage. 852–863행 표의 `x`가 2D인데 `permute(2,0,1)`/`flatten(1,2)`/`reshape(2,12)`는 차원 오류. 747–755행 refcount 0 = GPU 메모리 반환 아님(caching allocator). 1145행 "RBLN event 미지원" → v0.11.2 문서에 `torch.rbln.Event` 존재. 1185행 XPU record 설명(barrier 제출 후 event 반환, host 대기 아님). 605행 meta 함수 검증도 codegen이 만든다고 서술.
 
+## 반영 현황 (2026-09-27)
+
+일치 항목 표를 위에서부터 "Generator `clone` 시그니처"(1312-1327) 행까지 검토·반영했다. **그 아래 두 행(1334-1355 빌드 전환 일정, 1414-1418 `DEBUG`/`MAX_JOBS`)과 "한쪽만 제기한 항목" 목록은 아직 검토하지 않았다** (Codex A4-13은 view 표 재구성에 포함되어 함께 해소). 행 번호는 리뷰 당시 기준.
+
+검토한 20행 중 반영 17, 부분 반영 1, 미반영 2.
+
+| 항목 (리뷰 표기) | 상태 | 비고 |
+|---|---|---|
+| 40, 107-108 워밍업·"무려" | 미반영 | 검토 대상에 포함됐으나 이번 회차에서 손대지 않음. "무려 55단계" 문구 그대로 |
+| 118, 419 등 음차 | 반영 | 매트릭스→행렬 2곳, 디바이스→device 5곳 |
+| 125-126 matmul 분기 표 | 반영 | 1D×2D 행 추가, fold/`mm`과 broadcast/`bmm` 분리, fold는 각주 |
+| 142-146 kernel 미정의, 9문장 단락 | 반영 | kernel 정의 문장 추가, dispatcher 동작을 4단계 번호 목록으로 |
+| 144/253/334/575 redispatch 중복+모순 | 반영 | 145-154행을 정본으로, 나머지 5곳을 "실행 도중" 모델로 통일 |
+| 188/197 `callWithDispatchKeySlowPath` 역할 | 미반영 | 표 #20/#32 설명이 여전히 "최우선 key 선택" |
+| 191/250/275/455 Front-End가 key set 계산 | 반영 | key set 계산을 `Dispatcher::call`로 옮김 (4곳) |
+| 227-245 Mermaid에 Autograd kernel 없음 | 반영 | Mermaid 대신 `DispatchFlowDiagram.astro` SVG 컴포넌트로 교체. 개념도로 일반화하여 중간 kernel(예: Autograd)이 redispatch하는 구조 표시 |
+| 249/441/455 "C++ frontend" 레이블 | 반영 | 8곳을 "C++ 진입점(`at::_ops::*::call`)"으로. `ops/{op}.h`는 public C++ API 선언으로 정정 |
+| 513-557 vs 896-938 구버전 Autograd kernel 중복 | 반영 | 앞쪽 40행 삭제, 구버전은 Kernel 절에 `<details>`로 |
+| 701-708 intrusive_ptr·stride 무정의 | 부분 반영 | intrusive_ptr은 각주 추가. stride는 독자가 안다고 보고 의도적으로 생략 |
+| 831-845 TensorIterator 정의 오류 | 반영 | elementwise op helper로 한 문장 교체 |
+| 848-865 view 분류표 | 반영 | 표 하나로 재구성(무엇을 바꾸는가 / Storage), 3D 예제 `x3`로 통일 |
+| 1043 CPU index | 반영 | "-1 또는 0만 허용" |
+| 1134-1143 vs 1179-1204 Event 설명 2회 | 반영 | "Event API 상세"를 `<details>`로 |
+| 1119-1132 Event Mermaid | 반영 | Stream 2 + `block`, "완료: query() = true" |
+| 1140 "block command" | 반영 | 5곳 "wait 명령", 첫 등장에 `cudaStreamWaitEvent` 병기 |
+| 1188 `recordOnce` 인과 반전 | 반영 | "미기록 시에만 record, thread-safe 아님" |
+| 1215-1220 DeviceGuard SVG | 반영 | 라이트/다크 SVG 재작성: scope 라벨, current device 타임라인, set/restore 화살표 |
+| 1312-1327 Generator `clone` 시그니처 | 반영 | `at::Generator` / `c10::GeneratorImpl` 분리, 무인자 `clone()` |
+| 1334-1355 빌드 전환 일정 | 미검토 | |
+| 1414-1418 `DEBUG`/`MAX_JOBS` | 미검토 | |
+
+작업 중 발견한 기존 문제: Event 시퀀스 다이어그램이 다크 테마에서 메시지 글자가 어둡고 note 배경이 노랗게 렌더링됨(Mermaid 빌드 시 sequence diagram 테마 변수). 이번 회차 범위 밖.
+
 ## 두 리뷰어가 일치한 항목 (우선 수정 후보)
 
 | line | 문제 | 제안 |

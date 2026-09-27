@@ -1,0 +1,163 @@
+---
+/**
+ * DispatchFlowDiagram.astro
+ *
+ * Eager mode op 호출의 dispatch 흐름 개념도.
+ * Front-End → Dispatcher → 중간 kernel(예: Autograd) ⇢ Dispatcher → Device backend kernel → Device runtime.
+ * 중간 kernel이 실행 도중 Dispatcher를 다시 호출(redispatch)하는 중첩 구조를 보여줍니다.
+ *
+ * 선과 글자는 currentColor를 사용하므로 사이트의 data-theme 토글에 자동으로 대응합니다.
+ * 간선 라벨은 짧게 두고, 각 단계의 설명은 아래 범례에 둡니다.
+ *
+ * MDX 사용 예:
+ *   import DispatchFlowDiagram from '../../components/DispatchFlowDiagram.astro';
+ *
+ *   <DispatchFlowDiagram />
+ */
+
+export interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<figure class:list={['df-diagram', className]}>
+  <svg
+    viewBox="0 0 640 350"
+    role="img"
+    aria-labelledby="df-title"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <title id="df-title">Dispatch 흐름 개념도: Front-End, Dispatcher, 중간 kernel, Device backend kernel, Device runtime</title>
+    <defs>
+      <marker id="df-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+      </marker>
+      <marker id="df-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" class="df-accent-fill" />
+      </marker>
+    </defs>
+
+    <!-- Boxes -->
+    <rect class="df-box" x="200" y="16" width="240" height="40" rx="6" />
+    <text class="df-label" x="320" y="41">Front-End</text>
+
+    <rect class="df-box df-box-accent" x="200" y="104" width="240" height="40" rx="6" />
+    <text class="df-label df-label-strong" x="320" y="129">Dispatcher</text>
+
+    <rect class="df-box" x="40" y="210" width="260" height="44" rx="6" />
+    <text class="df-label" x="170" y="237">중간 kernel (예: Autograd)</text>
+
+    <rect class="df-box" x="360" y="210" width="260" height="44" rx="6" />
+    <text class="df-label" x="490" y="237">Device backend kernel</text>
+
+    <rect class="df-box" x="360" y="290" width="260" height="40" rx="6" />
+    <text class="df-label" x="490" y="315">Device runtime</text>
+
+    <!-- Edges -->
+    <line class="df-edge" x1="320" y1="56" x2="320" y2="102" marker-end="url(#df-arrow)" />
+
+    <line class="df-edge" x1="225" y1="144" x2="225" y2="208" marker-end="url(#df-arrow)" />
+    <text class="df-edge-label" x="215" y="181" text-anchor="end">① dispatch</text>
+
+    <line class="df-edge df-edge-accent" x1="275" y1="210" x2="275" y2="146" marker-end="url(#df-arrow-accent)" />
+    <text class="df-edge-label df-accent-text" x="285" y="181" text-anchor="start">② redispatch</text>
+
+    <line class="df-edge" x1="420" y1="144" x2="420" y2="208" marker-end="url(#df-arrow)" />
+    <text class="df-edge-label" x="430" y="181" text-anchor="start">③ dispatch</text>
+
+    <line class="df-edge" x1="490" y1="254" x2="490" y2="288" marker-end="url(#df-arrow)" />
+  </svg>
+
+  <figcaption class="df-legend">
+    <ol>
+      <li><b>① dispatch</b>: Dispatcher가 key set에서 우선순위가 가장 높은 key의 kernel을 호출</li>
+      <li><b>② redispatch</b>: 중간 kernel이 실행 도중, 처리한 key를 제외한 set으로 Dispatcher를 다시 호출</li>
+      <li><b>③ dispatch</b>: 남은 key 중 backend key의 kernel을 호출. backend kernel은 끝단이라 되돌아가지 않음</li>
+    </ol>
+  </figcaption>
+</figure>
+
+<style>
+  .df-diagram {
+    margin: 24px auto;
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .df-diagram svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    color: inherit;
+    font-family: inherit;
+  }
+
+  .df-box {
+    fill: rgba(125, 125, 125, 0.08);
+    stroke: rgba(125, 125, 125, 0.5);
+    stroke-width: 1.2;
+  }
+
+  .df-box-accent {
+    fill: rgba(59, 130, 246, 0.15);
+    stroke: rgba(59, 130, 246, 0.6);
+  }
+
+  .df-label {
+    fill: currentColor;
+    font-size: 15px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .df-label-strong {
+    font-weight: 600;
+  }
+
+  .df-edge {
+    stroke: currentColor;
+    stroke-width: 1.5;
+    fill: none;
+    opacity: 0.75;
+  }
+
+  .df-edge-accent {
+    stroke: rgb(59, 130, 246);
+    stroke-dasharray: 5 4;
+    opacity: 1;
+  }
+
+  .df-accent-fill {
+    fill: rgb(59, 130, 246);
+  }
+
+  .df-edge-label {
+    fill: currentColor;
+    font-size: 13px;
+    dominant-baseline: middle;
+    opacity: 0.85;
+  }
+
+  .df-accent-text {
+    fill: rgb(59, 130, 246);
+    opacity: 1;
+  }
+
+  .df-legend {
+    font-size: 0.8em;
+    opacity: 0.85;
+    margin-top: 4px;
+  }
+
+  .df-legend ol {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .df-legend li {
+    margin: 2px 0;
+  }
+</style>

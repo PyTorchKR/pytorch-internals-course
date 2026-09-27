@@ -6,6 +6,7 @@ lecture: 2
 
 import Mermaid from '../../components/Mermaid.astro';
 import ThemeImage from '../../components/ThemeImage.astro';
+import DispatchFlowDiagram from '../../components/DispatchFlowDiagram.astro';
 
 
 # Week 2: PyTorch Eager Mode
@@ -115,15 +116,18 @@ Call stack이 55단계나 되는 이유는 크게 세 가지로 나눌 수 있�
 
 **1. `torch.matmul` 자체의 복잡성**
 
-단순히 2D 매트릭스를 곱하는 것이라면 그냥 곱하면 되지만, `torch.matmul`은 input tensor의 shape에 따라 서로 다른 연산으로 분기합니다:
+단순히 2D 행렬을 곱하는 것이라면 그냥 곱하면 되지만, `torch.matmul`은 input tensor의 shape에 따라 서로 다른 연산으로 분기합니다:
 
 | Input 조합 | 호출되는 연산 |
 |---|---|
 | 1D × 1D | `torch.dot` |
 | 2D × 1D | `torch.mv` |
+| 1D × 2D | unsqueeze 후 `torch.mm` |
 | 2D × 2D | `torch.mm` |
-| 3D 이상 (batch) | `torch.bmm` |
-| 차원 불일치 시 | broadcast 후 위 연산 중 하나 |
+| N-D × 2-D 또는 N-D × 1-D | 보통 batch 차원을 fold[^fold]하여 `torch.mm` / `torch.mv` |
+| 양쪽 다 batch 차원 | batch 차원 broadcast 후 `torch.bmm` |
+
+[^fold]: 큰 tensor의 batch 차원을 앞쪽 행 차원에 접어 GEMM 한 번으로 처리하는 것. copy 없이 view로 접을 수 없으면 `should_fold`가 `bmm` 경로를 택합니다.
 
 **2. Language boundary 전환**
 
@@ -139,9 +143,16 @@ PyTorch는 단일 언어가 아니라 Python → C++ → CUDA(또는 다른 kern
 | **Autograd** | backward graph 생성 필요 vs 불필요 |
 | **Tracing** | `torch.jit.trace` / `torch.compile` 중 vs 아님 |
 
-이처럼 "지금 이 호출에서 어떤 구현(kernel)을 실행해야 하는가"를 런타임에 결정하여 해당 kernel을 호출하는 과정을 PyTorch에서는 **dispatch**라고 부릅니다. 그리고 위 표의 각 경우 하나하나를 나타내는 태그가 **dispatch key**입니다. 예를 들어 `CPU`, `CUDA` 같은 device도, `Autograd` 같은 기능도 각각 하나의 dispatch key로 표현됩니다.
+이처럼 "지금 이 호출에서 어떤 구현(kernel)을 실행해야 하는가"를 런타임에 결정하여 해당 kernel을 호출하는 과정을 PyTorch에서는 **dispatch**라고 부릅니다. 여기서 **kernel**은 dispatch key 하나에 등록된 함수입니다. 실제 연산을 수행하는 CUDA 코드도, autograd 기록만 하고 연산은 넘기는 wrapper도 dispatcher 입장에서는 모두 kernel입니다. 그리고 위 표의 각 경우 하나하나를 나타내는 태그가 **dispatch key**입니다. 예를 들어 `CPU`, `CUDA` 같은 device도, `Autograd` 같은 기능도 각각 하나의 dispatch key로 표현됩니다.
 
-한 번의 op 호출에는 여러 관심사가 동시에 걸려 있을 수 있습니다. "CUDA tensor이면서 gradient 추적이 필요한" 호출이라면 `CUDA` key와 `Autograd` key가 둘 다 유효합니다. 그래서 PyTorch는 하나의 key가 아니라 유효한 key들을 모은 **dispatch key set**을 만들고(입력 tensor들이 가진 key에 tracing mode 같은 thread-local 상태의 key까지 합쳐집니다), **dispatcher**라는 컴포넌트가 이 set에서 우선순위가 가장 높은 key를 골라 해당 kernel을 호출합니다. 호출된 kernel은 자기 관심사에 해당하는 준비 작업(예: backward graph 노드 생성)을 한 뒤, 실제 연산은 실행 도중에 dispatcher를 다시 호출해 요청합니다(**redispatch**). 이때 이미 처리한 key는 제외하도록 표시되므로, dispatcher는 남은 key 중 우선순위가 가장 높은 key(예: `CUDA`)의 kernel을 선택합니다. redispatch는 kernel 실행이 끝난 뒤가 아니라 실행 도중에 일어나는 중첩 호출이라는 점이 중요합니다. 안쪽 kernel이 결과를 반환하면 바깥 kernel이 마무리 작업(예: 결과 tensor에 backward history 기록)을 이어가며, 이 중첩이 쌓이는 것이 곧 call stack의 깊이가 됩니다.
+한 번의 op 호출에는 여러 관심사가 동시에 걸려 있을 수 있습니다. "CUDA tensor이면서 gradient 추적이 필요한" 호출이라면 `CUDA` key와 `Autograd` key가 둘 다 유효합니다. 이때 **dispatcher**라는 컴포넌트는 다음 순서로 움직입니다.
+
+1. **dispatch key set 계산**: 입력 tensor들이 가진 key에 tracing mode 같은 thread-local 상태의 key를 합쳐 **dispatch key set**을 만듭니다.
+2. **최고 우선순위 key 선택**: set에서 우선순위가 가장 높은 key(예: `Autograd`)의 kernel을 호출합니다.
+3. **준비 작업 후 redispatch**: 그 kernel은 자기 관심사의 준비 작업(예: backward graph 노드 생성)을 하고, 실행 도중에 dispatcher를 다시 호출합니다(**redispatch**). 이미 처리한 key는 제외하도록 표시됩니다.
+4. **다음 key의 kernel 실행**: 남은 key 중 우선순위가 가장 높은 key(예: `CUDA`)의 kernel이 실제 연산을 수행하고 반환합니다.
+
+redispatch는 kernel 실행이 끝난 뒤가 아니라 실행 도중에 일어나는 중첩 호출입니다. 안쪽 kernel이 결과를 반환하면 바깥 kernel이 마무리 작업(예: 결과 tensor에 backward history 기록)을 이어가고, 이 중첩이 쌓이는 것이 곧 call stack의 깊이입니다.
 
 위 표는 대표적인 예시일 뿐이며, 실제로는 이보다 더 많은 dispatch key가 존재합니다. 같은 `matmul` op이라도 실행 시나리오가 다양하고 이 경우를 모두 커버해야 하기 때문에, dispatch → kernel 실행 → redispatch가 반복되면서 call stack이 깊어집니다. 각 key가 device, autograd, tracing 같은 서로 다른 관심사를 독립적으로 처리하도록 설계된 것이 이 구조의 핵심이며, dispatcher의 내부 동작은 아래 "PyTorch Dispatcher" 절에서 자세히 다룹니다.
 
@@ -178,9 +189,9 @@ Call stack은 밑에서 위로 진입합니다. 크게 두 영역으로 나뉘�
 | #4 | `at::native::structured_mm_out_cuda::impl` at `native/cuda/Blas.cpp:604` | **CUDA mm 구현체** - structured kernel의 device별 impl |
 | **#5** | `at::` at `build/.../RegisterCUDA.cpp:12173` | **CUDA backend 등록** - `native_functions.yaml`에서 생성된 CUDA dispatch 등록 코드 (자동생성) |
 | #6-9 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **dispatch logic** - 등록된 kernel functor를 unboxed 호출로 변환하여 실행 |
-| **#10** | `c10::Dispatcher::redispatch` at `Dispatcher.h:714` | **redispatch** - Autograd kernel 처리 후 다음 dispatch key(CUDA)로 재전달 |
+| **#10** | `c10::Dispatcher::redispatch` at `Dispatcher.h:714` | **redispatch** - Autograd kernel이 실행 도중 다음 dispatch key(CUDA)로 재전달 |
 | #11 | `c10::TypedOperatorHandle` at `Dispatcher.h:536` | redispatch의 typed handle wrapper |
-| **#12** | `at::_ops::mm::redispatch` at `build/.../Operators_3.cpp:4010` | **mm redispatch frontend** - op별 생성된 redispatch 진입점 (자동생성) |
+| **#12** | `at::_ops::mm::redispatch` at `build/.../Operators_3.cpp:4010` | **mm redispatch 진입점** - op별 생성된 C++ redispatch 진입점 (자동생성) |
 | #13 | `at::redispatch::mm` at `build/.../RedispatchFunctions.h:5217` | mm redispatch convenience 함수 (자동생성) |
 | #14 | `operator` at `generated/VariableType_3.cpp:13455` | Autograd kernel 내부 lambda (자동생성) |
 | **#15** | `torch::autograd::VariableType::mm` at `generated/VariableType_3.cpp:13456` | **Autograd kernel** - backward graph 세팅 후 forward 실행, gradient 필요 시 기록 (자동생성; 실제 심볼은 `VariableType` 아래 익명 namespace 안에 생성됨) |
@@ -188,7 +199,7 @@ Call stack은 밑에서 위로 진입합니다. 크게 두 영역으로 나뉘�
 | #20 | `c10::Dispatcher::callWithDispatchKeySlowPath` at `Dispatcher.h:661` | dispatch key set에서 최우선 key를 선택하여 해당 kernel 탐색 |
 | **#21** | `c10::Dispatcher::call` at `Dispatcher.h:680` | **dispatch 진입** - mm op에 대한 첫 번째 dispatch (Autograd key 선택) |
 | #22 | `c10::TypedOperatorHandle` at `Dispatcher.h:531` | dispatch의 typed handle wrapper |
-| **#23** | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | **mm C++ frontend** - op별 생성된 dispatch 진입점, dispatch key set 계산 후 Dispatcher 호출 (자동생성) |
+| **#23** | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | **mm C++ 진입점** - op별 생성된 dispatch 진입점, Dispatcher 호출 (자동생성) |
 | #24 | `at::Tensor::mm` at `build/.../TensorBody.h:2999` | `at::Tensor`의 mm 메서드 - `mm::call`로 위임 |
 | #25 | `at::native::_matmul_impl` at `LinearAlgebra.cpp:2031` | **matmul 구현체** - input shape 분석 후 적절한 연산(mm, bmm 등) 선택 |
 | #26 | `at::native::matmul` at `LinearAlgebra.cpp:2181` | matmul 진입 - `_matmul_impl`로 위임 |
@@ -197,7 +208,7 @@ Call stack은 밑에서 위로 진입합니다. 크게 두 영역으로 나뉘�
 | #32 | `c10::Dispatcher::callWithDispatchKeySlowPath` at `Dispatcher.h:661` | dispatch key set에서 최우선 key를 선택하여 해당 kernel 탐색 |
 | **#33** | `c10::Dispatcher::call` at `Dispatcher.h:680` | **dispatch 진입** - matmul op에 대한 dispatch |
 | #34 | `c10::TypedOperatorHandle` at `Dispatcher.h:531` | dispatch의 typed handle wrapper |
-| **#35** | `at::_ops::matmul::call` at `build/.../Operators_4.cpp:3192` | **matmul C++ frontend** - op별 생성된 dispatch 진입점 (자동생성) |
+| **#35** | `at::_ops::matmul::call` at `build/.../Operators_4.cpp:3192` | **matmul C++ 진입점** - op별 생성된 dispatch 진입점 (자동생성) |
 | #36 | `at::Tensor::matmul` at `build/.../TensorBody.h:2899` | `at::Tensor`의 matmul 메서드 - `matmul::call`로 위임 |
 | #37 | `operator` at `generated/python_torch_functions_0.cpp:4909` | Python binding 내부 lambda - Python 인자 파싱 후 C++ 호출 (자동생성) |
 | **#38** | `torch::autograd::THPVariable_matmul` at `generated/python_torch_functions_0.cpp:4911` | **Python → C++ 진입점** - `torch.matmul()` 호출 시 CPython이 최초로 진입하는 C++ 함수 (자동생성) |
@@ -224,38 +235,20 @@ Call stack은 밑에서 위로 진입합니다. 크게 두 영역으로 나뉘�
 
 전체적으로 Eager mode가 어떻게 생겼는지 먼저 짚고 넘어가겠습니다.
 
-<Mermaid>
-{`graph TD
-    FE(Front-End)
-    D(Dispatcher)
-    DB1(Device Backend)
-    DB2(Device Backend)
-    DR1(Device Runtime)
-    DR2(Device Runtime)
-
-    FE --> D
-    D -- dispatch --> DB1
-    D --> DB2
-    
-    DB1 -. redispatch .-> D
-    DB2 -.-> D
-    
-    DB1 --> DR1
-    DB2 --> DR2`}
-</Mermaid>
+<DispatchFlowDiagram />
 
 다이어그램의 **Front-End**는 사용자가 호출하는 API 표면에서 Dispatcher 직전까지의 구간을 가리킵니다.
 `torch.matmul(y, z)`를 호출하면 Python API에서 시작해, 자동 생성된 Python binding(`THPVariable_matmul`, call stack #38)을 거쳐
-op별 C++ 진입점(`at::_ops::matmul::call`, #35 — call stack 표에서 "C++ frontend"로 표시된 부분)에 도달합니다.
-Front-End의 역할은 여기까지입니다: Python 인자를 C++ 타입으로 변환하고, dispatch key set을 계산해서 op을 **Dispatcher**에게 전달합니다.
-어떤 kernel이 실행될지는 Front-End가 아니라 Dispatcher가 결정하며, Dispatcher는 전달받은 key set에서 우선순위가 가장 높은 key를 선택하여 해당 kernel을 호출합니다.
+op별 C++ 진입점(`at::_ops::matmul::call`, #35 — call stack 표에서 "C++ 진입점"으로 표시된 부분)에 도달합니다. PyTorch 문서의 "C++ Frontend"는 libtorch의 `torch::nn` API를 가리키는 별개 용어이므로 여기서는 쓰지 않습니다.
+Front-End의 역할은 여기까지입니다: Python 인자를 C++ 타입으로 변환해 op과 함께 **Dispatcher**에게 전달합니다.
+어떤 kernel이 실행될지는 Front-End가 아니라 Dispatcher가 결정하며, Dispatcher는 인자에서 dispatch key set을 계산하고 그중 우선순위가 가장 높은 key를 선택하여 해당 kernel을 호출합니다.
 
-핵심은 kernel이 실행 도중에 다시 Dispatcher를 호출하여 redispatch한다는 점입니다.
-이 dispatch → kernel → redispatch의 중첩이 call stack의 depth가 깊어지는 이유입니다.
+앞 절에서 본 대로 kernel은 실행 도중에 다시 Dispatcher를 호출하여 redispatch합니다.
 예를 들어 Autograd kernel이 backward graph 노드를 준비한 뒤 자신의 key를 제외하고 redispatch하면,
 Dispatcher가 남은 key 중 우선순위가 가장 높은 key(예: CUDA)의 device backend kernel을 선택합니다. 
 이 Dispatcher ↔ Kernel 간의 순환 덕분에 autograd, backend 등 여러 kernel이 하나의 op 호출에 차례로 개입할 수 있습니다. 
 최종적으로 device backend kernel이 Device Runtime을 사용해 실제 연산을 수행합니다.
+중간 kernel은 Autograd 하나가 아니라 tracing, `matmul` → `mm` 분해(`CompositeImplicitAutograd`) 등 여러 층일 수 있으며, 각 층이 같은 방식으로 redispatch합니다. 중간 층이 하나도 없으면 Dispatcher가 바로 backend kernel을 호출합니다.
 
 
 ### Call Stack의 주요 특성
@@ -272,7 +265,7 @@ Call stack에서 자동 생성된 코드가 차지하는 비중이 큽니다. �
 | #5 | `at::` at `build/.../RegisterCUDA.cpp:12173` | CUDA backend dispatch 등록 - `gen.py`가 `native_functions.yaml`의 dispatch 항목으로부터 생성 |
 | #12-13 | `at::_ops::mm::redispatch` at `build/.../Operators_3.cpp:4010` | mm op의 redispatch 진입점 - Autograd → CUDA 전환 시 사용 |
 | #14-15 | `torch::autograd::VariableType::mm` at `generated/VariableType_3.cpp:13456` | mm의 Autograd kernel - `gen_variable_type.py`가 `derivatives.yaml`로부터 생성 |
-| #23 | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | mm op의 C++ dispatch 진입점 - dispatch key set 계산 및 Dispatcher 호출 |
+| #23 | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | mm op의 C++ dispatch 진입점 - Dispatcher 호출 |
 | #27 | `at::` at `build/.../RegisterCompositeImplicitAutograd.cpp:2774` | matmul kernel 등록 - device 무관 composite kernel |
 | #35 | `at::_ops::matmul::call` at `build/.../Operators_4.cpp:3192` | matmul op의 C++ dispatch 진입점 |
 | #37-38 | `torch::autograd::THPVariable_matmul` at `generated/python_torch_functions_0.cpp:4911` | Python → C++ binding - `gen_python_functions.py`가 `native_functions.yaml`로부터 생성 |
@@ -284,7 +277,7 @@ Call stack에서 자동 생성된 코드가 차지하는 비중이 큽니다. �
 자동 생성되는 파일들과 이를 만들어 내는 도구, 그 도구의 입력이 무엇인지를 정리하면 다음과 같습니다. `gen.py`, `gen_variable_type.py`, `gen_python_functions.py` 같은 코드 생성 도구들이 `native_functions.yaml`과 `derivatives.yaml`을 입력으로 받아 아래와 같은 다양한 파일들을 생성합니다.
 
 **`build/aten/src/ATen`** ← `gen.py` (input: `native_functions.yaml`)
-- `ops/{operator}.h` - op별 C++ frontend 선언
+- `ops/{operator}.h` - op별 public C++ API 함수(`at::matmul` 등) 선언. dispatcher 진입점 구조체(`at::_ops::*`)는 `ops/{operator}_ops.h`에 선언
 - `core/TensorBody.h` - `at::Tensor` 클래스의 메서드 선언
 - `Operators.cpp` - op별 `call`/`redispatch` 함수 구현
 - `Register{backend}.cpp` - backend별 kernel 등록 코드. PyTorch가 초기화될 때 이 파일들이 각 backend의 kernel을 Dispatcher에 등록합니다. `{backend}`에는 `CUDA`, `CPU`, `XPU` 등 다양한 종류가 들어갈 수 있습니다.
@@ -315,7 +308,7 @@ Dispatch logic은 call stack에서 반복적으로 등장하는 template 기반 
 | # | Call Stack | 역할 |
 |---|-----------|------|
 | #6-9 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **CUDA kernel dispatch** - CUDA backend로 등록된 mm kernel을 functor로 감싸서 실행 |
-| #10-13 | `Dispatcher::redispatch` → `mm::redispatch` at `Dispatcher.h` → `Operators_3.cpp` | **Redispatch** - Autograd 처리 후 다음 dispatch key(CUDA)로 mm을 재전달 |
+| #10-13 | `Dispatcher::redispatch` → `mm::redispatch` at `Dispatcher.h` → `Operators_3.cpp` | **Redispatch** - Autograd kernel이 실행 도중 다음 dispatch key(CUDA)로 mm을 재전달 |
 | #16-19 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **Autograd kernel dispatch** - Autograd key로 등록된 mm의 VariableType kernel 실행 |
 | #20-23 | `Dispatcher::call` → `mm::call` → `Tensor::mm` at `Dispatcher.h` → `Operators_3.cpp` | **mm dispatch 진입** - dispatch key set에서 최우선 key(Autograd) 선택 후 kernel 호출 |
 | #28-31 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **matmul kernel dispatch** - CompositeImplicitAutograd key로 등록된 matmul kernel 실행 |
@@ -331,7 +324,7 @@ Dispatch logic은 call stack에서 반복적으로 등장하는 template 기반 
 
 Edward Z. Yang(Meta)이 구현한 Dispatcher는 C++의 virtual function table(V-table)과 비슷한 개념이지만, 훨씬 더 복잡한 요구사항을 다룹니다. 같은 `matmul`이라도 CPU에서 실행될 때, CUDA에서 실행될 때, autograd가 켜져 있을 때 등 서로 다른 컨텍스트에서 다르게 동작해야 하는 모든 경우를 처리하기 위해, 별도의 데이터 구조와 알고리즘으로 설계되었습니다.
 
-Dispatch table에는 각 key에 해당하는 function pointer가 들어 있습니다. 중요한 점은 하나의 key만이 아니라 여러 개의 key가 동시에 유효하도록 설계되어 있다는 것입니다. 이것이 바로 dispatch key set의 개념이며, Dispatcher는 이 key set에서 우선순위가 가장 높은 key를 선택하여 해당 kernel을 호출하고, 처리가 끝나면 다음 key로 redispatch하는 과정을 반복합니다.
+Dispatch table에는 각 key에 해당하는 function pointer가 들어 있습니다. 중요한 점은 하나의 key만이 아니라 여러 개의 key가 동시에 유효하도록 설계되어 있다는 것입니다. 이것이 바로 dispatch key set의 개념이며, Dispatcher는 이 key set에서 우선순위가 가장 높은 key를 선택하여 해당 kernel을 호출하고, 호출된 kernel은 실행 도중 자기 key를 제외한 set으로 redispatch합니다(앞 절 참조).
 
 상세 설명: http://blog.ezyang.com/2020/09/lets-talk-about-the-pytorch-dispatcher/
 
@@ -379,7 +372,7 @@ Call stack이 55단계나 되니 매우 복잡한 구조처럼 보이지만, 상
 | 4 | **#35-27**: `matmul::call` → `RegisterCompositeImplicitAutograd` | **matmul kernel을 dispatch하는 과정** - Dispatcher가 CompositeImplicitAutograd key로 matmul kernel 선택 |
 | 5 | **#26-24**: `matmul` → `_matmul_impl` → `Tensor::mm` | **matmul(mm)을 처리하는 과정** - input shape 분석 후 2D×2D이므로 mm을 호출 |
 | 6 | **#23-15**: `mm::call` → `VariableType::mm` | **mm의 autograd kernel을 dispatch하여 수행하는 과정** - backward graph 세팅 후 redispatch |
-| 7 | **#14-5**: `mm::redispatch` → `RegisterCUDA` | **mm의 CUDA kernel을 dispatch하여 수행하는 과정** - Autograd 처리 후 CUDA key로 redispatch |
+| 7 | **#14-5**: `mm::redispatch` → `RegisterCUDA` | **mm의 CUDA kernel을 dispatch하여 수행하는 과정** - Autograd kernel이 실행 도중 CUDA key로 redispatch |
 | 8 | **#4-0**: `structured_mm_out_cuda::impl` → `gemm<float>` | **cuBLAS로 진입하는 과정** - 최종적으로 GPU에서 행렬곱 수행 |
 
 </details>
@@ -416,7 +409,7 @@ PyTorch는 성능과 확장성 요구사항을 충족하기 위해 자체 custom
 
 ```yaml
 - func: add.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor
-  device_check: NoCheck         # 디바이스 검사를 비활성화
+  device_check: NoCheck         # device 검사를 비활성화
   structured_delegate: add.out  # add.out의 정의를 상속
   variants: function, method    # namespace 함수 + Tensor 메서드
   dispatch:
@@ -429,7 +422,7 @@ PyTorch는 성능과 확장성 요구사항을 충족하기 위해 자체 custom
 ```
 
 - **`func`**: add 함수의 signature 정의 - 이름, 인자, 반환 타입을 지정
-- **`device_check: NoCheck`**: 디바이스 검사를 비활성화 - 전달받은 모든 tensor가 동일한 디바이스에 있는지 검사하지 않도록 함
+- **`device_check: NoCheck`**: device 검사를 비활성화 - 전달받은 모든 tensor가 동일한 device에 있는지 검사하지 않도록 함
 - **`structured_delegate: add.out`**: `add.out`의 정의를 상속받음
 - **`variants`**: `function` (namespace 안에서 호출, 예: `torch.add()`) / `method` (Tensor의 메서드로 호출, 예: `a.add()`)
 - **`dispatch`**: dispatch key 또는 backend별 impl 함수 지정 - Sparse, MKL-DNN, NestedTensor 등 각 backend에 맞는 구현 함수를 매핑
@@ -438,7 +431,7 @@ PyTorch는 성능과 확장성 요구사항을 충족하기 위해 자체 custom
 ### matmul kernel을 dispatch하는 과정
 
 ```cpp
-#35 at::_ops::matmul::call           ← Op의 C++ frontend
+#35 at::_ops::matmul::call           ← Op의 C++ 진입점
 #34 c10::TypedOperatorHandle<...>
 #33 c10::Dispatcher::call<...>       ← Dispatch logic
 #32 c10::Dispatcher::callWithDispatchKeySlowPath<...>
@@ -452,7 +445,7 @@ PyTorch는 성능과 확장성 요구사항을 충족하기 위해 자체 custom
 
 Python에서 C++로 넘어온 뒤, 이제 matmul operator의 kernel을 dispatch하는 과정을 살펴봅니다.
 
-먼저 Op의 C++ frontend (#35)가 어떤 op을 수행할지 결정하고, C++ 수준에서 dispatch key set을 계산하여 Dispatcher table에서 해당 kernel을 찾아 호출합니다. 이 과정을 거쳐 실제 matmul kernel이 실행됩니다.
+먼저 Op의 C++ 진입점(`at::_ops::matmul::call`, #35)이 Dispatcher를 호출합니다. Dispatcher가 인자에서 dispatch key set을 계산해 dispatch table에서 해당 kernel을 찾아 호출합니다. 이 과정을 거쳐 실제 matmul kernel이 실행됩니다.
 
 여기서 주목할 점은 #27의 `RegisterCompositeImplicitAutograd`입니다.
 
@@ -465,7 +458,7 @@ Python에서 C++로 넘어온 뒤, 이제 matmul operator의 kernel을 dispatch�
 
 ### matmul을 처리하는 과정
 
-실제 matmul operator를 처리하는 코드는 `aten/src/ATen/native/LinearAlgebra.cpp`에 구현되어 있습니다. `matmul`은 여러 input 조합에 대해 일반적으로 동작하도록 설계되어 있어, input tensor의 차원에 따라 어떤 연산을 수행할지 결정합니다. 이번 예제에서는 2D × 2D이므로, 결국 mm을 호출하여 2D 매트릭스 곱셈 연산을 dispatch하게 됩니다.
+실제 matmul operator를 처리하는 코드는 `aten/src/ATen/native/LinearAlgebra.cpp`에 구현되어 있습니다. `matmul`은 여러 input 조합에 대해 일반적으로 동작하도록 설계되어 있어, input tensor의 차원에 따라 어떤 연산을 수행할지 결정합니다. 이번 예제에서는 2D × 2D이므로, 결국 mm을 호출하여 2D 행렬 곱셈 연산을 dispatch하게 됩니다.
 
 ```cpp
 #24 at::Tensor::mm at build/aten/src/ATen/core/TensorBody.h:2999
@@ -510,51 +503,7 @@ Autograd kernel은 실제 backward 계산을 수행하지 않습니다. 대신 f
 
 이는 PyTorch의 **define-by-run** 방식과 관련이 있습니다. 그래프를 미리 정의하고 실행하는 define-and-run 방식과 달리, PyTorch는 eager mode에서 연산을 하나하나 즉시 실행합니다. 이 과정에서 각 연산이 수행될 때마다 autograd kernel이 동적 계산 그래프를 자동으로 생성하고, 후속 backward 계산을 위한 히스토리를 기록합니다.
 
-자동 생성된 Autograd kernel 예제 (old style `add`):
-
-```cpp
-// In VariableTypeEverything.cpp
-
-Tensor add_Tensor(const Tensor & self, const Tensor & other, Scalar alpha) {
-    auto& self_ = unpack(self, "self", 0);
-    auto& other_ = unpack(other, "other", 1);
-    std::shared_ptr<AddBackward0> grad_fn;
-    if (compute_requires_grad( self, other )) {
-        grad_fn = std::shared_ptr<AddBackward0>(new AddBackward0(), deleteNode);
-        grad_fn->set_next_edges(collect_next_edges( self, other ));
-        grad_fn->alpha = alpha;
-    }
-    #ifndef NDEBUG
-    c10::optional<Storage> self__storage_saved =
-        self_.has_storage() ? c10::optional<Storage>(self_.storage()) : c10::nullopt;
-    c10::intrusive_ptr<TensorImpl> self__impl_saved;
-    if (self_.defined()) self__impl_saved = self_.getIntrusivePtr();
-    c10::optional<Storage> other__storage_saved =
-        other_.has_storage() ? c10::optional<Storage>(other_.storage()) : c10::nullopt;
-    c10::intrusive_ptr<TensorImpl> other__impl_saved;
-    if (other_.defined()) other__impl_saved = other_.getIntrusivePtr();
-    #endif
-    auto tmp = ([&]() {
-        at::AutoNonVariableTypeMode non_var_type_mode(true);
-        return at::add(self_, other_, alpha);
-    })();
-    auto result = std::move(tmp);
-    #ifndef NDEBUG
-    if (self__storage_saved.has_value())
-        AT_ASSERT(self__storage_saved.value().is_alias_of(self_.storage()));
-    if (self__impl_saved) AT_ASSERT(self__impl_saved == self_.getIntrusivePtr());
-    if (other__storage_saved.has_value())
-        AT_ASSERT(other__storage_saved.value().is_alias_of(other_.storage()));
-    if (other__impl_saved) AT_ASSERT(other__impl_saved == other_.getIntrusivePtr());
-    #endif
-    if (grad_fn) {
-        set_history(flatten_tensor_args( result ), grad_fn);
-    }
-    return result;
-}
-```
-
-`gen_variable_type.py`가 `derivatives.yaml`로부터 생성한 코드로, gradient가 필요한 경우 backward graph를 update하고 forward 함수를 redispatch합니다.
+Autograd kernel의 실제 생성 코드는 아래 "Operator > Kernel" 절에서 v2.13.0 codegen 산출물로 살펴봅니다. gradient가 필요한 경우 backward graph 노드를 준비한 뒤 forward 연산을 redispatch하고, 반환된 결과에 backward history를 기록하는 구조입니다.
 
 
 ### mm의 CUDA kernel을 dispatch
@@ -698,7 +647,7 @@ Operator에 대해서는 앞서 충분히 다뤘으므로, 이제 operator의 �
 
 PyTorch 내부에서 대부분의 구현은 C++로 되어 있습니다. Python의 `torch.tensor`는 내부적으로 `at::Tensor`라는 C++ 객체에 대응되며, 이 객체는 `c10::TensorImpl`이라는 구현체(`impl`)를 통해 대부분의 정보를 관리합니다.
 
-- **`at::Tensor`** - `c10::TensorImpl`을 `intrusive_ptr`로 가리키는 얇은 wrapper
+- **`at::Tensor`** - `c10::TensorImpl`을 `intrusive_ptr`[^intrusive-ptr]로 가리키는 얇은 wrapper
 - **`c10::TensorImpl`** - 실제 구현체로, 핵심 정보를 가짐:
   - **`c10::Storage`**: 실제 data가 저장되는 공간. 
     - 예를 들어 GPU에 메모리가 할당되면, 그 메모리 덩어리가 이 `StorageImpl`과 1:1로 매핑됨.
@@ -706,6 +655,8 @@ PyTorch 내부에서 대부분의 구현은 C++로 되어 있습니다. Python�
     - view를 생성하면 새 storage가 아닌 기존 storage를 공유하면서 metadata만 다른 tensor가 만들어짐
   - **`metadata`** - sizes, strides, storage offset, dtype, device. Stride를 이용해 `tensor[i][j]`를 `data_ptr[i * stride[0] + j * stride[1]]`로 접근
   - **`AutogradMeta`** - gradient, `grad_fn` 등 autograd 관련 bookkeeping 정보를 tensor 단위로 저장. `requires_grad=False`이면 null로 최적화됨
+
+[^intrusive-ptr]: `c10::intrusive_ptr`은 reference count를 별도 control block이 아니라 가리키는 객체 안에 두는(intrusive) smart pointer입니다. `std::shared_ptr`보다 포인터 하나 크기로 가볍고, raw pointer에서 다시 감쌀 수 있어 Python 바인딩과 C++ 사이를 오가기 쉽습니다. `TensorImpl`, `StorageImpl`이 이 방식으로 관리되며, view가 storage를 공유한다는 것은 같은 `StorageImpl`의 count를 하나 올린다는 뜻입니다.
 
 #### Tensor의 Lifecycle
 
@@ -828,7 +779,7 @@ tensor([[110., 126., 134., 154.]])
 - 같은 data를 다른 shape으로 해석 (reshape)
 - 특정 차원을 반복해 접근 (broadcast)
 
-**TensorIterator**는 View와 분리된 storage를 접근하기 위한 helper입니다:
+**TensorIterator**는 elementwise op용 helper로, broadcast와 stride 처리를 대신해 주므로 kernel은 원소 단위 lambda만 쓰면 됩니다:
 
 ```cpp
 at::Tensor my_add_cuda(const at::Tensor& ta, const at::Tensor& tb) {
@@ -845,30 +796,17 @@ at::Tensor my_add_cuda(const at::Tensor& ta, const at::Tensor& tb) {
 }
 ```
 
-**차원의 변경**: 원소의 개수(각 차원 크기의 곱)는 같지만 각 차원의 크기가 다른 경우. Storage data는 변경되지 않고 metadata(size, stride)만 변경됩니다.
+view 계열 op은 metadata(size, stride, offset)만 바꾸고 storage를 공유합니다. 단 `reshape`와 `flatten`은 view로 표현할 수 없으면(예: transposed tensor) 새 storage에 복사합니다.
 
-| Operator | 설명 | 예시 |
-|---|---|---|
-| `view()` | 차원을 변경하며, stride를 자동 계산하여 설정 | `x = torch.arange(6).view(2, 3)` |
-| `transpose()` | 두 차원의 순서를 교환한 view 생성 | `y = x.transpose(0, 1)` |
-| `permute()` | 모든 차원의 순서를 재배열한 view 생성 | `y = x.permute(2, 0, 1)` |
-| `as_strided()` | 차원과 stride를 직접 지정해 view 생성 | `y = torch.as_strided(x, (2, 2), (1, 2))` |
-
-**차원의 축소**: 특정 차원을 제거하거나 크기를 축소하는 경우 (예: `(2, 3, 4)` → `(2, 12)` 또는 `(24,)`). Storage는 공유하고 metadata만 변경됩니다.
-
-| Operator | 설명 | 예시 |
-|---|---|---|
-| `flatten()` | 지정 범위의 차원을 하나로 합침 | `y = x.flatten(1, 2)` |
-| `squeeze()` | 크기가 1인 차원을 제거 | `y = x.squeeze(0)` |
-| `reshape()` | 원소 수가 같은 새 shape으로 변환 (view가 불가능한 경우에는 copy) | `y = x.reshape(2, 12)` |
-
-**차원의 확장**: 없는 차원을 추가하거나 크기가 1인 차원을 확장하는 경우 (예: `(3, 4)` → `(1, 3, 4)`). Storage는 공유하고 metadata만 변경됩니다.
-
-| Operator | 설명 | 예시 |
-|---|---|---|
-| `unsqueeze()` | 지정 위치에 크기 1인 차원을 추가 | `y = x.unsqueeze(0)` |
-| `expand()` | 크기가 1인 차원을 반복 없이 확장 | `y = x.expand(3, 4)` |
-| `broadcast_to()` | 목표 shape으로 broadcast | `y = x.broadcast_to(2, 3, 4)` |
+| Operator | 무엇을 바꾸는가 | Storage | 예시 (`x3 = torch.arange(24).reshape(2, 3, 4)`) |
+|---|---|---|---|
+| `view()` | shape | 항상 공유 (불가능하면 에러) | `x3.view(6, 4)` |
+| `reshape()` | shape | 가능하면 공유, 아니면 복사 | `x3.reshape(2, 12)` |
+| `flatten()` | 차원 병합 | 가능하면 공유, 아니면 복사 | `x3.flatten(1, 2)` |
+| `transpose()` / `permute()` | 차원 순서 | 항상 공유 | `x3.permute(2, 0, 1)` |
+| `squeeze()` / `unsqueeze()` | 크기 1 차원 제거·추가 | 항상 공유 | `x3.unsqueeze(0)` |
+| `expand()` / `broadcast_to()` | 크기 1 차원을 stride 0으로 확장 | 항상 공유 | `x3[:, :1, :].expand(2, 3, 4)` |
+| `as_strided()` | size와 stride 직접 지정 | 항상 공유 | `torch.as_strided(x3, (2, 2), (1, 2))` |
 
 
 ### Operator
@@ -937,7 +875,54 @@ at::Tensor add_Tensor(c10::DispatchKeySet ks, const at::Tensor & self, const at:
 }
 ```
 
-강의 앞부분의 old style 코드와 비교하면 구조(그래프 노드 생성 → guard 아래에서 forward 실행 → history 기록)는 동일하지만, 세부가 달라졌습니다:
+<details>
+<summary><strong>참고: old style 생성 코드 (PyTorch 1.x, `VariableTypeEverything.cpp` 시절)</strong></summary>
+
+```cpp
+// In VariableTypeEverything.cpp
+
+Tensor add_Tensor(const Tensor & self, const Tensor & other, Scalar alpha) {
+    auto& self_ = unpack(self, "self", 0);
+    auto& other_ = unpack(other, "other", 1);
+    std::shared_ptr<AddBackward0> grad_fn;
+    if (compute_requires_grad( self, other )) {
+        grad_fn = std::shared_ptr<AddBackward0>(new AddBackward0(), deleteNode);
+        grad_fn->set_next_edges(collect_next_edges( self, other ));
+        grad_fn->alpha = alpha;
+    }
+    #ifndef NDEBUG
+    c10::optional<Storage> self__storage_saved =
+        self_.has_storage() ? c10::optional<Storage>(self_.storage()) : c10::nullopt;
+    c10::intrusive_ptr<TensorImpl> self__impl_saved;
+    if (self_.defined()) self__impl_saved = self_.getIntrusivePtr();
+    c10::optional<Storage> other__storage_saved =
+        other_.has_storage() ? c10::optional<Storage>(other_.storage()) : c10::nullopt;
+    c10::intrusive_ptr<TensorImpl> other__impl_saved;
+    if (other_.defined()) other__impl_saved = other_.getIntrusivePtr();
+    #endif
+    auto tmp = ([&]() {
+        at::AutoNonVariableTypeMode non_var_type_mode(true);
+        return at::add(self_, other_, alpha);
+    })();
+    auto result = std::move(tmp);
+    #ifndef NDEBUG
+    if (self__storage_saved.has_value())
+        AT_ASSERT(self__storage_saved.value().is_alias_of(self_.storage()));
+    if (self__impl_saved) AT_ASSERT(self__impl_saved == self_.getIntrusivePtr());
+    if (other__storage_saved.has_value())
+        AT_ASSERT(other__storage_saved.value().is_alias_of(other_.storage()));
+    if (other__impl_saved) AT_ASSERT(other__impl_saved == other_.getIntrusivePtr());
+    #endif
+    if (grad_fn) {
+        set_history(flatten_tensor_args( result ), grad_fn);
+    }
+    return result;
+}
+```
+
+</details>
+
+위 참고의 old style 코드와 비교하면 구조(그래프 노드 생성 → guard 아래에서 forward 실행 → history 기록)는 동일하지만, 세부가 달라졌습니다:
 
 - Guard: `at::AutoNonVariableTypeMode` → **`at::AutoDispatchBelowADInplaceOrView`** (1.10에서 deprecated 후 교체)
 - Forward 호출: `at::add(...)` → **`at::redispatch::add(ks & c10::after_autograd_keyset, ...)`** — dispatch key set을 명시적으로 전달하며 자신(autograd)의 key를 제외하고 redispatch
@@ -1025,7 +1010,7 @@ DispatchKeySet getDispatchKeySetUnboxed(const Args&... args) const {
 
 ### Runtime
 
-Runtime은 실제 디바이스에서 연산을 수행하기 위한 저수준 인프라를 제공합니다. 주요 구성 요소는 Device, Stream, Event, DeviceGuard, Allocator, Generator입니다.
+Runtime은 실제 device에서 연산을 수행하기 위한 저수준 인프라를 제공합니다. 주요 구성 요소는 Device, Stream, Event, DeviceGuard, Allocator, Generator입니다.
 
 #### Device
 
@@ -1039,8 +1024,8 @@ Tensor가 저장되어 있는 device를 표현합니다.
 
 **Device index 해석:**
 - **Negative**: current device를 의미
-- **Non-negative**: 특정한 concrete한 디바이스
-- Device type이 CPU면 device index는 zero여야 함 (host에 해당)
+- **Non-negative**: 특정한 concrete한 device
+- Device type이 CPU면 device index는 -1 또는 0만 허용 (CPU는 하나뿐이므로, `torch.device('cpu')`는 -1)
 
 (`c10/core/Device.h`)
 
@@ -1119,16 +1104,20 @@ bool Stream::query() const {
 <Mermaid>
 {`sequenceDiagram
     participant H as Host
-    participant S as Stream
+    participant S1 as Stream 1
     participant E as Event
+    participant S2 as Stream 2
 
     H->>E: 생성
-    H->>S: event.record(stream)
-    Note over S: record command 삽입
+    H->>S1: event.record(stream1)
+    Note over S1: record command 삽입
     Note over E: was_marked_for_recording = true
-    S->>S: command 처리
-    S->>E: record command 처리
-    Note over E: 소멸`}
+    H->>S2: event.block(stream2)
+    Note over S2: wait 명령 삽입<br/>(record 완료까지 대기)
+    S1->>S1: 앞선 command 처리
+    S1->>E: record command 처리
+    Note over E: 완료: query() = true
+    E-->>S2: wait 해제, 이후 command 처리`}
 </Mermaid>
 
 ##### `event.record(stream)`
@@ -1137,10 +1126,10 @@ bool Stream::query() const {
 - `was_marked_for_recording`이 false → true로 변경
 
 ##### `event.block(stream)`
-- Record command가 처리될 때까지 대기하라는 **block command**를 stream에 삽입
-- Stream은 block command를 처리할 때 record command의 처리 여부를 확인
+- Record command가 처리될 때까지 대기하라는 **wait 명령**(CUDA의 `cudaStreamWaitEvent`)을 stream에 삽입
+- Stream은 wait 명령에 도달하면 record command의 처리 여부를 확인
 - Stream과 event의 device type은 같아야 하지만 device index는 다를 수 있음
-- 같은 device index여도 deadlock이 발생하지 않음 (block command가 처리되기 전까지 계속 command를 처리해 record command를 처리할 수 있으므로)
+- 같은 device index여도 deadlock이 발생하지 않음 (wait 명령이 처리되기 전까지 계속 command를 처리해 record command를 처리할 수 있으므로)
 
 (`c10/core/Event.h` | XPU: `sycl::event` 대응 | RBLN: 아직 event 미지원)
 
@@ -1176,7 +1165,8 @@ struct InlineEvent final {
 
 Device specific한 부분은 `T backend_`(`VirtualGuardImpl`)를 통해 결국 DeviceGuard에 의존합니다:
 
-##### Event API 상세
+<details>
+<summary><strong>Event API 상세 (호출 체인과 XPU/CUDA 구현)</strong></summary>
 
 - **다양한 getter들**: `device()`, `device_type()`, `device_index()`, `flag()`, `was_marked_for_recording()`, `eventId()`
 - **`record(stream)`**: 주어진 stream에 record command를 삽입. record command가 처리되어야 이 event를 기다리는 stream이 재시작할 수 있음
@@ -1185,12 +1175,12 @@ Device specific한 부분은 `T backend_`(`VirtualGuardImpl`)를 통해 결국 D
     - XPU 구현: `c10::xpu::impl::XPUGuardImpl::record` → stream의 `sycl::queue`에 `ext_oneapi_submit_barrier`를 호출해 event에 record를 호출하기 이전의 command를 모두 처리한 후 `sycl::event`를 선언함
     - CUDA 구현: `c10::cuda::impl::CUDAGuardImpl::record` → 주어진 stream의 device로 `setDevice`하고 `cudaEventRecord`를 호출하고 원래 device로 `setDevice`함
   - `c10::impl::DeviceGuardImplInterface::record`를 수행한 후 `was_marked_for_recording_`을 `true`로 변경
-- **`recordOnce(stream)`**: Event는 thread-safe하지 않아서 record가 한 번만 호출되도록 보장
+- **`recordOnce(stream)`**: 아직 record된 적이 없을 때만 record. Event 자체가 thread-safe하지 않으므로 여러 thread에서 동시에 부르면 record가 여러 번 실행될 수 있음
   - `c10::Event::recordOnce` → `c10::impl::InlineEvent<c10::impl::VirtualGuardImpl>::recordOnce` → `c10::impl::InlineEvent<c10::impl::VirtualGuardImpl>::record`
   - `was_marked_for_recording_`이 `false`일 때만 record 실행
-- **`block(stream)`**: event에 record를 호출했을 때 삽입된 record command가 처리될 때까지 대기하라는 block command를 stream에 삽입. stream은 block command를 처리할 때 record command의 처리 여부를 확인함
+- **`block(stream)`**: event에 record를 호출했을 때 삽입된 record command가 처리될 때까지 대기하라는 wait 명령을 stream에 삽입. stream은 wait 명령을 처리할 때 record command의 처리 여부를 확인함
   - stream과 event의 device type은 같아야 하지만 device index는 다를 수 있음
-  - 같은 device index여도 block command가 stream에서 처리되기 전까지 계속 command를 처리해 record command를 처리할 수 있으므로 deadlock이 발생하지 않음
+  - 같은 device index여도 wait 명령이 stream에서 처리되기 전까지 계속 command를 처리해 record command를 처리할 수 있으므로 deadlock이 발생하지 않음
   - `c10::Event::block` → `c10::impl::InlineEvent<c10::impl::VirtualGuardImpl>::block` → `c10::impl::VirtualGuardImpl::block` → `c10::impl::DeviceGuardImplInterface::block` (virtual)
     - XPU 구현: `c10::xpu::impl::XPUGuardImpl::block` → stream의 `sycl::queue`에 `sycl::event` list를 argument로 `ext_oneapi_submit_barrier`를 호출. `ext_oneapi_submit_barrier`는 `cudaStreamWaitEvent`과 같은 역할
     - CUDA 구현: `c10::cuda::impl::CUDAGuardImpl::block` → `cudaStreamWaitEvent`를 호출. 주어진 stream은 event의 record command가 처리될 때까지 대기함
@@ -1203,19 +1193,21 @@ Device specific한 부분은 `T backend_`(`VirtualGuardImpl`)를 통해 결국 D
     - XPU 구현: `c10::xpu::impl::XPUGuardImpl::synchronizeEvent` → `sycl::event`에 `wait_and_throw`를 호출
     - CUDA 구현: `c10::cuda::impl::CUDAGuardImpl::synchronizeEvent` → CUDA event에 `cudaEventSynchronize`를 호출해 event의 record command가 처리될 때까지 대기
 
+</details>
+
 #### DeviceGuard
 
 **DeviceGuard**는 특정한 device, stream, event의 안전한 사용을 보장하는 장치입니다:
 
 - 정해진 scope에서 특정 device를 set하고, scope을 벗어나면 원래 device로 reset
 - **RAII** (Resource Acquisition Is Initialization) 디자인 패턴
-- Nesting된 형태로 사용 가능
+- 중첩 사용 가능. 안쪽 guard가 끝나면 바깥 guard의 device로, 바깥 guard가 끝나면 원래 device로 복원
 
 
 <ThemeImage
   darkSrc="/images/02/deviceguard_dark.svg"
   lightSrc="/images/02/deviceguard_light.svg"
-  alt="DeviceGuard nested diagram"
+  alt="DeviceGuard 중첩 scope와 current device 복원 다이어그램"
   class="h-80 mx-auto mt-4"
 />
 
@@ -1309,22 +1301,22 @@ Device memory를 관리하는 structure입니다. 대부분의 중요한 함수�
 - **Pseudo Random Number Generator (PRNG)** engine을 사용하는 interface
 - 사용자는 seed를 제공하거나 상태를 확인할 수 있음
 
-Common methods for all generators:
+두 층으로 나뉩니다. 사용자가 다루는 `at::Generator`는 device agnostic한 wrapper이고, device별 구현은 `c10::GeneratorImpl`을 상속해 작성합니다.
 
-- `virtual void set_current_seed(uint64_t seed) = 0`
-- `virtual void set_offset(uint64_t offset) = 0`
-- `virtual uint64_t get_offset() const = 0`
-- `virtual uint64_t current_seed() const = 0`
-- `virtual uint64_t seed() = 0`
-- `virtual void set_state(const c10::TensorImpl& new_state) = 0`
-- `virtual c10::intrusive_ptr<c10::TensorImpl> get_state() const = 0`
+**`at::Generator`** (`aten/src/ATen/core/Generator.h`) - `impl_`에 위임하는 wrapper
+
+- `void set_current_seed(uint64_t seed)` / `uint64_t current_seed() const` / `uint64_t seed()`
+- `void set_offset(uint64_t offset)` / `uint64_t get_offset() const`
+- `void set_state(const at::Tensor& new_state)` / `at::Tensor get_state() const`
 - `const c10::intrusive_ptr<c10::GeneratorImpl>& getIntrusivePtr() const`
-- `c10::intrusive_ptr<c10::GeneratorImpl> clone(const c10::intrusive_ptr<c10::GeneratorImpl>& generator_state) const`
+- `Generator clone() const` - `impl_->clone()`을 감싸 반환
 
-- ATen Generator는 device agnostic한 class
-- Device specific한 구현을 위해 `c10::GeneratorImpl`을 제공
+**`c10::GeneratorImpl`** (`c10/core/GeneratorImpl.h`) - device별로 구현하는 pure virtual
 
-(`aten/src/ATen/core/Generator.h`)
+- `virtual void set_current_seed(uint64_t seed) = 0` / `virtual uint64_t current_seed() const = 0` / `virtual uint64_t seed() = 0`
+- `virtual void set_offset(uint64_t offset) = 0` / `virtual uint64_t get_offset() const = 0`
+- `virtual void set_state(const c10::TensorImpl& new_state) = 0` / `virtual c10::intrusive_ptr<c10::TensorImpl> get_state() const = 0`
+- `c10::intrusive_ptr<GeneratorImpl> clone() const` - non-virtual. 내부에서 `virtual GeneratorImpl* clone_impl() const = 0`을 호출하므로 device별 구현은 `clone_impl`만 제공
 
 
 ## PyTorch Build
@@ -1532,7 +1524,7 @@ libtorch_python.so  libtorch.so  libtorch_xxx.so  libc10_xxx.so  libc10.so
   - Backend integration point
   - namespace: `c10`
 - **Generated files**
-  - 주로 Op별 C++ frontend, autograd kernels, dispatch registration 코드
+  - 주로 op별 public C++ API(`at::*`, `at::Tensor::*`)와 dispatcher 진입점(`at::_ops::*`), autograd kernels, dispatch registration 코드
   - `native_functions.yaml`와 `derivatives.yaml`로부터 생성
 
 참고: https://discuss.pytorch.org/t/whats-the-difference-between-aten-and-c10/114034/3
