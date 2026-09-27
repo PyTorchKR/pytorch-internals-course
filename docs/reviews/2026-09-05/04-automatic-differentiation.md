@@ -16,7 +16,7 @@
 
 ## 반영 현황 (2026-09-27)
 
-일치 항목 21행: 반영 17, 부분 반영 2, 의도적 보류 2. 한쪽만 제기한 항목은 아직 미검토(단, Codex A4-3의 `PowBackward0` 반환값, A4-14의 "이미 최적화된 코드" 표현, A3-7의 interpose SVG 문구는 같은 자리를 고치면서 함께 해소). 강의 04는 PyTorch 2.13 기준을 유지하고 소스 검증은 v2.14.0 checkout으로 했다. 행 번호는 리뷰 당시 기준.
+일치 항목 21행: 반영 16, 부분 반영 1, 의도적 보류 4. 한쪽만 제기한 항목은 아직 미검토(단, Codex A4-3의 `PowBackward0` 반환값, A4-14의 "이미 최적화된 코드" 표현, A3-7의 interpose SVG 문구는 같은 자리를 고치면서 함께 해소). 강의 04는 PyTorch 2.13 기준을 유지하고 소스 검증은 v2.14.0 checkout으로 했다. 행 번호는 리뷰 당시 기준.
 
 | 항목 (리뷰 표기) | 상태 | 비고 |
 |---|---|---|
@@ -29,13 +29,13 @@
 | 462-487 autograd.Function 예시 | 반영 | "partition된 forward/backward graph (`TORCH_LOGS=aot_graphs`)"로, 실제 Function은 `CompiledFunction` |
 | 495 lazy lowering 이력 | 반영 | 각주 `[^lazy-bw]`로 이동, 본문 반복 5곳을 각주 참조로 축약 |
 | 532-702 "normalization" | 반영 | 11곳 모두 functionalization / decomposition으로 |
-| 536-723 파이프라인 반복 | 부분 반영 | 541·543·723행 개요 재서술 삭제. 그림 설명(536-539), 표(632-642), 코드 레벨 절은 각도가 달라 유지 |
+| 536-723 파이프라인 반복 | 보류 | 각 절 앞의 요약은 강연자가 붙인 것이라 유지. lazy lowering 세부만 각주로 |
 | 571-573 "FX Graph → C++ object" | 반영 | joint 함수 + `torch.autograd.grad`를 fake tensor 위에서 `make_fx`로 기록 |
 | 604 slide22_1 고아 | 반영 | 삭제 대신 462행 코드 예시 바로 아래로 옮기고 설명 추가 (로그 원본 화면) |
 | 611-623 slide25_1 설명 | 반영 | 그림의 세 변환(unwrap/dedupe → functionalization·decomposition·tracing → autograd.Function wrapping) 기준으로 재작성 |
 | 652 H 이전 backend 최적화 없음 | 반영 | Inductor가 `decompositions`·`partition_fn`을 미리 넘김 (`compile_fx.py`) |
 | 684/787/796 Prims IR 필수 경로 | 반영 | decomposition은 tracing 중 적용, joint graph는 이미 ATen, Prims는 별도 경로 |
-| 825-834 recomputation 2회 | 반영 | 827행 문단을 trade-off 한 문장으로 |
+| 825-834 recomputation 2회 | 보류 | "Recomputation이란?" 정의 문단 유지 (저자 결정) |
 | 839-878 MyCube | 보류 | 공식 문서 예제 유지. forward가 backward용 값을 미리 계산하는 구조가 partitioner의 "moved backward compute to forwards"와 같다는 연결 문장을 추가 |
 | 918-933 Q1-Q3 | 보류 | 저자 결정으로 Q1-Q3 유지 (강연 Q&A 기록) |
 | 930 "backward-trigger gradient" | 반영 | Q3 안의 표현을 "gradient (`grad_outs`, joint graph에서는 `tangents_*`)"로 |
