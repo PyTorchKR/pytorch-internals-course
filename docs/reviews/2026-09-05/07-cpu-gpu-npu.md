@@ -86,6 +86,26 @@
 
 ## 한쪽만 제기한 항목 (검토 필요)
 
+반영 현황 (2026-09-27): 15건 중 반영 14, 일치 항목과 함께 해소 1. 근거는 리뷰의 출처 검증표(PTX ISA, CUDA occupancy/programming guide, GCC 문서, TI C6000 문서, JAX scaling book GPU 장)와 원 그림 확인.
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| Codex A4-1 무어의 법칙 18개월 | 반영 | 약 2년 |
+| Codex A4-5 microcode ↔ RISC/VLIW | 반영 | 표의 "1:1 대응"을 "bundle 슬롯이 유닛과 대응, operation은 decode됨"으로, microcode 비교는 비유임을 명시 |
+| Codex A4-6 systolic vs VLIW | 반영 | 다른 층위. VLIW 제어 + systolic 연산기 조합 가능, TPU MXU 예, Tensor Core 내부 배치는 비공개 |
+| Codex A4-9 NPU DMA 과장 | 반영 | DRAM↔on-chip 전송이 대상, 비동기 완료는 signal/wait로. "매 cycle 표" → "순서표" |
+| Codex A4-10 GPU 작업 분할 | 반영 | 작업 분할은 SW(thread·block), HW는 배치·Warp 스케줄링으로 행 분리 |
+| Codex A3-16 pipeline 그림 k | 반영 | k = 출력 tile 번호. 안쪽(K-step) pipeline과 바깥(tile) pipeline 구분을 본문에 명시 |
+| Codex A4-11/13 "10배", L2 5.5TB/s, HBM SXM | 반영 | "10배" 삭제(일치 항목 1022-1056에서), 표 제목 "H100 SXM", L2는 JAX scaling book 실측치임을 명시, HBM SXM 기준 표기 |
+| Codex A3-10 "hundreds of stages" | 반영 | 캡션에 면적 비율은 개념도, 문구는 in-flight 작업이 많다는 뜻으로 읽으라는 단서 |
+| Fable A4-4 Blackwell "HW 지원" | 반영 | SW 구조 유지, TMEM·single-thread issue는 비용을 줄이는 자원 |
+| Fable A4-6 branch prediction "버릴 수 있다" | 반영 | 563행(일치 항목에서)과 713행 장점 목록 모두 수정 |
+| Fable A4-7 Iterative MS | 반영 | LLVM MachinePipeliner·GCC SMS는 Swing MS. modulo scheduling 계열로 |
+| Fable A4-8 Pranjal 크레딧 | 반영 | 본문과 출처에 원 워크로그 링크 |
+| Fable A4-2 "(논리적) 레지스터" | 함께 해소 | 일치 항목 416-420 수정 시 |
+| Fable A4-12 Dennard | 반영 | 전압 하한·leakage로 재서술 |
+| Fable A2-9 Little's law | 반영 | Occupancy 절에 "3.35TB/s × 600ns ≈ 2MB in-flight" 예시 한 문단 |
+
 - **Codex A4-1 (high) line 81**: 무어의 법칙 "18개월마다" → 약 2년.
 - **Codex A4-5 (high) line 605-660**: microcode vertical/horizontal 구분을 RISC/VLIW ISA 양분에 그대로 적용. VLIW도 decode함.
 - **Codex A4-6 (high) line 734-737**: systolic array와 VLIW는 다른 층위. Tensor Core 내부 = systolic은 needs verification.
