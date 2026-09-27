@@ -85,6 +85,28 @@
 
 ## 한쪽만 제기한 항목 (검토 필요)
 
+반영 현황 (2026-09-27): 17건 중 반영 15, 일치 항목과 함께 해소 1, 검증 후 수치 확정 1. 근거는 FA1/FA2 논문 원문, vLLM MRV2 블로그(2026-03-24), vLLM v0.10.1 scheduler, 원 그림(vllm-anatomy-pd.png).
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| Codex A4-5 "최종 결과만 한 번 DRAM에" | 반영 | N×N score 행렬을 쓰지 않는 것이 핵심. FA1은 K/V block마다 출력·통계량 갱신, FA2부터 Q block당 한 번이라고 명시. Fusion bullet도 "중간 결과를 쓰지 않음"으로 |
+| Codex A4-7 "메모리 세 번 읽기" | 반영 | 순차 baseline 설명임을 밝히고, 행이 SRAM에 들어가면 pass 수는 문제가 아니며 tile 단위 도착이 진짜 문제라고 재서술 |
+| Codex A4-4 "Prefill은 이미 이상적" | 반영 | compute-bound ≠ peak. 985행 max(T_math, T_mem)도 "이상적 하한" 표기 |
+| Codex A4-12 "PyTorch만 지원하면 vLLM 동작" | 반영 | 937행은 이미 조건이 있었음. 888행 "compile 백엔드만 받쳐 두면"에 attention custom op은 별도라는 단서 추가 |
+| Codex A4-13/14 Transformers backend | 반영 | 884행 "compile 대상은 vLLM 자체 구현" → 자체 구현이든 Transformers backend든 같은 경로. fallback은 호환 모델에 한정 |
+| Codex A4-16 running 큐 | 반영 | running 요청의 토큰 = decode 1개 또는 남은 prefill chunk (v0.10.1 scheduler) |
+| Codex A4-17 HBM read 하한 | 반영 | dense·full attention·스텝당 1토큰 가정 명시, MoE/sliding window/MLA 예외 |
+| Codex A4-15 강의일 vs 2026 자료 | 반영 | 표지 아래에 "2026-09 기준 보강" 안내 문단 |
+| Codex A3-4 vllm-anatomy-pd | 반영 | 실제 클래스는 `h-[32rem]`(512px)이라 크기는 문제 없음. engine core/worker/NIXL 설명 캡션 추가 |
+| Fable A4-10 고아 footnote | 반영 | `[^simt]`는 766행 SIMT에, `[^cublas]`는 796행 cuBLAS에 참조 |
+| Fable A4-4 FA v1 "생짜 CUDA" | 반영 | FA1 논문 acknowledgment(Apex FMHA 출발점), FA2 논문 acknowledgment(CUTLASS 3.x). 카드와 본문 수정 |
+| Fable A4-3 cuBLAS 호출 | 함께 해소 | 일치 항목 782-784 수정 시 반영 |
+| Fable A4-17 PagedAttention | 반영 | 메모리 관리 기법으로 규정, kernel 20–26% 느림 + throughput 2–4배(vLLM 논문) |
+| Fable A4-16 TTFT와 TPS | 반영 | TTFT와 TPOT |
+| Fable A4-11 점화식 형태 | 반영 | 실제 FA는 마지막에 한 번 나눔을 명시, Zihao Ye 노트 링크 |
+| Fable A4-14 2026 자료 | 검증 후 확정 | DSpark(2607.05147) 확인. MRV2 블로그 원문 "Qwen3-0.6B, 1×GB200, 16K → 25K tok/s, 56.2%"로 수치 갱신. Transformers backend 범위는 supported_models 페이지 기준 유지 |
+| Fable A2-15 `⌐ 오늘의 초점 ¬` | 반영 | "▼ 오늘의 초점" |
+
 - **Codex A4-5 (high) line 404/483/489**: "최종 결과만 한 번 DRAM에" → FA1 Algorithm 1은 K/V block마다 Q·O·통계량 read/write. 줄이는 것은 N×N 행렬 materialization.
 - **Codex A4-7 (high) line 552-605**: "메모리 세 번 읽기"는 순차 baseline 설명. 행이 SRAM에 들어가면 1 pass.
 - **Codex A4-4 (high) line 282-291**: "Prefill은 이미 이상적" → compute-bound ≠ peak 달성. 985–989행 시간도 이상적 하한으로 표시.
