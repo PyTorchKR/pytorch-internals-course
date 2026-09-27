@@ -21,6 +21,39 @@
 - Fable만 잡은 high: 48행 "`gemm_internal`이 v2.13에서 추가" → v2.5.0에 이미 74회 등장(v2.2.0에는 0). 그리고 `gemm<float>`(#0) 내부 호출이라 스택에 안 보임.
 - Codex만 잡은 high: 322행 `CompositeImplicitAutograd`는 alias key라 runtime key set에서 "선택"되지 않음. 672행 cuBLASLt 경로는 `cublasLtMatmul`(직전 코드가 `gemm_and_bias`). 728행 `clone`은 `empty_strided` 후 `copy_`. 736행 "clone 안 하면 대부분 view" → 산술 연산도 새 storage. 852–863행 표의 `x`가 2D인데 `permute(2,0,1)`/`flatten(1,2)`/`reshape(2,12)`는 차원 오류. 747–755행 refcount 0 = GPU 메모리 반환 아님(caching allocator). 1145행 "RBLN event 미지원" → v0.11.2 문서에 `torch.rbln.Event` 존재. 1185행 XPU record 설명(barrier 제출 후 event 반환, host 대기 아님). 605행 meta 함수 검증도 codegen이 만든다고 서술.
 
+## 반영 현황 (2026-09-27)
+
+일치 항목 표를 위에서부터 "Generator `clone` 시그니처"(1312-1327) 행까지 검토·반영했다. 그 아래 두 행과 "한쪽만 제기한 항목" 목록은 2026-09-27 PyTorch 2.14 재핀(브랜치 `docs/lecture-02-pytorch-2.14`)에서 처리했다. 행 번호는 리뷰 당시 기준.
+
+22행 중 반영 20, 부분 반영 1, 의도적 보류 1.
+
+| 항목 (리뷰 표기) | 상태 | 비고 |
+|---|---|---|
+| 40, 107-108 워밍업·"무려" | 보류 | 저자가 검토 후 의도적으로 유지 |
+| 118, 419 등 음차 | 반영 | 매트릭스→행렬 2곳, 디바이스→device 5곳 |
+| 125-126 matmul 분기 표 | 반영 | 1D×2D 행 추가, fold/`mm`과 broadcast/`bmm` 분리, fold는 각주 |
+| 142-146 kernel 미정의, 9문장 단락 | 반영 | kernel 정의 문장 추가, dispatcher 동작을 4단계 번호 목록으로 |
+| 144/253/334/575 redispatch 중복+모순 | 반영 | 145-154행을 정본으로, 나머지 5곳을 "실행 도중" 모델로 통일 |
+| 188/197 `callWithDispatchKeySlowPath` 역할 | 반영 | 표 #20/#32를 RecordFunction/profiler 경로로 수정 (`Dispatcher.h:791-793` 조건 확인) |
+| 191/250/275/455 Front-End가 key set 계산 | 반영 | key set 계산을 `Dispatcher::call`로 옮김 (4곳) |
+| 227-245 Mermaid에 Autograd kernel 없음 | 반영 | Mermaid 대신 `DispatchFlowDiagram.astro` SVG 컴포넌트로 교체. 개념도로 일반화하여 중간 kernel(예: Autograd)이 redispatch하는 구조 표시 |
+| 249/441/455 "C++ frontend" 레이블 | 반영 | 8곳을 "C++ 진입점(`at::_ops::*::call`)"으로. `ops/{op}.h`는 public C++ API 선언으로 정정 |
+| 513-557 vs 896-938 구버전 Autograd kernel 중복 | 반영 | 앞쪽 40행 삭제, 구버전은 Kernel 절에 `<details>`로 |
+| 701-708 intrusive_ptr·stride 무정의 | 부분 반영 | intrusive_ptr은 각주 추가. stride는 독자가 안다고 보고 의도적으로 생략 |
+| 831-845 TensorIterator 정의 오류 | 반영 | elementwise op helper로 한 문장 교체 |
+| 848-865 view 분류표 | 반영 | 표 하나로 재구성(무엇을 바꾸는가 / Storage), 3D 예제 `x3`로 통일 |
+| 1043 CPU index | 반영 | "-1 또는 0만 허용" |
+| 1134-1143 vs 1179-1204 Event 설명 2회 | 반영 | "Event API 상세"를 `<details>`로 |
+| 1119-1132 Event Mermaid | 반영 | Stream 2 + `block`, "완료: query() = true" |
+| 1140 "block command" | 반영 | 5곳 "wait 명령", 첫 등장에 `cudaStreamWaitEvent` 병기 |
+| 1188 `recordOnce` 인과 반전 | 반영 | "미기록 시에만 record, thread-safe 아님" |
+| 1215-1220 DeviceGuard SVG | 반영 | 라이트/다크 SVG 재작성: scope 라벨, current device 타임라인, set/restore 화살표 |
+| 1312-1327 Generator `clone` 시그니처 | 반영 | `at::Generator` / `c10::GeneratorImpl` 분리, 무인자 `clone()` |
+| 1334-1355 빌드 전환 일정 | 반영 | 2.14 재핀에서 Build 절을 현재형으로 다시 씀. 일정은 v2.14.0 `setup.py` 주석으로 확인 |
+| 1414-1418 `DEBUG`/`MAX_JOBS` | 반영 | `pyproject.toml` override/env alias로 처리 위치 명시. `DEBUG_CUDA`는 원래 CMake 옵션이었음을 바로잡음 |
+
+작업 중 발견한 기존 문제: Event 시퀀스 다이어그램이 다크 테마에서 메시지 글자가 어둡고 note 배경이 노랗게 렌더링됨(Mermaid 빌드 시 sequence diagram 테마 변수). 이번 회차 범위 밖.
+
 ## 두 리뷰어가 일치한 항목 (우선 수정 후보)
 
 | line | 문제 | 제안 |
@@ -49,6 +82,32 @@
 | 1414-1418 | `DEBUG`→scikit-build, `MAX_JOBS` alias | 2.13은 setup.py/`tools/setup_helpers/cmake.py`. 2.14+ 분리 |
 
 ## 한쪽만 제기한 항목 (검토 필요)
+
+반영 현황 (2026-09-27, 브랜치 `docs/lecture-02-pytorch-2.14`, PyTorch 2.14 재핀과 함께 처리):
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| Fable A4-1 `gemm_internal` "v2.13에서 추가" | 반영 | 재핀 시 "최근 버전에서는 ... 레이어가 있어"로 교체, v2.14.0 행 번호 병기 |
+| Fable A4-5 `getDispatchKeySetUnboxed` 구버전 인용 | 반영 | v2.14.0 `DispatchKeyExtractor.h:146-160, 193-196`으로 교체 (TLS 합산 포함) |
+| Fable A4-15 "새 key는 core 패치 필요" | 반영 | `PrivateUse1~3` 문장 추가 |
+| Fable A4-17 yaml·Blas.cpp 구버전 인용 | 반영 | 재핀 시 v2.14.0 원문으로 교체 |
+| Fable A4-12 `torch.tensor` → `torch.Tensor` | 반영 | 2곳 |
+| Fable A4-16 "Edward Z. Yang이 구현" | 반영 | 블로그 저자로 표기 |
+| Fable A3-2 slide13_1 = slide38_1 | 해당 없음 | 두 파일의 md5가 다름 (d576d3e7… vs 6d72882f…) |
+| Codex A4-1 `CompositeImplicitAutograd`는 alias key | 반영 | 표 2곳과 절 본문에 alias key 설명 추가 |
+| Codex A4-7 cuBLASLt 경로 = `cublasLtMatmul` | 반영 | |
+| Codex A4-9/10 `clone` = `empty_strided` + `copy_`, "clone 안 하면 view" | 반영 | |
+| Codex A4-12 refcount 0 ≠ GPU 메모리 반환 | 반영 | caching allocator 설명 추가 |
+| Codex A4-13 2D `x`에 `permute(2,0,1)` 차원 오류 | 반영 | view 표 재구성 시 3D `x3`로 통일 (이전 회차) |
+| Codex A4-18 RBLN event 미지원 | 반영 | 검증되지 않은 주장이라 삭제 |
+| Codex A4-17 XPU `record` = barrier 제출, host 대기 아님 | 반영 | `submit_profiling_tag` 분기도 병기 |
+| Codex A4-6 `TORCH_META_FUNC(mm)`는 사람이 작성 | 반영 | |
+| Codex A4-8 AutogradMeta "항상 null" 아님 | 반영 | `TensorImpl.h` 주석 기준 |
+| Codex A3-10 .so 그림 `torch_cuda → torch_cpu`, 빌드 옵션 조건 | 반영 | 엣지 2개 추가, `USE_CUDA`/`USE_XPU` 조건 문장 추가 |
+| Codex A4-21 스택 캡처 환경 미기록 | 부분 반영 | Python 3.13.0 conda debug 빌드로 명시. commit·빌드 옵션은 기록이 없어 "기록되지 않았음"으로 표기 |
+
+원 목록:
+
 
 - **Fable A4-1 (high) line 48**: `gemm_internal` "v2.13에서 추가" → v2.3~2.5에 이미 존재. #0 아래라 스택에 안 보임.
 - **Fable A4-5 line 1012-1023**: `getDispatchKeySetUnboxed` 인용이 구버전(2.13은 TLS 합산 후 `getBackendIndex`, `nonFallthroughKeysPerBackend_`).
