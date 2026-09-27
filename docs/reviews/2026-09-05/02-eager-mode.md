@@ -25,16 +25,16 @@
 
 일치 항목 표를 위에서부터 "Generator `clone` 시그니처"(1312-1327) 행까지 검토·반영했다. **그 아래 두 행(1334-1355 빌드 전환 일정, 1414-1418 `DEBUG`/`MAX_JOBS`)과 "한쪽만 제기한 항목" 목록은 아직 검토하지 않았다** (Codex A4-13은 view 표 재구성에 포함되어 함께 해소). 행 번호는 리뷰 당시 기준.
 
-검토한 20행 중 반영 17, 부분 반영 1, 미반영 2.
+검토한 20행 중 반영 18, 부분 반영 1, 의도적 보류 1.
 
 | 항목 (리뷰 표기) | 상태 | 비고 |
 |---|---|---|
-| 40, 107-108 워밍업·"무려" | 미반영 | 검토 대상에 포함됐으나 이번 회차에서 손대지 않음. "무려 55단계" 문구 그대로 |
+| 40, 107-108 워밍업·"무려" | 보류 | 저자가 검토 후 의도적으로 유지 |
 | 118, 419 등 음차 | 반영 | 매트릭스→행렬 2곳, 디바이스→device 5곳 |
 | 125-126 matmul 분기 표 | 반영 | 1D×2D 행 추가, fold/`mm`과 broadcast/`bmm` 분리, fold는 각주 |
 | 142-146 kernel 미정의, 9문장 단락 | 반영 | kernel 정의 문장 추가, dispatcher 동작을 4단계 번호 목록으로 |
 | 144/253/334/575 redispatch 중복+모순 | 반영 | 145-154행을 정본으로, 나머지 5곳을 "실행 도중" 모델로 통일 |
-| 188/197 `callWithDispatchKeySlowPath` 역할 | 미반영 | 표 #20/#32 설명이 여전히 "최우선 key 선택" |
+| 188/197 `callWithDispatchKeySlowPath` 역할 | 반영 | 표 #20/#32를 RecordFunction/profiler 경로로 수정 (`Dispatcher.h:791-793` 조건 확인) |
 | 191/250/275/455 Front-End가 key set 계산 | 반영 | key set 계산을 `Dispatcher::call`로 옮김 (4곳) |
 | 227-245 Mermaid에 Autograd kernel 없음 | 반영 | Mermaid 대신 `DispatchFlowDiagram.astro` SVG 컴포넌트로 교체. 개념도로 일반화하여 중간 kernel(예: Autograd)이 redispatch하는 구조 표시 |
 | 249/441/455 "C++ frontend" 레이블 | 반영 | 8곳을 "C++ 진입점(`at::_ops::*::call`)"으로. `ops/{op}.h`는 public C++ API 선언으로 정정 |

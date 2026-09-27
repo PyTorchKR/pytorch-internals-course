@@ -196,7 +196,7 @@ Call stack은 밑에서 위로 진입합니다. 크게 두 영역으로 나뉘�
 | #14 | `operator` at `generated/VariableType_3.cpp:13455` | Autograd kernel 내부 lambda (자동생성) |
 | **#15** | `torch::autograd::VariableType::mm` at `generated/VariableType_3.cpp:13456` | **Autograd kernel** - backward graph 세팅 후 forward 실행, gradient 필요 시 기록 (자동생성; 실제 심볼은 `VariableType` 아래 익명 namespace 안에 생성됨) |
 | #16-19 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **dispatch logic** - mm의 Autograd key에 대한 kernel 실행 |
-| #20 | `c10::Dispatcher::callWithDispatchKeySlowPath` at `Dispatcher.h:661` | dispatch key set에서 최우선 key를 선택하여 해당 kernel 탐색 |
+| #20 | `c10::Dispatcher::callWithDispatchKeySlowPath` at `Dispatcher.h:661` | profiler 경로 - `RecordFunction` callback이 등록되어 있고 op이 observed일 때만 타며, kernel 호출을 `RecordFunction` guard로 감쌈. kernel 선택은 이미 `Dispatcher::call`에서 끝남 |
 | **#21** | `c10::Dispatcher::call` at `Dispatcher.h:680` | **dispatch 진입** - mm op에 대한 첫 번째 dispatch (Autograd key 선택) |
 | #22 | `c10::TypedOperatorHandle` at `Dispatcher.h:531` | dispatch의 typed handle wrapper |
 | **#23** | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | **mm C++ 진입점** - op별 생성된 dispatch 진입점, Dispatcher 호출 (자동생성) |
@@ -205,7 +205,7 @@ Call stack은 밑에서 위로 진입합니다. 크게 두 영역으로 나뉘�
 | #26 | `at::native::matmul` at `LinearAlgebra.cpp:2181` | matmul 진입 - `_matmul_impl`로 위임 |
 | **#27** | `at::` at `build/.../RegisterCompositeImplicitAutograd.cpp:2774` | **matmul kernel 등록** - device/autograd 무관한 composite kernel로 등록 (자동생성) |
 | #28-31 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **dispatch logic** - matmul의 CompositeImplicitAutograd key에 대한 kernel 실행 |
-| #32 | `c10::Dispatcher::callWithDispatchKeySlowPath` at `Dispatcher.h:661` | dispatch key set에서 최우선 key를 선택하여 해당 kernel 탐색 |
+| #32 | `c10::Dispatcher::callWithDispatchKeySlowPath` at `Dispatcher.h:661` | profiler 경로 - `RecordFunction` callback이 등록되어 있고 op이 observed일 때만 타며, kernel 호출을 `RecordFunction` guard로 감쌈. kernel 선택은 이미 `Dispatcher::call`에서 끝남 |
 | **#33** | `c10::Dispatcher::call` at `Dispatcher.h:680` | **dispatch 진입** - matmul op에 대한 dispatch |
 | #34 | `c10::TypedOperatorHandle` at `Dispatcher.h:531` | dispatch의 typed handle wrapper |
 | **#35** | `at::_ops::matmul::call` at `build/.../Operators_4.cpp:3192` | **matmul C++ 진입점** - op별 생성된 dispatch 진입점 (자동생성) |
