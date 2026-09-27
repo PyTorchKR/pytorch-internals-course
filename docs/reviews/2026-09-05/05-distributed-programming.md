@@ -18,6 +18,39 @@
 - Codex만 잡은 high: 520–534행 재게시 코드에 `.to(device)` 누락 → CPU tensor로 NCCL broadcast 실패. 386–409행 torchrun 순서(agent rendezvous → worker spawn, 본문은 반대). 727행 "DDP forward는 통신 없음"(buffer broadcast 있음). 819행 "reshard 통신"(reshard는 해제, 통신 아님). 843행 "FSDP는 P/world_size"(peak는 full 버퍼+activation 추가). 983행 DeepSpeed 예제 `training_data` 없이 dataloader 반복. 1019행 ZeRO-2/3 통신 시점. 1064행 Accelerate DeepSpeed 경로. 1148행 "NVCC는 커널 하나 컴파일". 922행 "8~16-way 한계"는 TPU v5p 분석을 GPU 일반론으로.
 - Fable만 잡은: 631행 `destroy_process_group`은 barrier 아님(Codex도 medium으로 비슷하게), 686행 FSDP1 "deprecated"(소스에 warning 없음), 694행 TP `parallelize_module`은 in-place(클래스 교체 아님), 305행 UCC는 빌드 옵션, 672행 1.11은 beta.
 
+## 반영 현황 (2026-09-27)
+
+일치 항목 26행: 반영 23, 부분 반영 3, 보류 0. 한쪽만 제기한 항목은 아직 미검토(단, Codex A4-2의 재게시 코드 `.to(device)` 누락과 A4-5의 torchrun 순서는 같은 자리를 고치면서 함께 해소). 강의 05는 PyTorch 2.13 기준을 유지하고 소스 검증은 v2.14.0 checkout과 torch 2.14 실행으로 했다. 행 번호는 리뷰 당시 기준.
+
+| 항목 (리뷰 표기) | 상태 | 비고 |
+|---|---|---|
+| 24-33 목차 약어 | 부분 반영 | 목차 구조는 강의자 의도대로 유지. DDP/FSDP/TP/SP/PP/EP/CP/MoE는 괄호로 풀어 씀 |
+| 100 "근사 모델" | 반영 | SPMD(single program, multiple data)로 |
+| 149-154 아키텍처 SVG | 반영 | ProcessGroup 행 라벨 `c10d · backend`, Custom 상자를 `XCCL / Custom`, 캡션 `default process group = world` (light/dark 둘 다) |
+| 167 c10d 명칭 | 반영 | "core 계층 `c10` + distributed의 `d`"로 쓰고 포럼 답변 각주 `[^c10d]` 추가 |
+| 324 torchrun 문장 | 반영 | "worker process 생성, rendezvous, 환경변수 설정이 이루어져…"로 |
+| 333-350 파라미터 표 | 반영 | 실제 flag(`--nnodes`, `--nproc_per_node`, `--rdzv_*`)만으로 표 재구성. backend는 스크립트 몫이라고 명시. `test.py` → `dist_matmul_allreduce.py` |
+| 338/388 랑데부/랑데뷰 | 반영 | 본문 전체 "rendezvous"로 통일, 첫 등장(115행)에 "(랑데뷰)" 병기 |
+| 362-379 `--node_rank` | 반영 | 두 노드 동일 명령. `--node_rank`는 static backend 전용이며 c10d에서 무시된다는 한 줄 추가 |
+| 392 TorchrunVisualizer | 반영 | 단계 순서를 agent rendezvous → worker spawn + env → init → broadcast/조각 선택 → local matmul → all-reduce → destroy로 재작성. 포트 29500, 스크립트 `dist_matmul_allreduce.py`, `--node_rank` 제거, DistributedSampler 언급 제거. 본문 단계 목록(380-386)도 같은 순서로 |
+| 484-500 local rank 슬라이스 | 반영 | `distributed_data(A, B, rank, world_size)`로 global rank 슬라이스, `local_rank`는 device 선택만. 입력을 `arange` 기반 비균일 값으로. $AB = A_0B_0 + A_1B_1 + \cdots$ 한 줄과 local rank로 자르면 틀리는 이유 추가. 520-534 재게시 코드에도 `.to(device)` 포함 |
+| 502-506 nccl Q&A | 반영 | backend는 통신 라이브러리 선택, 계산 device는 tensor가 결정. nccl은 CUDA tensor만 통신 가능 |
+| 541 set_device lazy init | 반영 | `THCPModule_setDevice_wrap`이 `device_lazy_init`을 먼저 호출 |
+| 554/578 `wait()` | 반영 | 현재 stream에 NCCL stream 완료 의존성 설정, CPU를 막지 않음(`TORCH_NCCL_BLOCKING_WAIT=1`이면 CPU 대기). 코드 주석 2곳 수정 |
+| 585-625 초기화 방식 | 반영 | `env://`(기본)·tcp·file 세 가지. torchrun 아래에서는 agent가 TCPStore를 열고 worker 전원이 client(`_create_c10d_store` docstring) |
+| 631-633 destroy | 반영 | barrier가 아니라 순차 shutdown. 모든 rank가 같은 순서로 호출해야 하며 불일치·미완료 collective 시 NCCL hang 가능 |
+| 694 "컴파일러처럼" | 반영 | 자문자답 삭제. FSDP2 = 클래스 교체, TP = parameter DTensor 교체 + hook(in-place) |
+| 709-710 DDP 예제 | 반영 | `local_rank`로 device 선택, `DistributedSampler` + `set_epoch` 추가 |
+| 748-757 `Shard(0)` | 반영 | dim-0 = tensor 차원, `placements`는 mesh 축마다 하나라는 문단 추가 |
+| 761 fsdp2_workflow.png | 부분 반영 | backward 설명 뒤(815행 이후)로 이동하고 `max-w-5xl`로 키움. 한 rank로 crop하지는 않고 캡션에 "두 줄 = 두 rank" 설명 |
+| 777-779 FSDP1 freeze | 반영 | `use_orig_params=False` 기본값의 제약과 `use_orig_params=True`의 gradient 메모리 비용 구분 |
+| 781 sharded checkpointing | 반영 | "all-gather 없는"으로 한정, FSDP1 SHARDED_STATE_DICT 언급, DCP coordinator의 metadata 조율 언급 |
+| 830 분해 그림 표기 | 부분 반영 | 공식 tutorial 그림은 그대로 두고 캡션에 "오른쪽 A~D는 합산 조각" 설명 |
+| 841/923 각주·임계 | 반영 | 839행에 arithmetic intensity 각주 참조 삽입, 923행은 "arithmetic intensity 임계"로 지칭 |
+| 883 Megatron 그림 | 반영 | 그림 아래에 $A=[A_1,A_2]$ = `ColwiseParallel(w1)`, $B$ = `RowwiseParallel(w2)`, f/g 정의, $Y=XA$ 표기와 `Linear.weight=[out,in]` 전치 관계(`Shard(0)`) 설명. 그림 `h-72`로 확대 |
+| 918-925 FSDP1+TP, 8~16-way | 반영 | FSDP1도 `DTensorExtensions`로 조합 가능(별도 경로). 8~16-way는 JAX scaling book의 TPU v5p 조건임을 명시 |
+| 1078-1087 Ray optimizer | 반영 | `optimizer = torch.optim.Adam(model.parameters())` 추가 |
+
 ## 두 리뷰어가 일치한 항목 (우선 수정 후보)
 
 | line | 문제 | 제안 |
