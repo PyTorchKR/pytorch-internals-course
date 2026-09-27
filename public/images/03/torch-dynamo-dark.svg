@@ -7,14 +7,14 @@
 
   <!-- Compilation header -->
   <text x="40" y="24" font-size="14" font-weight="500" fill="#F1EFE8">Compilation</text>
-  <text x="154" y="24" font-size="12" fill="#888780">— bytecode에서 graph break를 찾아 각 구간을 FX 그래프로 컴파일</text>
+  <text x="154" y="24" font-size="12" fill="#B4B2A9">— bytecode에서 graph break를 찾아 각 구간을 FX 그래프로 컴파일</text>
 
   <!-- Break arrows -->
-  <text x="193" y="48" font-size="12" text-anchor="middle" fill="#888780">Break</text>
+  <text x="193" y="48" font-size="12" text-anchor="middle" fill="#B4B2A9">Break</text>
   <line x1="193" y1="51" x2="193" y2="74" stroke="#888780" stroke-width="1" marker-end="url(#arr)"/>
-  <text x="361" y="48" font-size="12" text-anchor="middle" fill="#888780">Break</text>
+  <text x="361" y="48" font-size="12" text-anchor="middle" fill="#B4B2A9">Break</text>
   <line x1="361" y1="51" x2="361" y2="74" stroke="#888780" stroke-width="1" marker-end="url(#arr)"/>
-  <text x="529" y="48" font-size="12" text-anchor="middle" fill="#888780">Break</text>
+  <text x="529" y="48" font-size="12" text-anchor="middle" fill="#B4B2A9">Break</text>
   <line x1="529" y1="51" x2="529" y2="74" stroke="#888780" stroke-width="1" marker-end="url(#arr)"/>
 
   <!-- Top cell row -->
@@ -43,20 +43,20 @@
 
   <!-- Top brackets + trace labels -->
   <path d="M40,108 L40,114 L178,114 L178,108" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="109" y="130" font-size="12" text-anchor="middle" fill="#888780">Trace #1</text>
+  <text x="109" y="130" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #1</text>
   <path d="M208,108 L208,114 L346,114 L346,108" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="277" y="130" font-size="12" text-anchor="middle" fill="#888780">Trace #2</text>
+  <text x="277" y="130" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #2</text>
   <path d="M376,108 L376,114 L514,114 L514,108" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="445" y="130" font-size="12" text-anchor="middle" fill="#888780">Trace #3</text>
+  <text x="445" y="130" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #3</text>
   <path d="M544,108 L544,114 L654,114 L654,108" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="599" y="130" font-size="12" text-anchor="middle" fill="#888780">Trace #4</text>
+  <text x="599" y="130" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #4</text>
 
   <!-- Divider -->
   <line x1="40" y1="152" x2="654" y2="152" stroke="#444441" stroke-width="0.5" stroke-dasharray="5 4"/>
 
   <!-- Execution header -->
   <text x="40" y="176" font-size="14" font-weight="500" fill="#F1EFE8">Execution</text>
-  <text x="131" y="176" font-size="12" fill="#888780">— 실행 시점에 guard를 검사하고 통과하면 컴파일된 trace를 실행</text>
+  <text x="131" y="176" font-size="12" fill="#B4B2A9">— 실행 시점에 guard를 검사하고 통과하면 컴파일된 trace를 실행</text>
 
   <!-- Check arrows -->
   <text x="53"  y="200" font-size="12" text-anchor="middle" fill="#85B7EB">Check</text>
@@ -94,18 +94,18 @@
 
   <!-- Bottom brackets + trace labels -->
   <path d="M40,262 L40,268 L178,268 L178,262" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="109" y="284" font-size="12" text-anchor="middle" fill="#888780">Trace #1</text>
+  <text x="109" y="284" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #1</text>
   <path d="M208,262 L208,268 L346,268 L346,262" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="277" y="284" font-size="12" text-anchor="middle" fill="#888780">Trace #2</text>
+  <text x="277" y="284" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #2</text>
   <path d="M376,262 L376,268 L514,268 L514,262" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="445" y="284" font-size="12" text-anchor="middle" fill="#888780">Trace #3</text>
+  <text x="445" y="284" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #3</text>
   <path d="M544,262 L544,268 L654,268 L654,262" fill="none" stroke="#B4B2A9" stroke-width="2" stroke-linecap="round"/>
-  <text x="599" y="284" font-size="12" text-anchor="middle" fill="#888780">Trace #4</text>
+  <text x="599" y="284" font-size="12" text-anchor="middle" fill="#B4B2A9">Trace #4</text>
 
   <!-- Legend -->
   <rect x="40"  y="308" width="10" height="10" rx="1" fill="#D3D1C7"/>
-  <text x="56"  y="317" font-size="12" fill="#888780">Graph break (동적 제어 흐름)</text>
+  <text x="56"  y="317" font-size="12" fill="#B4B2A9">Graph break (동적 제어 흐름)</text>
   <rect x="240" y="308" width="10" height="10" rx="1" fill="#3d3d3a" stroke="#888780" stroke-width="1"/>
-  <text x="256" y="317" font-size="12" fill="#888780">Bytecode 명령어</text>
+  <text x="256" y="317" font-size="12" fill="#B4B2A9">Bytecode 명령어</text>
   <text x="440" y="317" font-size="12" fill="#85B7EB">↓ Check = Guard 검사</text>
 </svg>
