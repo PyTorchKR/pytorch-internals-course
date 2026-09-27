@@ -419,7 +419,7 @@ Dynamo는 CPython의 frame evaluation API를 이용해 frame 실행에 개입합
 
 <img src="/images/03/slide21_1.png" alt="Python 기본 frame 실행과 Dynamo의 frame evaluation 확장 비교 다이어그램" class="h-64" />
 
-> 참고 1: https://docs.pytorch.org/docs/2.13/user_guide/torch_compiler/torch.compiler_dynamo_overview.html
+> 참고 1: https://docs.pytorch.org/docs/2.14/user_guide/torch_compiler/torch.compiler_dynamo_overview.html
 >
 > 참고 2: https://dev-discuss.pytorch.org/t/torchdynamo-an-experiment-in-dynamic-python-bytecode-transformation/361
 
@@ -588,7 +588,7 @@ PyTorch compiler 문서에서는 backend가 받을 수 있는 operator 집합을
 
 - **Torch IR** - Python 코드 수준에서 보이는 모든 연산자(operators)가 포함된 가장 상위 레벨의 IR. PyTorch이 지원하는 2,000개가 넘는 연산자에 해당 (PyTorch 2.0 발표 시점 기준 수치)
 - **Aten IR** - Torch IR을 약 750개의 canonical한 연산자로 정리한 IR (PyTorch 2.0 발표 시점 기준 수치). 기존에 이미 PyTorch를 지원하고 있는 backend가 사용 (Intel CPU, NVIDIA GPU 등)
-- **Core Aten IR** - Aten에서 더 작고 표현이 간결한 subset으로 정리한 약 190개의 operations(`torch.compiler_ir` 문서 기준, 2.13 시점 193개). 반드시 저수준의 ops를 의미하는 것은 아니며, avgpool2d, convolution 등의 high-level ops도 포함
+- **Core Aten IR** - Aten에서 더 작고 표현이 간결한 subset으로 정리한 193개의 operations(PyTorch 2.14 `torch.compiler_ir` 문서 기준). 반드시 저수준의 ops를 의미하는 것은 아니며, avgpool2d, convolution 등의 high-level ops도 포함
 - **Prims IR** - Core Aten과 비슷하지만, 타입 정보와 broadcasting을 명시적으로 표현하여 backend 구현을 단순화할 수 있는 primitive 집합. 내부 operation 수는 PyTorch 버전에 따라 달라집니다.
 
 아래 코드는 이 lowering에 사용되는 decomposition table을 구성하는 예시입니다:
@@ -608,7 +608,7 @@ decomp_table = torch._decomp.get_decompositions([
 
 AOTAutograd와 backend compiler는 decomposition table을 사용해 상위 연산을 더 작은 연산으로 변환할 수 있습니다. 어떤 decomposition을 적용할지는 compilation 경로와 backend 설정에 따라 달라집니다.
 
-> 참고: https://docs.pytorch.org/docs/2.13/user_guide/torch_compiler/torch.compiler_ir.html (본문의 op 개수는 이 2.13 문서 기준)
+> 참고: https://docs.pytorch.org/docs/2.14/user_guide/torch_compiler/torch.compiler_ir.html (본문의 op 개수는 이 2.14 문서 기준)
 
 
 ## Device Backend 통합
@@ -694,7 +694,7 @@ Backend를 이름으로 등록해두고 싶다면(예: minifier에서 문자열�
 
 > **Q**: 상위와 하위 IR을 구분하는 이유는 무엇인가요?
 >
-> **A**: 컴파일러에서 일반적으로 사용하는 접근 방식입니다. 상위 레벨에서 다양한 기능을 제공하는 Op들을 제한된 Op들의 조합으로 표현하는 것이 lowering입니다. 예를 들어 Torch IR의 수천 개 Op이 Prims까지 내려가면 약 120개(2.13 시점 123개)로 추려집니다. Op의 총 개수는 많을 수 있지만 구성하는 set 자체는 줄어들고, 개별 Op도 구체적이고 단순해집니다. 결과적으로 backend compiler는 제한된 수의 단순한 Op만 구현하면 됩니다.
+> **A**: 컴파일러에서 일반적으로 사용하는 접근 방식입니다. 상위 레벨에서 다양한 기능을 제공하는 Op들을 제한된 Op들의 조합으로 표현하는 것이 lowering입니다. 예를 들어 Torch IR의 수천 개 Op이 Prims까지 내려가면 123개(2.14 문서 기준)로 추려집니다. Op의 총 개수는 많을 수 있지만 구성하는 set 자체는 줄어들고, 개별 Op도 구체적이고 단순해집니다. 결과적으로 backend compiler는 제한된 수의 단순한 Op만 구현하면 됩니다.
 
 > **Q**: ATen IR과 Core ATen IR의 관계는?
 >
