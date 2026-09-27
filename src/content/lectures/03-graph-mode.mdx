@@ -189,7 +189,7 @@ TorchDynamo도 runtime 조건을 검사한 뒤 이전 compilation 결과를 재�
 
 #### Trace Cache (Pentium 4에 적용된 사례)
 
-Trace Cache는 Instruction Cache + Branch Prediction을 더 최적화한 형태입니다. Branch Prediction이 없으면 분기가 결정되기 전까지 instruction을 미리 fetch할 수 없기 때문에 예측을 수행하는데, 그럼에도 Instruction Cache는 점프가 많아지면 fetch 효율이 떨어집니다. 일반 instruction cache는 연속 주소만 한 번에 읽을 수 있어서, 여러 taken branch를 넘어 비연속 블록을 같은 cycle에 공급하려면 복잡한 fetch 구조가 필요하기 때문입니다.
+Trace Cache는 Instruction Cache + Branch Prediction을 더 최적화한 형태입니다. Branch Prediction이 없으면 분기가 결정되기 전까지 instruction을 미리 fetch할 수 없기 때문에 예측을 수행하는데, 그럼에도 Instruction Cache는 점프가 많아지면 fetch 효율이 떨어집니다. Instruction cache는 한 번에 이어진 주소 한 덩어리만 읽는데, 점프가 잦으면 그중 실제로 실행할 명령은 몇 개뿐이고 점프한 곳의 명령은 다음 번에 또 따로 읽어야 하기 때문입니다.
 
 Trace Cache는 예측된 제어 흐름을 따라 decoded micro-op을 연속적으로 저장해 fetch와 decode를 최적화합니다. Pentium 4가 이를 상용 x86 processor에 적용한 대표 사례입니다. 아래 동작 방식과 장치 구성은 Rotenberg 등의 연구 구조를 따른 것이고, Pentium 4 구현에서는 trace cache miss 시 L2 cache에서 명령어를 가져와 decode하면서 새 trace를 채웁니다.
 
@@ -216,7 +216,7 @@ Trace Cache의 동작 방식은 다음과 같습니다:
 
 <img src="/images/03/slide10_2.png" alt="Instruction Cache와 Trace Cache 비교 다이어그램" class="h-32" />
 
-- **(a) Instruction Cache**: 블록 A, B → C → D → E가 메모리 상에 비연속적으로 배치되어 있어, 점프할 때마다 다른 위치에서 fetch해야 합니다. 한 cycle에 연속 구간 하나만 읽을 수 있으므로 fetch 효율이 저하됩니다.
+- **(a) Instruction Cache**: 블록 A, B → C → D → E가 메모리 상에 비연속적으로 배치되어 있어, 점프할 때마다 다른 위치에서 fetch해야 합니다. 한 번에 한 덩어리만 읽을 수 있으므로 블록마다 fetch를 반복하게 되어 효율이 떨어집니다.
 - **(b) Trace Cache**: 동일한 블록들을 A, B, C, D, E 순서로 하나의 연속적인 trace로 묶어 저장합니다. 한 번에 fetch가 가능하여 성능이 향상됩니다.
 
 이 세 장치가 연결되어 동작하는 흐름은 다음과 같습니다:
