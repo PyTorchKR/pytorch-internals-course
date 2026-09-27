@@ -377,7 +377,7 @@ PyTorch에서 새 hardware backend를 연결하는 지점은 세 곳입니다:
 | ② Graph mode<br />(JIT: `torch.compile` / AOT: `torch.export`) | FX graph (`ExportedProgram`) | TorchDynamo가 뽑은 graph를 받는 backend |
 | ③ Graph mode (codegen) | Inductor의 loop-level IR | Inductor의 device별 code generator |
 
-①은 2주차(dispatcher), ②는 3주차(Dynamo backend)에서 자세히 다룹니다.
+①은 [2주차](/lectures/02-eager-mode/#operator)(dispatcher), ②는 [3주차](/lectures/03-graph-mode/#device-backend-통합)(Dynamo backend)에서 자세히 다룹니다.
 
 
 ## Q&A

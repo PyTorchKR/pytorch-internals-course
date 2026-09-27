@@ -38,7 +38,7 @@ PyTorch는 **Torch**에서 출발했습니다. Torch는 C/C++ 라이브러리였
 
 Lua보다 Python이 훨씬 더 인기 있는 언어였기 때문에, Meta(당시 Facebook)에서 Python 기반의 PyTorch 프로젝트를 시작했습니다. 당시에는 TensorFlow가 대세였고, PyTorch는 지금처럼 큰 프로젝트가 될 것이라 기대하지 않았습니다. 연구자들이 TensorFlow의 복잡한 사용성에 어려움을 겪고 있었기 때문에, 그 문제를 해결하고자 **eager mode**[^eager-mode] 철학을 중심으로 개발을 시작했습니다.
 
-[^eager-mode]: 연산을 코드에 작성된 순서대로 즉시 실행하는 define-by-run 방식의 실행 모델. Week 1의 "Eager vs. Graph Mode"에서 개념을, Week 2에서 dispatcher를 중심으로 한 내부 동작을 다뤘습니다.
+[^eager-mode]: 연산을 코드에 작성된 순서대로 즉시 실행하는 define-by-run 방식의 실행 모델. [Week 1의 "Eager vs. Graph Mode"](/lectures/01-technical-background/#eager-vs-graph-mode)에서 개념을, [Week 2](/lectures/02-eager-mode/#operator)에서 dispatcher를 중심으로 한 내부 동작을 다뤘습니다.
 
 이 접근 방식은 특히 연구 커뮤니티에서 호응을 얻어 PyTorch가 빠르게 성장하는 계기가 되었습니다. 다만 이 시기의 PyTorch는 주로 연구자들이 사용하는 도구였으며, production 환경에서 사용하기에는 부족한 점이 있었습니다:
 
@@ -59,8 +59,8 @@ PyTorch 2.0에서 1.0 대비 가장 크게 바뀐 부분은 graph mode입니다.
 - **AOTAutograd**: 머신러닝 컴파일러이므로 자동 미분이 frontend에 포함되어, backend에 넘기기 전에 backward graph까지 만들어 둠
 - **Inductor 및 다양한 backend 지원**: 대표 backend는 Inductor[^inductor]이며, 그 아래에 Triton[^triton] 등의 codegen backend가 연결
 
-[^inductor]: PyTorch 2.0의 기본 backend compiler. 캡처된 그래프를 받아 최적화된 kernel 코드를 생성하며, Week 1에서 Dynamo·Triton과 함께 PyTorch 2.0의 주요 ML 컴파일러 컴포넌트로 소개했습니다.
-[^triton]: OpenAI가 개발한 GPU kernel 작성용 언어이자 컴파일러. Week 1 Q&A의 "CUDA와 Triton의 차이점"에서 소개했습니다.
+[^inductor]: PyTorch 2.0의 기본 backend compiler. 캡처된 그래프를 받아 최적화된 kernel 코드를 생성하며, [Week 1](/lectures/01-technical-background/#pytorch-20)에서 Dynamo·Triton과 함께 PyTorch 2.0의 주요 ML 컴파일러 컴포넌트로 소개했습니다.
+[^triton]: OpenAI가 개발한 GPU kernel 작성용 언어이자 컴파일러. [Week 1 Q&A의 "CUDA와 Triton의 차이점"](/lectures/01-technical-background/#cuda와-triton의-차이점)에서 소개했습니다.
 
 이 시기에 PyTorch가 Linux Foundation에 기부되며 PyTorch Foundation이 설립되었습니다.
 
@@ -570,7 +570,7 @@ Dynamo가 생성하는 FX Graph는 **Torch IR**로 표현되며, 비교적 상�
 
 **2. AOT Autograd** → FxGraph (Aten IR)
 
-Gradient 계산이 필요할 경우 이 단계에서 forward와 backward를 한 graph에 담은 **joint graph**를 만들고, 이를 forward/backward 두 graph로 나누는 **partitioning**을 수행합니다. inference처럼 gradient가 필요 없으면 joint graph 생성과 partitioning만 생략하고, **functionalization**(in-place 연산을 out-of-place로 바꿔 부수효과 제거)과 **decomposition**(복합 op을 더 작은 ATen op으로 분해)은 그대로 거칩니다. 이 과정은 Week 4에서 자세히 다룹니다. Inductor 경로에서 이 단계의 출력은 decomposition이 적용된 Aten IR이며, 더 낮은 Prims IR로 내리는 것은 별도 경로입니다.
+Gradient 계산이 필요할 경우 이 단계에서 forward와 backward를 한 graph에 담은 **joint graph**를 만들고, 이를 forward/backward 두 graph로 나누는 **partitioning**을 수행합니다. inference처럼 gradient가 필요 없으면 joint graph 생성과 partitioning만 생략하고, **functionalization**(in-place 연산을 out-of-place로 바꿔 부수효과 제거)과 **decomposition**(복합 op을 더 작은 ATen op으로 분해)은 그대로 거칩니다. 이 과정은 [Week 4](/lectures/04-automatic-differentiation/#graph-mode-backward의-도전-과제)에서 자세히 다룹니다. Inductor 경로에서 이 단계의 출력은 decomposition이 적용된 Aten IR이며, 더 낮은 Prims IR로 내리는 것은 별도 경로입니다.
 
 **3. Inductor** → Loop-Level IR → kernel 소스
 

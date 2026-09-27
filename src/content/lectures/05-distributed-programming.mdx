@@ -16,7 +16,7 @@ PyTorch + NPU 온라인 모임 #5 | 2025-01-15
 
 ## 소개
 
-이번 강의에서는 PyTorch의 분산 프로그래밍(Distributed Programming)에 대해 다룹니다. Week 1에서 PyTorch 2.0의 핵심 특징 중 하나로 MPI-like distributed programming model을 언급한 바 있는데, 이번 주에 그 내용을 본격적으로 파고듭니다.
+이번 강의에서는 PyTorch의 분산 프로그래밍(Distributed Programming)에 대해 다룹니다. [Week 1](/lectures/01-technical-background/#pytorch-20)에서 PyTorch 2.0의 핵심 특징 중 하나로 MPI-like distributed programming model을 언급한 바 있는데, 이번 주에 그 내용을 본격적으로 파고듭니다.
 
 
 ## 오늘 다룰 주제들
@@ -165,7 +165,7 @@ Rendezvous는 참여 process의 membership과 초기화 정보를 구성합니�
     * 가장 맨 아래단에서 실제 통신을 담당합니다.
     * NCCL[^nccl], MPI, Gloo 등 다른 라이브러리를 활용하여 CPU 또는 GPU 간의 프로세스 통신을 관장합니다.
 * **c10d**[^c10d]
-    * Week 2에서 본 core 계층 `c10`에 distributed의 `d`를 붙인 이름으로, PyTorch 분산 통신의 기반 계층입니다.
+    * [Week 2](/lectures/02-eager-mode/#eager-mode의-소스-코드-구조)에서 본 core 계층 `c10`에 distributed의 `d`를 붙인 이름으로, PyTorch 분산 통신의 기반 계층입니다.
     * 실제 Backend들이 이 레이어에 붙으며, `all-reduce`, `broadcast` 같은 Collective API의 인터페이스도 여기에 정리되어 있습니다.
 * **High-level 패키지** 
     * c10d 위에 올라가는 DDP, FSDP, TP, SP, PP 등의 모델 병렬화 패키지입니다. 
@@ -644,7 +644,7 @@ NCCL backend의 경우, 내부적으로 NCCLComm 객체가 소멸되면서 `nccl
 - **Parameter**: 모델 weight 자체. mixed precision[^mixed-precision]이면 fp16/bf16으로 parameter당 2 byte
 - **Gradient**: backward가 만들어내는 값. parameter와 같은 크기로 2 byte
 - **Optimizer state**: Adam 기준 fp32 master weight(4 byte) + momentum(4 byte) + variance(4 byte) = 12 byte
-- **Activation**: forward 중간 결과. batch/sequence 길이에 비례하며, Week 4에서 본 activation checkpointing으로 줄이는 대상
+- **Activation**: forward 중간 결과. batch/sequence 길이에 비례하며, [Week 4](/lectures/04-automatic-differentiation/#aotautograd-단계별-상세-bi)에서 본 activation checkpointing으로 줄이는 대상
 
 [^mixed-precision]: forward/backward 계산은 fp16/bf16 저정밀로 수행하고, 수치 안정성을 위해 optimizer에는 fp32 master weight를 유지하는 학습 기법. Optimizer state에 fp32 master weight(4 byte)가 포함되는 이유입니다.
 
@@ -724,7 +724,7 @@ for epoch in range(epochs):
 
 DDP의 내부 동작도 initialization, forward, backward 단계로 나눌 수 있습니다.
 
-**Initialization** 단계에서는 rank 0의 parameter와 buffer를 모든 rank에 broadcast해서 완전히 동일한 상태에서 출발하도록 맞춥니다. 그리고 **Reducer**라는 내부 객체가 parameter들을 **bucket**(기본 25MB) 단위로 묶어 두고, 각 parameter에 autograd hook을 등록합니다. Week 4에서 본 autograd hook이 여기서 실전으로 쓰이는 것입니다.
+**Initialization** 단계에서는 rank 0의 parameter와 buffer를 모든 rank에 broadcast해서 완전히 동일한 상태에서 출발하도록 맞춥니다. 그리고 **Reducer**라는 내부 객체가 parameter들을 **bucket**(기본 25MB) 단위로 묶어 두고, 각 parameter에 autograd hook을 등록합니다. autograd hook은 backward 중 특정 tensor의 gradient가 완성될 때 불리는 callback입니다(사용자 API로는 `Tensor.register_post_accumulate_grad_hook`). [Week 4](/lectures/04-automatic-differentiation/#autograd-동작-예제)에서 본 backward graph 순회가 각 parameter에 도착하는 지점에 끼어드는 장치라고 보면 됩니다.
 
 **Forward**는 로컬 계산 그대로입니다. parameter 통신은 없고, BatchNorm의 running statistics 같은 buffer가 있으면 기본 설정(`forward_sync_buffers=True`)에서 forward 시작 시 rank 0의 buffer를 broadcast하는 것이 전부입니다.
 
@@ -843,7 +843,7 @@ FSDP에는 forward parameter all-gather가 추가됩니다. Prefetch가 이 통�
 
 Per-device batch가 작아지면 계산량은 줄지만 parameter와 gradient 통신량은 크게 줄지 않아 통신 비중이 증가합니다. 계산량을 통신량으로 나눈 이 비율(arithmetic intensity[^arithmetic-intensity])이 하드웨어의 임계값 아래로 내려가면 통신이 병목이 됩니다. 따라서 data parallel scaling은 model size, token 수, GPU 연산 성능, interconnect bandwidth와 통신·계산 overlap을 함께 측정해 결정해야 합니다.
 
-[^arithmetic-intensity]: 연산량(FLOPs)을 데이터 이동량(bytes)으로 나눈 값. 하드웨어의 "연산 성능 ÷ 대역폭" 임계값과 비교해 compute bound인지 memory bound인지를 판별하는 기준으로, Week 6의 Roofline 분석에서 본격적으로 다룹니다.
+[^arithmetic-intensity]: 연산량(FLOPs)을 데이터 이동량(bytes)으로 나눈 값. 하드웨어의 "연산 성능 ÷ 대역폭" 임계값과 비교해 compute bound인지 memory bound인지를 판별하는 기준으로, [Week 6의 Roofline 분석](/lectures/06-beyond-pytorch/#roofline-analysis)에서 본격적으로 다룹니다.
 
 DDP는 rank마다 16 byte/param 전체를 복제하지만, FSDP는 상시 보관하는 학습 상태를 world_size로 나눕니다. 다만 peak memory에는 지금 계산 중인 module(과 prefetch된 다음 module)의 full parameter 버퍼와 activation이 더해지므로, 각 `fully_shard` 단위는 복원됐을 때 한 GPU에 들어가야 합니다. 선택은 다음 질문으로 정합니다:
 

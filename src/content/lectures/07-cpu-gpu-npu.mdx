@@ -897,7 +897,7 @@ ML 수요가 커지면서 NVIDIA GPU의 연산 처리량도 세대마다 빠르�
 | L2 Cache | ~50MB | 모든 SM이 공유. 대역폭은 NVIDIA 공식 수치가 없고 JAX scaling book의 실측치 약 5.5TB/s |
 | HBM3 (GMEM) | 80GB | 3.35TB/s (SXM 기준. PCIe/NVL 구성은 다름) |
 
-여기서 6주차에 다룬 Roofline Analysis를 적용할 수 있습니다. NVIDIA가 공개한 dense BF16 Tensor Core peak와 HBM peak bandwidth를 사용하면 H100 SXM은 약 990 TFLOPs/s ÷ 3.35 TB/s ≈ 295 FLOPs/byte, B200은 약 2.25 PFLOPs/s ÷ 8 TB/s ≈ 281 FLOPs/byte입니다. 실제 kernel의 attainable peak는 precision mode, sparsity 사용 여부, clock과 memory efficiency에 따라 달라지지만, 두 예 모두 높은 arithmetic intensity가 필요하다는 점을 보여줍니다.
+여기서 [6주차](/lectures/06-beyond-pytorch/#roofline-analysis)에 다룬 Roofline Analysis를 적용할 수 있습니다. NVIDIA가 공개한 dense BF16 Tensor Core peak와 HBM peak bandwidth를 사용하면 H100 SXM은 약 990 TFLOPs/s ÷ 3.35 TB/s ≈ 295 FLOPs/byte, B200은 약 2.25 PFLOPs/s ÷ 8 TB/s ≈ 281 FLOPs/byte입니다. 실제 kernel의 attainable peak는 precision mode, sparsity 사용 여부, clock과 memory efficiency에 따라 달라지지만, 두 예 모두 높은 arithmetic intensity가 필요하다는 점을 보여줍니다.
 
 > 수치 출처: [How to Think About GPUs — JAX Scaling Book](https://jax-ml.github.io/scaling-book/gpus/)
 
