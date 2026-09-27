@@ -12,6 +12,54 @@
 - **Codex만 잡았고 검증 완료된 high 2건**: (1) 323–335행 예제 `x.cos().cos()` 후 `mean() > 0.5` — cos(cos(x)) ∈ [0.54, 1]이라 어떤 입력에도 분기가 바뀌지 않아 "trace 안전성 없음" 예제로 작동하지 않음. (2) 536행 `accumulated_recompile_limit`를 "프로세스 전체"라 했으나 v2.13.0 `cache_size.py`는 "across ALL regions on this code object"로 **code object 단위**. Fable은 이 줄을 "검증 통과"로 표시했으나 틀렸음.
 - **Fable만 잡은 high였으나 출처 검증에서 기각**: 699행 Prims "123개"를 Fable은 "≤87개"라 정정했지만, v2.13 공식 IR 문서의 Prims 표는 정확히 123개이고 `torch._prims.__all__`도 127개. 강의 원문이 맞음.
 
+## 반영 현황 (2026-09-27, main e1b7a4f + 후속 커밋)
+
+일치 항목 25행: 반영 20, 부분 반영 2, 의도적 보류 3. 한쪽만 제기한 항목 11건: 반영 10, 기각 1(이미 기각된 Prims 개수). 행 번호는 리뷰 당시 기준. 강의 03은 아직 PyTorch 2.13 기준이며 재핀은 하지 않았다.
+
+| 항목 (리뷰 표기) | 상태 | 비고 |
+|---|---|---|
+| 59 / 69 AOTAutograd 위치 | 반영 | "프론트엔드에 포함"으로 한 줄 수정 |
+| 110, 182, 339 음차 | 반영 | 456행의 같은 표현도 통일. symbolic execution은 361행에서 한 번 정의 |
+| 132 CFG 노드 문장 | 반영 | L1-2를 한 노드로 묶었다는 설명으로 |
+| 150-155 trace-diagram | 부분 반영 | 개념도이므로 노드명은 넣지 않고 trace B 칸 수만 6개로 줄여 입력 의존성을 표시 |
+| 174 / 192 branch 빈도·cache miss | 반영 | 174행 수치는 "workload에 따라 다름"으로 완화, 192·219행은 fetch bandwidth 설명으로 교체 |
+| 190-231 Trace cache 절 과다 | 보류 | 강의 원문 구성 유지. Pentium 4 miss 경로(L2 → decode)는 한 문장 추가 |
+| 213, 228 outstanding trace buffer | 반영 | 논문 §2.2 정의로 교체, 3·4단계를 그림 화살표 순서로 |
+| 261-273 partial-evaluation ①②③ | 반영 | SVG ① 지시선을 주황 칸으로, bullet 3개 |
+| 268 static input 포함 연산 제거 | 반영 | |
+| 300-313 `jit.script` | 반영 | AST → TorchScript IR 컴파일로 |
+| 301 CPython 직접 통합 | 반영 | PEP 523 hook |
+| 380 frame 내부 evaluation loop | 반영 | |
+| 386 slide15_1 ≤3.10 구조 | 반영 | 자체 SVG(interpreter-frame)로 교체. call stack·frame·evaluation loop·Dynamo hook 개념도, 3.10/3.11+ 차이는 캡션 |
+| 390-563 Dynamo 루프 6중 반복 | 부분 반영 | 6회 → 4회. 결과물 절 삭제, Trace Replay를 핵심 정리에 흡수. 그림(trace-generation)은 유지 결정 |
+| 442-446 slide22_1 | 반영 | 그림을 전체 폭으로 키우고 5단계 문장을 그림 라벨 순서로 |
+| 467-492 Mermaid | 반영 | RECOMPILE → TB 엣지, 분기 A/B, "함수 호출 → 새 frame". 세로 배치 유지 |
+| 504 안쪽 함수까지 eager | 반영 | `FrameExecStrategy(RUN_ONLY, RUN_ONLY)` 기준 |
+| 510-515 trace-generation SVG 삭제 | 보류 | 그림 유지 결정. 상자 확대, 주석 두 줄, 다크 대비 수정 |
+| 538 `dynamic=True` | 반영 | `torch.compile` docstring 기준 |
+| 570-591 Loop-Level IR → Triton | 반영 | Triton kernel 소스 생성 → Triton compiler → PTX/cubin |
+| 583 용어 무정의 | 반영 | joint graph·partitioning·functionalization·decomposition 한 줄 정의, Week 4로 |
+| 651 / 717 compilation overhead 없음 | 반영 | 3곳 |
+| 655-670 예제 | 반영 | 의사코드 표시, `my_compiled(my_input)` |
+| 677-688 Core Aten | 반영 | `decompositions=core_aten_decompositions()` 추가. torch 2.14에서 실행해 op 차이 확인 |
+| 727-729 Q&A Python에서만 | 반영 | 사용 범위로 답변. non-strict export는 Dynamo 미사용 명시 |
+
+한쪽만 제기한 항목:
+
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| Codex A4-4 `cos().cos()` 분기 안 바뀜 | 반영 | 실행 확인: 값 범위 [0.54, 1]. 임계값 0.8, `zeros` vs `full(π/2)` 예시 추가 |
+| Codex A4-5 `accumulated_recompile_limit` 범위 | 반영 | code object 단위, `recompile_limit`은 ID_MATCH 객체 단위 |
+| Codex A4-3 TorchScript 최적화 | 반영 | |
+| Codex A4-7 Pentium 4 miss 경로 | 반영 | 연구 구조와 Pentium 4 구현을 구분하는 문장 추가 |
+| Codex A4-10 "Python 전체 지원" | 반영 | 표와 bullet 모두 |
+| Codex A4-12 CPython 3.11+ specialization | 반영 | |
+| Codex A4-16 `stable` 링크 | 반영 | 두 링크를 `/docs/2.13/`으로 고정 |
+| Fable A4-1 Prims 123개 | 기각 | 출처 검증대로 원문이 맞음 |
+| Fable A2-4 tensor 값이 dynamic | 반영 | |
+| Fable A2-6 `fullgraph` 정의 | 반영 | |
+| Fable A4-11 Aten IR 또는 Prims IR | 반영 | Inductor 경로는 Aten IR, Prims는 별도 경로 |
+
 ## 두 리뷰어가 일치한 항목 (우선 수정 후보)
 
 | line | 문제 | 제안 |
