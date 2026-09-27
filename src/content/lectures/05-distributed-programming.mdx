@@ -843,7 +843,7 @@ FSDP에는 forward parameter all-gather가 추가됩니다. Prefetch가 이 통�
 
 Per-device batch가 작아지면 계산량은 줄지만 parameter와 gradient 통신량은 크게 줄지 않아 통신 비중이 증가합니다. 계산량을 통신량으로 나눈 이 비율(arithmetic intensity[^arithmetic-intensity])이 하드웨어의 임계값 아래로 내려가면 통신이 병목이 됩니다. 따라서 data parallel scaling은 model size, token 수, GPU 연산 성능, interconnect bandwidth와 통신·계산 overlap을 함께 측정해 결정해야 합니다.
 
-[^arithmetic-intensity]: 연산량(FLOPs)을 데이터 이동량(bytes)으로 나눈 값. 하드웨어의 "연산 성능 ÷ 대역폭" 임계값과 비교해 compute bound인지 memory bound인지를 판별하는 기준으로, Week 6의 Roofline 분석에서 본격적으로 다룹니다.
+[^arithmetic-intensity]: 연산량(FLOPs)을 데이터 이동량(bytes)으로 나눈 값. 하드웨어의 "연산 성능 ÷ 대역폭" 임계값과 비교해 compute bound인지 memory bound인지를 판별하는 기준으로, [Week 6의 Roofline 분석](/lectures/06-beyond-pytorch/#roofline-analysis)에서 본격적으로 다룹니다.
 
 DDP는 rank마다 16 byte/param 전체를 복제하지만, FSDP는 상시 보관하는 학습 상태를 world_size로 나눕니다. 다만 peak memory에는 지금 계산 중인 module(과 prefetch된 다음 module)의 full parameter 버퍼와 activation이 더해지므로, 각 `fully_shard` 단위는 복원됐을 때 한 GPU에 들어가야 합니다. 선택은 다음 질문으로 정합니다:
 

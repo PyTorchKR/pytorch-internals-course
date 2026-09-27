@@ -18,7 +18,7 @@ PyTorch + NPU 온라인 모임 #2 | 2024-12-11
 
 이번 강의는 PyTorch 기초의 첫 번째 시간으로, Eager mode[^eager-mode]에 대해 다룹니다.
 
-[^eager-mode]: 연산을 코드에 작성된 순서대로 즉시 실행하는 define-by-run 방식의 실행 모델. 그래프를 먼저 만들어 두고 나중에 실행하는 graph mode와 대비되는 개념으로, Week 1의 "Eager vs. Graph Mode"에서 소개했습니다.
+[^eager-mode]: 연산을 코드에 작성된 순서대로 즉시 실행하는 define-by-run 방식의 실행 모델. 그래프를 먼저 만들어 두고 나중에 실행하는 graph mode와 대비되는 개념으로, [Week 1의 "Eager vs. Graph Mode"](/lectures/01-technical-background/#eager-vs-graph-mode)에서 소개했습니다.
 
 ## 오늘 다룰 주제들
 
@@ -44,7 +44,7 @@ PyTorch에서 `x = torch.matmul(y, z)`를 실행하면 내부적으로 어떤 �
 
 아래는 GPU에서 matmul이 수행되도록 설정하고 CUDA GEMM[^gemm] 진입점에 breakpoint를 건 뒤 `torch.matmul`을 수행했을 때의 call stack snapshot입니다. 실제 수행 지점까지 많은 중간 단계를 거칩니다.
 
-[^gemm]: General Matrix Multiply. BLAS(Basic Linear Algebra Subprograms)에서 정의하는 행렬 곱셈 연산으로, NVIDIA GPU용 구현이 call stack 끝에서 만나게 될 cuBLAS입니다. Week 1의 supercomputing 배경(BLAS/cuBLAS)에서 소개했습니다.
+[^gemm]: General Matrix Multiply. BLAS(Basic Linear Algebra Subprograms)에서 정의하는 행렬 곱셈 연산으로, NVIDIA GPU용 구현이 call stack 끝에서 만나게 될 cuBLAS입니다. [Week 1의 supercomputing 배경](/lectures/01-technical-background/#supercomputing)(BLAS/cuBLAS)에서 소개했습니다.
 
 이 snapshot은 Python 3.13.0(conda) 환경의 debug 빌드에서 캡처한 것입니다(commit과 빌드 옵션은 기록되지 않았습니다). 이 문서가 기준으로 삼는 v2.14.0 소스와 대조해 보면 표에 등장하는 심볼 이름·파일 경로·전체 dispatch 흐름은 그대로 유효하지만, 파일 내 라인 번호는 버전에 따라 이동합니다(예: `Dispatcher.h`의 `redispatch`는 v2.14.0 기준 843행). 또한 최근 버전에서는 cuBLAS 호출 직전에 TunableOp 체크와 backend 선택(cuBLAS/cuBLASLt) 레이어가 있어, `gemm<float>` → `gemm_internal<float>` → `gemm_internal_cublas<float>`(v2.14.0 기준 `CUDABlas.cpp` 1421 → 1226 → 969행) 순으로 스택이 1~2단 더 깊어집니다.
 
