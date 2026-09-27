@@ -465,7 +465,7 @@ addi  s1, s1, 1     # 7`}</pre>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '260px' }}>
     <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"의존 경로가 없는 명령어는 병렬 처리 가능"</div>
-    <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph: 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이에는 addi(s1)→slli 하나만 남는다" class="w-full" />
+    <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 목적지 레지스터의 물리 매핑(예: slli s2→p1), edge 이름은 그 edge로 전달되는 값. 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이를 잇는 값은 루프 카운터 s1(p6) 하나뿐" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>register renaming을 한 후,<br/>data-flow graph로 전환</div>
   </div>
 </div>
@@ -477,8 +477,8 @@ addi  s1, s1, 1     # 7`}</pre>
 3. **Register Renaming → Data-flow graph 전환** - 펼쳐진 trace에는 같은 레지스터 이름이 iteration마다 반복 등장하지만, 하드웨어가 이름을 바꿔 주면 False Dependency가 사라집니다. 그 결과 명령어들 사이에는 오직 True Dependency만 남고, 전체 코드는 의존 관계를 표현하는 **data-flow graph(DAG)** 형태로 정리됩니다. 이 DAG에서 서로 의존 경로가 없는 명령어들은 동시에 실행해도 결과가 같기 때문에, 자연스럽게 병렬 처리가 가능해집니다.
 
 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', margin: '16px 0' }}>
-  <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph: 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이에는 addi(s1)→slli 하나만 남는다" class="w-full max-w-3xl mx-auto" />
-  <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>위 루프 두 iteration을 renaming한 뒤의 data-flow graph. 두 열 사이의 edge는 s1 하나뿐이다</div>
+  <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 목적지 레지스터의 물리 매핑(예: slli s2→p1), edge 이름은 그 edge로 전달되는 값. 각 iteration 안에는 slli→add→lw→mul→add→sw 체인이 있고, iteration 사이를 잇는 값은 루프 카운터 s1(p6) 하나뿐" class="w-full max-w-3xl mx-auto" />
+  <div style={{ fontSize: '0.9em', opacity: 0.8, maxWidth: '48rem' }}>위 루프 두 iteration을 renaming한 뒤의 data-flow graph. 노드의 <code>s2→p1</code>은 architectural register <code>s2</code>가 이번에는 physical register <code>p1</code>에 매핑됐다는 뜻이고, edge에 적힌 이름은 그 edge로 전달되는 값이다. 같은 이름 <code>s2</code>, <code>s3</code>, <code>t1</code>…이 iteration마다 다른 physical register(<code>p1</code>…<code>p5</code>, <code>p7</code>…<code>p11</code>)를 받으므로, renaming 전에 iteration i+1의 <code>slli s2</code>가 iteration i의 <code style={{ whiteSpace: 'nowrap' }}>add s3, s0, s2</code>가 <code>s2</code>를 다 읽을 때까지 기다려야 했던 False Dependency가 사라진다. 두 열을 잇는 값은 루프 카운터 <code>s1</code>(<code>p6</code>) 하나뿐이고, 그 아래 명령어들은 두 iteration에서 동시에 실행될 수 있다.</div>
 </div>
 
 #### 어떻게 하드웨어는 가능한가? Physical Register
