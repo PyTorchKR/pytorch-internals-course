@@ -29,12 +29,12 @@
 - 03강 CFG Mermaid의 `❨ ❩` 글리프(커밋 4f1fcc2에서 의도적으로 넣음, 렌더링 검증 없이 되돌리지 않음).
 - 06강 🤗 (Hugging Face 공식 표기), 07강 NPU DMA 카드 겹침(정보성).
 
-## 사용자 확인이 필요한 사실 flag (문체 축이 아니라 적용하지 않음)
+## 사실 flag 처리 결과 (문체 축 밖이라 저자 확인 후 처리)
 
-- `src/pages/index.astro:29`, `src/pages/about.astro:48` "2026년 8월에 PyTorch 2.13 기준" — 02~04강은 2.14로 재고정됨. about.astro 16·35행 "NPU LAB" 표기도 index와 다름.
-- 06강 230행: prefill-vs-decode.png 설명이 그림에 없는 레이어·피드백 요소를 말함(아래 PrefillDecodeDiagram 설명으로 보임).
-- 07강 987행 "매 cycle"이 983행("매 cycle을 완전히 확정하는 것은 아니고")과 어긋남 — 적용 문안에서는 "매 cycle"만 뺐음.
-- 04강 BackpropWidget ADD forward 단계는 강의 418행에 맞춰 "저장하는 값: 없음"으로 바꿈(사실 정합성 수정).
+- `src/pages/index.astro:29`, `src/pages/about.astro:48` 버전 문구 → "2026년 9월에 PyTorch 2.14 기준"으로 갱신 (저자 결정, 커밋 83dd61b·35fa474). about.astro 16·35행 "NPU LAB" 표기는 그대로.
+- 06강 prefill-vs-decode.png 아래 문단(레이어 축·피드백 설명) → `<PrefillDecodeDiagram />` 아래로 옮기고 첫 문장을 "위 위젯에서 세로축은 layer, 화살표는 attention(토큰 간 의존)을 뜻합니다"로 수정 (저자 결정, 커밋 db48418).
+- 07강 987행 "매 cycle"이 983행("매 cycle을 완전히 확정하는 것은 아니고")과 어긋남 → 적용 문안에서 "매 cycle"만 뺐음.
+- 04강 BackpropWidget ADD forward 단계 → 강의 418행에 맞춰 "저장하는 값: 없음"으로 수정(사실 정합성).
 
 ## 검증
 
