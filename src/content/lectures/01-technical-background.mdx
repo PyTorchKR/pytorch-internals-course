@@ -82,9 +82,9 @@ GPU 기반 heterogeneous computing은 GUI와 컴퓨터 게임을 위한 graphics
 
 #### Shader Programming의 등장 (2000년대 초)
 
-2000년대 초에는 GPU 프로그래밍에 큰 변화를 가져온 **Shader Programming**이 등장했습니다. 이전에는 GPU가 fixed function만 수행할 수 있었지만, 이제 개발자가 GPU를 프로그래밍 가능한 디바이스로 활용할 수 있게 되었습니다.
+2000년대 초에는 GPU 프로그래밍에 큰 변화를 가져온 **Shader Programming**이 등장했습니다. 이전에는 GPU가 fixed function만 수행할 수 있었지만, 이제 개발자가 GPU를 프로그래밍 가능한 device로 활용할 수 있게 되었습니다.
 
-- NVIDIA GeForce 3 (2001): 최초로 Shader Programming을 지원한 GPU로, 하드웨어적으로 셰이더 기능을 도입했습니다.
+- NVIDIA GeForce 3 (2001): 최초로 Shader Programming을 지원한 GPU로, 하드웨어적으로 Shader 기능을 도입했습니다.
 - DirectX 9와 HLSL: Microsoft는 DirectX 9(2002)에서 High-Level Shading Language(HLSL)를 정의하여 개발자들이 고급 언어로 GPU를 프로그래밍할 수 있도록 지원했습니다.
 
 Programmable shader가 도입되자 개발자는 GPU의 연산을 프로그램으로 기술할 수 있었습니다. 이 기능은 이후 범용 GPU 계산의 기반이 되었습니다.
@@ -103,7 +103,7 @@ OpenCL과 HSA도 heterogeneous computing을 지원하지만, NVIDIA GPU 기반 M
 
 ### Supercomputing
 
-슈퍼컴퓨팅은 대규모 계산을 처리하기 위한 고성능 컴퓨팅 기술입니다. 현재는 머신러닝도 대표적인 workload지만, 전통적으로 물리학 simulation, 천문학, 기후 modeling, 항공우주와 에너지 연구 같은 과학·공학 분야에서 사용되었습니다. 미국의 National Laboratory도 이러한 supercomputer로 대규모 과학 계산을 수행합니다.
+슈퍼컴퓨팅은 대규모 계산을 처리하기 위한 고성능 컴퓨팅 기술입니다. 현재는 머신러닝도 대표적인 workload지만, 전통적으로 물리학 simulation, 천문학, 기후 modeling, 항공우주와 에너지 연구 같은 과학·공학 분야에서 사용되었습니다. 미국의 National Laboratory도 이러한 슈퍼컴퓨터로 대규모 과학 계산을 수행합니다.
 
 #### 슈퍼컴퓨팅과 인터넷 서비스의 차이
 
@@ -112,7 +112,7 @@ OpenCL과 HSA도 heterogeneous computing을 지원하지만, NVIDIA GPU 기반 M
 - **인터넷 서비스**는 독립적이고 간단한 계산을 대량으로 처리하는 데 중점을 둡니다.
 - **슈퍼컴퓨팅**은 하나의 계산을 여러 컴퓨터에 분할하는 경우가 많아 작업 사이의 통신과 동기화가 필요합니다. 한 작업의 실패가 전체 job에 영향을 줄 수 있으므로 fault handling이 중요합니다.
 
-머신러닝에서도 추론은 독립적인 작업이 많지만, 대규모 분산 학습은 하나의 작업이 매우 크기 때문에 fault 처리가 더 중요합니다.
+머신러닝에서도 추론은 독립적인 작업이 많지만, 대규모 분산 학습은 하나의 작업이 매우 크기 때문에 fault handling이 더 중요합니다.
 
 #### 병렬/분산 프로그래밍 모델
 
@@ -132,21 +132,21 @@ Matrix Multiplication은 과학 계산과 머신러닝에서 자주 사용되는
 
 **표준 라이브러리 BLAS**
 - BLAS (Basic Linear Algebra Subprograms, 1979): 다양한 linear algebra 문제에 적용할 수 있는 low-level API로, Matrix multiplication을 위한 **GEMM**(General Matrix Multiply)을 포함합니다.
-- 각 HW vendor들은 자사 하드웨어에 최적화된 BLAS 구현을 출시합니다:
+- 각 하드웨어 vendor들은 자사 하드웨어에 최적화된 BLAS 구현을 출시합니다:
   - NVIDIA:
     - **cuBLAS** (2007, closed-source): NVIDIA GPU에 최적화된 BLAS 구현
     - **CUTLASS** (2018, open-source): GEMM 등을 위한 고성능 GPU 커널을 구성하고 사용자 요구에 맞게 특수화할 수 있는 오픈소스 CUDA C++ 템플릿 라이브러리
 
 
-### ML Compiler
+### ML compiler
 
-ML Compiler는 정적인 graph로 전환된 ML model을 특정 hardware에 맞게 최적화해주는 컴파일러입니다.
+ML compiler는 정적인 graph로 전환된 ML model을 특정 하드웨어에 맞게 최적화해주는 컴파일러입니다.
 
 Eager 방식의 ML Framework에서는 model의 연산이 실행 중에 결정됩니다. ML compiler를 적용하는 과정은 다음과 같습니다:
 
 1. model의 전체 또는 일부 연산을 graph로 표현하고
 2. 이를 ML compiler가 이해할 수 있는 중간 표현(IR)으로 변환하여
-3. 최종적으로 HW에서 실행할 수 있는 코드를 생성합니다.
+3. 최종적으로 하드웨어에서 실행할 수 있는 코드를 생성합니다.
 
 #### On-Device AI에서의 활용
 
@@ -164,13 +164,13 @@ ML compiler는 서버의 GPU로 학습한 모델을 On-Device AI 가속기에서
 
 PyTorch 2.0은 `torch.compile`을 통해 graph capture와 backend compilation을 기본 API에 통합했습니다.
 
-#### PyTorch에서의 ML Compiler
+#### PyTorch에서의 ML compiler
 
-PyTorch 1.x에서도 JIT Trace가 모델을 정적 형태로 변환해주는 역할을 했지만, 본격적인 ML 컴파일러로서의 역할은 제한적이었습니다.
+PyTorch 1.x에서도 JIT Trace가 모델을 정적 형태로 변환해주는 역할을 했지만, 본격적인 ML compiler로서의 역할은 제한적이었습니다.
 
-PyTorch 2.0은 ML 컴파일러 기능을 대폭 강화했습니다:
+PyTorch 2.0은 ML compiler 기능을 대폭 강화했습니다:
 - Dynamo: JIT Trace를 대체하는 컴포넌트로, 컴파일러와 유사한 역할 수행
-- Inductor: 본격적인 ML 컴파일러로, 모델 최적화 및 하드웨어 실행 효율화 담당
+- Inductor: 본격적인 ML compiler로, 모델 최적화 및 하드웨어 실행 효율화 담당
 - Triton: 도메인 특화 언어(DSL)로, GPU를 위한 커널 최적화 작업에 활용
 
 
@@ -236,7 +236,7 @@ Eager execution 중에도 graph 자료구조를 사용할 수 있습니다. 예�
 - 개발자는 일반적인 코드로 model의 연산을 작성
 - 프레임워크가 코드 분석이나 tracing을 통해 컴파일에 필요한 graph를 추출
 
-TF2와 PyTorch는 eager mode와 graph mode를 모두 지원합니다. JAX도 기본적으로는 eager로 실행되지만, `jax.jit`으로 감싼 함수는 tracing을 거쳐 그래프로 컴파일됩니다.
+TF2와 PyTorch는 eager mode와 graph mode를 모두 지원합니다. JAX도 기본적으로는 eager로 실행되지만, `jax.jit`으로 감싼 함수는 tracing을 거쳐 graph로 컴파일됩니다.
 
 
 ### TF1 vs. PyTorch 코드 비교
@@ -252,7 +252,7 @@ with tf.Session() as sess:
     print(sess.run(c))
 ```
 
-TensorFlow 1.x에서는 `tf.constant`와 `tf.matmul` 같은 연산자들이 실제 계산을 수행하지 않고, 계산 과정을 그래프로 만듭니다. `c`를 평가하기 전까지는 실제 값을 알 수 없으며, `Session`을 생성한 뒤 `sess.run(c)`(또는 `c.eval()`)를 호출해야 비로소 계산 결과를 얻을 수 있습니다.
+TensorFlow 1.x에서는 `tf.constant`와 `tf.matmul` 같은 연산자들이 실제 계산을 수행하지 않고, 계산 과정을 graph로 만듭니다. `c`를 평가하기 전까지는 실제 값을 알 수 없으며, `Session`을 생성한 뒤 `sess.run(c)`(또는 `c.eval()`)를 호출해야 비로소 계산 결과를 얻을 수 있습니다.
 
 #### PyTorch
 
@@ -263,12 +263,12 @@ y = x1 + x2
 print(y)
 ```
 
-PyTorch의 eager mode에서는 각 줄의 연산이 즉시 수행되고, `y`에는 `+`의 결과가 바로 들어 있습니다. 별도의 그래프 실행 단계는 없습니다.
+PyTorch의 eager mode에서는 각 줄의 연산이 즉시 수행되고, `y`에는 `+`의 결과가 바로 들어 있습니다. 별도의 graph 실행 단계는 없습니다.
 
 
 ### Graph Capture: TF2와 PyTorch 비교
 
-그래프 모드에서는 그래프를 어떻게 얻을지부터 정해야 합니다. TF1은 개발자가 그래프를 직접 구성하게 했고, TF2와 PyTorch는 eager 모드로 작성한 코드에서 프레임워크가 그래프를 추출합니다.
+graph mode에서는 graph를 어떻게 얻을지부터 정해야 합니다. TF1은 개발자가 graph를 직접 구성하게 했고, TF2와 PyTorch는 eager mode로 작성한 코드에서 프레임워크가 graph를 추출합니다.
 
 #### TF2
 
@@ -285,7 +285,7 @@ y = tf.random.uniform((3, 4))
 foo(x, y)
 ```
 
-TF2는 기본이 eager 모드입니다. `@tf.function` 데코레이터를 붙인 함수를 처음 호출하면, TF2는 함수 내부 연산을 trace하여 그래프로 캡처합니다. 개발자는 eager 스타일로 코드를 작성하고, 프레임워크가 그래프 추출을 담당하는 define-by-run 구조입니다.
+TF2는 기본이 eager mode입니다. `@tf.function` 데코레이터를 붙인 함수를 처음 호출하면, TF2는 함수 내부 연산을 trace하여 graph로 캡처합니다. 개발자는 eager 스타일로 코드를 작성하고, 프레임워크가 graph 추출을 담당하는 define-by-run 구조입니다.
 
 #### PyTorch 1 & 2
 
@@ -319,10 +319,10 @@ Eager vs. graph mode가 "graph를 만드는가"의 축이라면, 이 축은 "코
 | JIT (Just in Time) | 첫 실행 시점. 실제 shape·dtype을 보고 컴파일 | `torch.compile` | 런타임 정보에 특화된 코드, 코드 수정 최소 | warmup 시간, guard 실패 시 재컴파일 |
 | AOT (Ahead of Time) | 실행 전. 배포용 artifact를 생성 | `torch.export`로 graph를 얻고 AOTInductor(`torch._inductor.aoti_compile_and_package`)로 컴파일 | Python 없이 C++ runtime에서 실행, 시작 지연 없음 | 입력 shape 등 가정을 미리 고정해야 함 |
 
-뒤의 "Backend Integration Points" 표는 이 구분을 전제로 hardware 연결 지점을 나눕니다.
+뒤의 "Backend Integration Points" 표는 이 구분을 전제로 하드웨어 연결 지점을 나눕니다.
 
 
-### Eager 프로그램에서 실행 그래프를 얻는 관련 기법
+### Eager 프로그램에서 실행 graph를 얻는 관련 기법
 
 프로그램의 실행 경로와 데이터 의존성을 분석하고 활용하는 기법은 컴파일러와 하드웨어 양쪽에서 발전해 왔습니다.
 
@@ -337,7 +337,7 @@ Eager vs. graph mode가 "graph를 만드는가"의 축이라면, 이 축은 "코
 Fisher, J.A. "Trace Scheduling: A Technique for Global Microcode Compaction" IEEE Trans. on Computers, 1981
 </div>
 
-PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파일 타임에 활용해 최적화를 수행하는 더 넓은 개념이며, 트레이스 스케줄링은 PGO에서 사용하는 특정 기법 중 하나입니다. 트레이스 스케줄링은 브랜치 예측으로 자주 실행되는 동적 실행 경로(Trace)를 추출합니다. 그리고 이 경로에 맞게 명령어를 스케줄링합니다. 양질의 프로파일 데이터가 필요하며, 올바른 트레이스를 만들어 롤백 없이 효율적인 성능을 제공하는 것이 핵심입니다.
+PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파일 타임에 활용해 최적화를 수행하는 더 넓은 개념이며, Trace scheduling은 PGO에서 사용하는 특정 기법 중 하나입니다. Trace scheduling은 브랜치 예측으로 자주 실행되는 동적 실행 경로(Trace)를 추출합니다. 그리고 이 경로에 맞게 명령어를 스케줄링합니다. 양질의 프로파일 데이터가 필요하며, 올바른 트레이스를 만들어 롤백 없이 효율적인 성능을 제공하는 것이 핵심입니다.
 
 
 ## PyTorch에 통합된 기술
@@ -359,14 +359,14 @@ PyTorch 2.0은 PyTorch 1.0의 특성을 거의 모두 계승(inherit)합니다. 
 - **NumPy-like experience** - 텐서 구조, 사전 정의된 수학 함수, 대화형 환경, Jupyter Notebook 호환성
 - **Heterogeneous computing** as an underneath foundation - CPU와 GPU/NPU 같은 가속기를 함께 쓰는 실행 모델이 프레임워크의 토대. tensor가 device 정보를 가지며, 같은 op이라도 device에 따라 다른 구현이 실행되는 구조의 기반이 됨
 - **MPI-like** distributed programming model - MPI에서 정립된 collective communication 스타일(broadcast, all-reduce 등)의 분산 프로그래밍을 `torch.distributed`로 기본 지원
-- Integration with compute libraries / ML compiler - PyTorch 1.0부터 Eager mode에서는 컴퓨팅 라이브러리를 사용하고, PyTorch 2.0에서는 Graph mode에서 ML 컴파일러와의 통합을 핵심 과제로 다루고 있음
+- Integration with compute libraries / ML compiler - PyTorch 1.0부터 Eager mode에서는 컴퓨팅 라이브러리를 사용하고, PyTorch 2.0에서는 Graph mode에서 ML compiler와의 통합을 핵심 과제로 다루고 있음
 - Three language layers: Python → C++ → kernel language (예: CUDA, Triton) - 단순한 2개 언어가 아니라 제3 랭귀지 또는 멀티 랭귀지 솔루션 (Python API + C++ 구현 + CUDA/Triton kernel). 스크립팅은 Python으로 이루어지지만, 하위 레벨에서는 성능 최적화를 위해 C++로 전환되며, GPU/TPU/NPU 등의 하드웨어에서는 커널 레벨의 최적화 성능을 제공
 - **Define-by-run** with graph capturing via TorchDynamo - Eager mode 중심으로 Graph mode를 부드럽게 지원
 - Support both training and inference - Graph mode(컴파일) 경로가 inference뿐 아니라 training까지 쉽게 활용할 수 있게 된 것이 PyTorch 2.0에서 가장 크게 변화한 부분
 
 #### Backend Integration Points
 
-PyTorch에서 새 hardware backend를 연결하는 지점은 세 곳입니다:
+PyTorch에서 새 하드웨어 backend를 연결하는 지점은 세 곳입니다:
 
 | 접점 | 입력 단위 | 연결 층 |
 |------|----------|--------|
@@ -395,4 +395,4 @@ PyTorch에서 새 hardware backend를 연결하는 지점은 세 곳입니다:
 - **프로그래밍 모델**: CUDA C++는 스레드 중심, Triton은 데이터 블록(타일) 중심
 - **최적화 방식**: CUDA C++는 세밀한 직접 제어, Triton은 컴파일러 자동화에 중점
 
-Triton은 단순한 Python API가 아니라 Python syntax를 사용하는 kernel programming DSL입니다. PyTorch Inductor는 NVIDIA GPU용 kernel을 생성할 때 Triton을 주요 code generation backend 중 하나로 사용합니다. 이는 모든 PyTorch operator나 모든 hardware backend가 Triton을 사용한다는 의미는 아닙니다.
+Triton은 단순한 Python API가 아니라 Python syntax를 사용하는 kernel programming DSL입니다. PyTorch Inductor는 NVIDIA GPU용 kernel을 생성할 때 Triton을 주요 code generation backend 중 하나로 사용합니다. 이는 모든 PyTorch operator나 모든 하드웨어 backend가 Triton을 사용한다는 의미는 아닙니다.
