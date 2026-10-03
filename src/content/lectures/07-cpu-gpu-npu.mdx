@@ -106,7 +106,7 @@ PyTorch + NPU 온라인 모임 #7 | 2025-02-12
   lightSrc="/images/07/latency_hiding_light.svg"
   darkSrc="/images/07/latency_hiding_dark.svg"
   alt="위: 작업을 하나씩 처리하면 Latency가 Throughput을 정한다. 아래: 작업을 겹쳐 처리하면 다음 작업의 시작 간격이 Throughput을 정한다"
-  class="h-36 mx-auto"
+  class="mx-auto w-full max-w-[880px]"
 />
 
 위 그림은 같은 길이의 작업이라도 처리 방식에 따라 Throughput이 어떻게 달라지는지를 보여줍니다.
@@ -783,7 +783,7 @@ Thread-level 병렬 아키텍처가 서버 시장에서 중요해진 이유 하�
 
 <MemoryHierarchyDiagram />
 
-가장 위에는 실제 연산을 담당하는 Compute Unit들이 있습니다. 그 밑에 빠른 On-Chip Memory(CPU의 경우 보통 Cache)가 있고, 가장 아래에 DRAM 같은 오프칩 메모리가 있습니다. Compute Unit과 On-Chip Memory는 Interconnect로 이어지고, On-Chip Memory와 DRAM 사이의 경계에는 Memory Wall이 표시되어 있습니다(뜻은 아래에서 설명합니다). 위로 갈수록 빠르고 작고, 아래로 갈수록 느리고 큽니다. 이 구조를 **Memory Hierarchy**라고 부릅니다.
+가장 위에는 실제 연산을 담당하는 Compute Unit들이 있습니다. 그 밑에 빠른 On-Chip Memory(CPU의 경우 보통 Cache)가 있고, 가장 아래에 DRAM 같은 오프칩 메모리가 있습니다. CPU는 보통 DDR DRAM을 씁니다. GPU가 쓰는 HBM(High Bandwidth Memory)도 DRAM die를 여러 층 쌓아 프로세서 옆에 붙인 DRAM입니다. 그래서 이 절에서 말하는 DRAM은 HBM까지 포함합니다. Compute Unit과 On-Chip Memory는 Interconnect로 이어지고, On-Chip Memory와 DRAM 사이의 경계에는 Memory Wall이 표시되어 있습니다(뜻은 아래에서 설명합니다). 위로 갈수록 빠르고 작고, 아래로 갈수록 느리고 큽니다. 이 구조를 **Memory Hierarchy**라고 부릅니다.
 
 현대 프로세서에서 가장 큰 성능 병목은 이 오프칩 메모리(DRAM)에 접근할 때의 bandwidth와 Latency입니다. 연산 능력은 세대를 거치며 계속 향상되지만, DRAM에 접근하는 속도는 그 속도를 따라가지 못합니다. 이 현상을 가리키는 용어가 **Memory Wall**이고, Wulf와 McKee의 1994년 기술 보고서(1995년 ACM 게재)에서 널리 알려졌습니다. 프로세서 설계의 과제는 "DRAM bandwidth를 어떻게 최대한 활용할 것인가"가 됩니다.
 
