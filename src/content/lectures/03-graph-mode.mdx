@@ -695,7 +695,7 @@ my_backend = aot_autograd(
 
 [^boxing]: Boxed/unboxed 호출 방식은 PyTorch wiki의 [Boxing and Unboxing in the PyTorch Operator Library](https://github.com/pytorch/pytorch/wiki/Boxing-and-Unboxing-in-the-PyTorch-Operator-Library)에, AOTAutograd가 list 인자를 요구하는 이유는 [pytorch#83137의 설명](https://github.com/pytorch/pytorch/pull/83137#issuecomment-1211320670)에 있습니다. `make_boxed_func`는 `f(*args)`를 `g(args)`로 감싸고 `g._boxed_call = True`를 표시합니다(`torch/_functorch/_aot_autograd/utils.py`).
 
-Backend를 이름으로 등록해두고 싶다면(예: minifier에서 문자열로 backend를 지정하는 경우) `torch._dynamo` 의 `register_backend` 데코레이터를 사용합니다. 등록된 backend 목록은 `torch._dynamo.list_backends()`로 확인할 수 있습니다.
+Backend를 이름으로 등록하려면 `torch._dynamo`의 `register_backend` 데코레이터를 사용합니다. 등록한 backend는 `torch.compile(model, backend="my_compiler")`처럼 문자열로 지정할 수 있습니다. minifier(실행이나 컴파일에서 crash가 나는 FX graph를 받아, 같은 crash를 재현하는 최소 graph를 찾는 도구)를 쓸 때도 backend 등록이 필요합니다. 등록된 backend 목록은 `torch._dynamo.list_backends()`로 확인할 수 있습니다.
 
 ## Q&A
 
