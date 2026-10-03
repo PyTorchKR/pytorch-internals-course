@@ -1075,6 +1075,26 @@ a:hover {
   color: var(--text-muted);
 }
 
+.footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.footer-build {
+  font-size: 0.75rem;
+  font-family: var(--fig-font-mono);
+  color: var(--text-muted);
+}
+
+.footer-build a {
+  color: inherit;
+}
+
+.footer-build a:hover {
+  color: var(--accent);
+}
+
 /* ===== Scrollbar ===== */
 ::-webkit-scrollbar {
   width: 6px;

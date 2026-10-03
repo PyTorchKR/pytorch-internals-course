@@ -1,12 +1,20 @@
 ---
 import { siteConfig } from '../config';
+import { buildInfo } from '../lib/build-info';
 ---
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <span class="footer-copyright">
-      &copy; {new Date().getFullYear()} {siteConfig.author}
-    </span>
+    <div class="footer-meta">
+      <span class="footer-copyright">
+        &copy; {new Date().getFullYear()} {siteConfig.author}
+      </span>
+      <span class="footer-build">
+        {buildInfo.version} &middot;
+        <a href={buildInfo.commitUrl} target="_blank" rel="noopener noreferrer">{buildInfo.commit || 'local'}</a>
+        &middot; {buildInfo.buildDate} 빌드
+      </span>
+    </div>
 
     <div class="footer-social">
       {siteConfig.social.github && (
