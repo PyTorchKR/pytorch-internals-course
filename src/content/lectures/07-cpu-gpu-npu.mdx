@@ -561,7 +561,7 @@ VLIW는 여기에 정반대 방향의 답을 내놓습니다. OOO와 똑같은 �
     lightSrc="/images/07/loop_vliw_light.svg"
     darkSrc="/images/07/loop_vliw_dark.svg"
     alt="VLIW modulo schedule: II=3, ALU 2개·MEM·MUL 4개 유닛에 3 iteration의 명령어를 배치한 표. prologue, 3 cycle마다 반복되는 kernel, epilogue로 나뉘고 짝수·홀수 iteration이 레지스터 세트 A/B를 번갈아 쓴다"
-    class="w-full max-w-5xl mx-auto"
+    class="mx-auto w-full max-w-[880px]"
   />
   <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>VLIW: 컴파일러가 미리 만든 modulo schedule(II = 3). kernel 구간을 하드웨어가 그대로 반복</div>
 </div>
@@ -987,7 +987,7 @@ NPU에서는 Compute Unit뿐 아니라 DMA도 소프트웨어가 따로 프로�
     lightSrc="/images/07/command_processor_arch_light.svg"
     darkSrc="/images/07/command_processor_arch_dark.svg"
     alt="NPU 명령 관점 구조: Command Processor가 command stream을 Compute Unit·L1 DMA·L2 DMA별 command queue에 나눠 넣고, Sync Network가 유닛 사이의 signal/wait를 전달"
-    class="h-36 mx-auto"
+    class="mx-auto w-full max-w-[900px]"
 />
 
 이런 command stream은 여러 functional unit의 동작을 소프트웨어가 함께 스케줄한다는 점에서 앞 절의 Horizontal Encoding과 유사합니다. 다만 모든 NPU ISA가 VLIW이거나 reconfigurable architecture인 것은 아니므로, 여기서는 스케줄링 방식의 유사성만 비교합니다.
@@ -1000,7 +1000,7 @@ NPU에서는 Compute Unit뿐 아니라 DMA도 소프트웨어가 따로 프로�
     lightSrc="/images/07/npu_compiler_light.svg"
     darkSrc="/images/07/npu_compiler_dark.svg"
     alt="NPU compiler: model 그래프와 아키텍처 정보(Compute Unit, Command Processor, DMA, Scratchpad)를 입력으로 받아 유닛별 command queue를 생성"
-    class="h-36 mx-auto"
+    class="mx-auto w-full max-w-[900px]"
 />
 
 ML model은 일반적으로 노드 단위의 그래프 형태로 컴파일러에 들어옵니다. 그런데 그래프의 한 노드(예: 큰 matmul, attention 한 블록)가 곧바로 한 cycle에 끝낼 수 있는 작업인 경우는 거의 없고, 하드웨어가 한 번에 처리할 수 있는 작은 단위로 더 잘게 쪼개야 합니다.
