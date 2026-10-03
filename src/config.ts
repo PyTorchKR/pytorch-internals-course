@@ -8,6 +8,6 @@ export const siteConfig = {
     { label: 'About', href: '/about' },
   ],
   social: {
-    github: 'https://github.com/appleparan/pytorch-internals-course',
+    github: 'https://github.com/PyTorchKR/pytorch-internals-course',
   },
 } as const;
