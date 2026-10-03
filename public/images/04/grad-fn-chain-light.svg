@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 100" role="img" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="13">
+<title>z에서 x로 거꾸로 이어지는 grad_fn 연결</title>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#888780"/></marker></defs>
+<rect x="655.0" y="30.0" width="210" height="40" rx="6" fill="#FBE3D6" stroke="#D85A30" stroke-width="1.4"/>
+<text x="760" y="54.5" text-anchor="middle" fill="#2C2C2A" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">z.grad_fn: PowBackward0</text>
+<rect x="335.0" y="30.0" width="210" height="40" rx="6" fill="#FBE3D6" stroke="#D85A30" stroke-width="1.4"/>
+<text x="440" y="54.5" text-anchor="middle" fill="#2C2C2A" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">y.grad_fn: MulBackward0</text>
+<rect x="15.0" y="30.0" width="210" height="40" rx="6" fill="#FBE3D6" stroke="#D85A30" stroke-width="1.4"/>
+<text x="120" y="54.5" text-anchor="middle" fill="#2C2C2A" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">x (leaf): AccumulateGrad</text>
+<path d="M 655.0 50.0 H 545.0" fill="none" stroke="#888780" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 335.0 50.0 H 225.0" fill="none" stroke="#888780" stroke-width="1.4" marker-end="url(#ar)"/>
+</svg>

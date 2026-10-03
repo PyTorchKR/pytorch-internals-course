@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 410" role="img" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="13">
+<title>Eager Mode의 shared object 의존 관계</title>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#B4B2A9"/></marker></defs>
+<rect x="315" y="20" width="170" height="34" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="400.0" y="41.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libtorch_python.so</text>
+<rect x="315" y="90" width="170" height="34" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="400.0" y="111.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libtorch.so</text>
+<rect x="45" y="176" width="170" height="34" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="130.0" y="197.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libtorch_cuda.so</text>
+<rect x="315" y="176" width="170" height="34" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="400.0" y="197.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libtorch_cpu.so</text>
+<rect x="585" y="176" width="170" height="34" rx="5" fill="#332D4D" stroke="#AFA9EC" stroke-width="1.3"/>
+<text x="670.0" y="197.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libtorch_xpu.so</text>
+<rect x="45" y="270" width="170" height="34" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="130.0" y="291.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libc10_cuda.so</text>
+<rect x="315" y="270" width="170" height="34" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="400.0" y="291.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libc10.so</text>
+<rect x="585" y="270" width="170" height="34" rx="5" fill="#332D4D" stroke="#AFA9EC" stroke-width="1.3"/>
+<text x="670.0" y="291.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libc10_xpu.so</text>
+<rect x="45" y="364" width="170" height="34" rx="5" fill="none" stroke="#888780" stroke-width="1.3" stroke-dasharray="6 4"/>
+<text x="130.0" y="385.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libcudart.so</text>
+<rect x="585" y="364" width="170" height="34" rx="5" fill="none" stroke="#888780" stroke-width="1.3" stroke-dasharray="6 4"/>
+<text x="670.0" y="385.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7">libsycl.so</text>
+<path d="M 400 54 V 90" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 400 124 V 176" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 400 150 H 130 V 176" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 400 150 H 670 V 176" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 215 193 H 315" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 585 193 H 485" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 130 210 V 270" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 670 210 V 270" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 400 210 V 270" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 215 287 H 315" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 585 287 H 485" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 130 304 V 364" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+<path d="M 670 304 V 364" fill="none" stroke="#B4B2A9" stroke-width="1.4" marker-end="url(#ar)"/>
+</svg>

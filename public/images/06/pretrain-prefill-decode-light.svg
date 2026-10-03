@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="14" role="img">
+<title>Pretraining에서 Trained Weights를 만들고 Prefill과 Decode로 이어지는 흐름</title>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#5F5E5A"/></marker></defs>
+<rect width="760" height="260" fill="#FFFFFF"/>
+<rect x="20" y="50" width="110" height="44" rx="5" fill="#F1EFE8" stroke="#888780" stroke-width="1.4"/>
+<text x="75.0" y="77.0" text-anchor="middle" fill="#2C2C2A" font-weight="600">Model</text>
+<rect x="20" y="178" width="110" height="44" rx="5" fill="#F1EFE8" stroke="#888780" stroke-width="1.4"/>
+<text x="75.0" y="205.0" text-anchor="middle" fill="#2C2C2A" font-weight="600">Data</text>
+<rect x="190" y="108" width="190" height="56" rx="5" fill="#F1EFE8" stroke="#888780" stroke-width="1.4"/>
+<text x="285.0" y="133.0" text-anchor="middle" fill="#2C2C2A" font-weight="600">Pretraining</text>
+<text x="285.0" y="150.0" text-anchor="middle" fill="#5F5E5A" font-size="12">(next-token prediction)</text>
+<rect x="440" y="108" width="130" height="56" rx="5" fill="#F1EFE8" stroke="#888780" stroke-width="1.4"/>
+<text x="505.0" y="141.0" text-anchor="middle" fill="#2C2C2A" font-weight="600">Trained Weights</text>
+<rect x="630" y="50" width="110" height="44" rx="5" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.4"/>
+<text x="685.0" y="77.0" text-anchor="middle" fill="#185FA5" font-weight="600">Prefill</text>
+<rect x="630" y="178" width="110" height="44" rx="5" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.4"/>
+<text x="685.0" y="205.0" text-anchor="middle" fill="#185FA5" font-weight="600">Decode</text>
+<path d="M130 72 H160 V136 H190" fill="none" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M130 200 H160 V136 H190" fill="none" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M380 136 H440" fill="none" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M570 136 H600 V72 H630" fill="none" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M570 136 H600 V200 H630" fill="none" stroke="#5F5E5A" stroke-width="1.4" marker-end="url(#ah)"/>
+</svg>

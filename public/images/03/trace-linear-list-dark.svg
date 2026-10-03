@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 64" role="img" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="13">
+<title>d = 0일 때의 Trace</title>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#888780"/></marker></defs>
+<rect x="20" y="14" width="88" height="36" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="64.0" y="36.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">L1-2</text>
+<path d="M 108 32 H 148" fill="none" stroke="#888780" stroke-width="1.3" marker-end="url(#ar)"/>
+<rect x="148" y="14" width="88" height="36" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="192.0" y="36.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">d=?</text>
+<path d="M 236 32 H 276" fill="none" stroke="#888780" stroke-width="1.3" marker-end="url(#ar)"/>
+<rect x="276" y="14" width="88" height="36" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="320.0" y="36.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">L6</text>
+<path d="M 364 32 H 404" fill="none" stroke="#888780" stroke-width="1.3" marker-end="url(#ar)"/>
+<rect x="404" y="14" width="88" height="36" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="448.0" y="36.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">J1</text>
+<path d="M 492 32 H 532" fill="none" stroke="#888780" stroke-width="1.3" marker-end="url(#ar)"/>
+<rect x="532" y="14" width="88" height="36" rx="5" fill="#444441" stroke="#888780" stroke-width="1.3"/>
+<text x="576.0" y="36.5" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#D3D1C7">L9</text>
+</svg>

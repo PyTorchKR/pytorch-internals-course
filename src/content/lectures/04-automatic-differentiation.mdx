@@ -6,7 +6,6 @@ lecture: 4
 
 import LinearRegressionWidget from '../../components/LinearRegressionWidget.astro';
 import BackpropWidget from '../../components/BackpropWidget.astro';
-import Mermaid from '../../components/Mermaid.astro';
 import ThemeImage from '../../components/ThemeImage.astro';
 
 
@@ -191,10 +190,7 @@ y = x * 2
 
 Forward 계산으로 $y = x \times 2 = 4$가 저장됩니다. $x$에 미분이 필요하다고 마킹되어 있으므로 그 output인 $y$도 gradient가 필요합니다. 이때 Autograd는 `MulBackward0`라는 grad function을 $y$에 연결해, multiplication의 backward가 필요하다는 것을 기록합니다. (forward kernel이 이 기록을 남기는 실제 C++ 코드와, `MulBackward0` 같은 grad function이 만들어지는 과정은 Step 4 뒤의 [참고] 섹션들에서 자세히 다룹니다.) Computation graph 상태는 다음과 같습니다:
 
-<Mermaid>
-{`graph LR
-    x["x: 2"] -->|"× 2"| y["y: 4"]`}
-</Mermaid>
+<ThemeImage lightSrc="/images/04/forward-x-to-y-light.svg" darkSrc="/images/04/forward-x-to-y-dark.svg" alt="x에서 y로 × 2 연산이 연결된 forward computation graph이다." class="mx-auto w-full max-w-[640px]" />
 
 이때 $y$에는 `grad_fn = MulBackward0`가 붙습니다. 이 연결은 forward 데이터 흐름과 반대 방향이므로 아래 Step 3에서 따로 그립니다.
 
@@ -207,17 +203,11 @@ z = y ** 2
 
 Step 2와 동일한 과정이 반복됩니다. $z = y^2 = 16$이 계산되면서, Autograd는 $y$와 $z$도 gradient가 필요하다는 것을 인지합니다. Forward kernel은 `compute_requires_grad` 판별을 거쳐 `PowBackward0` grad function을 기록해 둡니다(이 판별 코드는 아래 [참고] 섹션에서 확인할 수 있습니다). `PowBackward0`는 backward 때 위에서 받은 gradient에 $2y$를 곱해 돌려줍니다. 그러기 위해 $y$를 저장해 둡니다. 여기서 forward 계산이 끝나고 backward graph도 준비됩니다. Forward 데이터 흐름은 다음과 같고:
 
-<Mermaid>
-{`graph LR
-    x["x: 2"] -->|"× 2"| y["y: 4"] -->|"y²"| z["z: 16"]`}
-</Mermaid>
+<ThemeImage lightSrc="/images/04/forward-x-y-z-light.svg" darkSrc="/images/04/forward-x-y-z-dark.svg" alt="x에서 y, y에서 z로 이어지는 forward 데이터 흐름이다." class="mx-auto w-full max-w-[640px]" />
 
 그 위에 Autograd가 남긴 `grad_fn` 연결은 반대 방향으로 이어집니다:
 
-<Mermaid>
-{`graph RL
-    z["z.grad_fn: PowBackward0"] --> y["y.grad_fn: MulBackward0"] --> x["x (leaf): AccumulateGrad"]`}
-</Mermaid>
+<ThemeImage lightSrc="/images/04/grad-fn-chain-light.svg" darkSrc="/images/04/grad-fn-chain-dark.svg" alt="z.grad_fn, y.grad_fn, x의 AccumulateGrad가 forward와 반대 방향으로 이어지는 연결이다." class="mx-auto w-full max-w-[900px]" />
 
 
 #### Step 4: Backward
@@ -234,10 +224,7 @@ Step 4.2(gradient 전파): 다음 단계에서 $x$에 대한 $y$의 편미분 $\
 
 전체 backward 흐름:
 
-<Mermaid wide>
-{`graph RL
-    start["dz/dz = 1"] --> pow["PowBackward0: 1 × 2y = 8"] --> mul["MulBackward0: 8 × 2 = 16"] --> result["x.grad = 16"]`}
-</Mermaid>
+<ThemeImage lightSrc="/images/04/backward-flow-light.svg" darkSrc="/images/04/backward-flow-dark.svg" alt="dz/dz = 1에서 PowBackward0, MulBackward0를 거쳐 x.grad = 16에 이르는 backward 흐름이다." class="mx-auto w-full max-w-[900px]" />
 
 검증: $z = (2x)^2 = 4x^2$이므로, $\dfrac{dz}{dx} = 8x = 8 \times 2 = 16$
 
