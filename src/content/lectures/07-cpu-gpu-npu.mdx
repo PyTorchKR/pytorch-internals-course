@@ -1023,6 +1023,7 @@ ML model은 일반적으로 노드 단위의 그래프 형태로 컴파일러에
 
 이 표는 이 절에서 비교하는 대표적인 실행 모델을 단순화한 것입니다. 기본 CUDA model에서 programmer는 thread의 작업과 launch shape을 정의하고, 하드웨어가 resident Warp의 실행 순서를 정합니다. GPU에서도 Shared Memory와 asynchronous copy를 명시적으로 사용할 수 있으며, 뒤의 Hopper·Blackwell 절에서 그 사례를 다룹니다. 이 절의 NPU model에서는 컴파일러가 task placement, DMA와 synchronization까지 더 많이 결정합니다. 그만큼 runtime 스케줄링 하드웨어를 줄일 수 있지만, 컴파일러가 target memory와 execution resource의 특성을 구체적으로 모델링해야 합니다.
 
+실행 계획을 컴파일 타임에 고정한다는 것은 연산의 shape도 미리 정해 둔다는 뜻입니다. 그래서 이런 NPU에서 LLM을 서빙하려면 매 스텝의 batch를 미리 컴파일해 둔 shape에 맞추는 bucketing이 필요합니다([Week 6](/lectures/06-beyond-pytorch/#정적-shape-backend와-bucketing) 참고).
 
 ## Hopper·Blackwell GEMM Kernel의 명시적 Pipelining
 
