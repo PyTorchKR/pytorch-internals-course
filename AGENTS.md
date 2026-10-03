@@ -1,225 +1,121 @@
-# AGENTS.md - PyTorch Internal Lecture Presentation Guide
+# AGENTS.md
 
-## Project Overview
+Korean lecture notes on PyTorch internals (모두의 연구소 PyTorch + NPU랩), built with
+Astro 6 + MDX and Tailwind CSS v4. Each lecture is one prose article in
+`src/content/lectures/NN-*.mdx`; figures live in `public/images/NN/` and
+interactive figures in `src/components/`.
 
-This project is a presentation system for a Korean-language lecture series on PyTorch internals, built with **Astro + MDX**. The lectures are from "모두의 연구소 PyTorch + NPU랩" and cover PyTorch internals from fundamentals to advanced hardware topics.
-
-- **Framework**: Astro 5.x with MDX, Tailwind CSS v4
-- **Language**: Korean (한국어) with English technical terms preserved as-is
-- **Source material**: 7 PPTX lecture files in `lecture_files/` (git-ignored)
-- **Target**: One `.mdx` file per lecture in `src/content/lectures/`, served as interactive slide decks
-
-## Lecture Series Structure
-
-### Part 1: PyTorch Internal 기초 (Fundamentals, Weeks 1-4)
-
-| Week | File | Title | Slides |
-|------|------|-------|--------|
-| 1 | `01-technical-background.mdx` | Pytorch의 기술적인 배경 | 24 |
-| 2 | `02-eager-mode.mdx` | Pytorch Eager Mode | 76 |
-| 3 | `03-graph-mode.mdx` | Pytorch Graph Mode | 31 |
-| 4 | `04-automatic-differentiation.mdx` | Automatic Differentiation in Pytorch | 36 |
-
-### Part 2: PyTorch Internal 심화 (Advanced, Weeks 5-8)
-
-| Week | File | Title | Slides |
-|------|------|-------|--------|
-| 5 | `05-distributed-programming.mdx` | Distributed Programming in Pytorch | 38 |
-| 6 | `06-beyond-pytorch.mdx` | Beyond Pytorch: Custom Kernel과 vLLM | 48 |
-| 7 | `07-cpu-gpu-npu.mdx` | CPU / GPU / NPU | 57 |
-
-**Total: 310 slides across 7 lectures**
-
-## Architecture
-
-### Astro Components (`src/components/`)
-
-| Component | Purpose | Props |
-|-----------|---------|-------|
-| `Slide.astro` | Slide container | `layout`: `default` / `cover` / `center`; `class`: additional CSS |
-| `Reveal.astro` | Progressive disclosure (click-to-reveal) | `items`: `true` (reveal children one-by-one) / `false` (reveal whole block) |
-| `ThemeImage.astro` | Light/dark pair of `<img>` SVG figures | `lightSrc`, `darkSrc`, `alt`, `class` |
-| Figure widgets (`BackpropWidget`, `KvCacheWidget`, `SelfAttentionDiagram`, ...) | Interactive or math-labeled figures; follow "Figure and Widget Style" | none |
-
-### Slide Engine (`src/scripts/slide-engine.js`)
-
-Vanilla JS navigation system:
-- **Keyboard**: ←→ arrows, Space, PageUp/Down, Home/End, Escape (back to index)
-- **Progressive reveal**: `<Reveal>` children shown one at a time before advancing
-- **URL hash**: `#slide-N` for direct access (1-indexed)
-- **Touch**: Swipe left/right for mobile navigation
-- **Counter**: Shows `current / total` in bottom-right nav bar
-
-### Content Collections (`src/content.config.ts`)
-
-Schema: `title` (string), `date` (string), `lecture` (number)
-
-### Plugins
-
-- **remark-math** + **rehype-katex**: LaTeX math rendering
-- **Shiki** (one-dark-pro): Code syntax highlighting
-- **Tailwind CSS v4**: Utility-first styling
-
-## MDX Slide Format
-
-Each lecture MDX file follows this pattern:
-
-```mdx
----
-title: "Lecture Title"
-date: "YYYY-MM-DD"
-lecture: N
----
-
-import Slide from '../../components/Slide.astro';
-import Reveal from '../../components/Reveal.astro';
-import ThemeImage from '../../components/ThemeImage.astro';
-
-<Slide layout="cover">
-# Week N: Title
-Pytorch + NPU 온라인 모임 #N | YYYY-MM-DD
-</Slide>
-
-<Slide>
-## Content Slide
-Regular markdown content with Tailwind CSS classes.
-
-<Reveal>
-- Item revealed on first click
-- Item revealed on second click
-</Reveal>
-</Slide>
-
-<Slide>
-## Diagram
-
-<ThemeImage lightSrc="/images/0N/name-light.svg" darkSrc="/images/0N/name-dark.svg" alt="..." class="mx-auto w-full max-w-[680px]" />
-</Slide>
-
-<Slide layout="center">
-## Thank You!
-</Slide>
-```
-
-### Diagrams
-
-Draw every diagram as a light/dark SVG pair under `public/images/NN/`
-and embed it with `ThemeImage`, following "Figure and Widget Style"
-below. The site does not use Mermaid: all former Mermaid diagrams
-were redrawn as SVG so that they share the palette, the font stack and
-right-angle connectors.
-
-### Figure and Widget Style
-
-All SVG figures in `public/images/NN/` and all interactive widgets in
-`src/components/` use one palette and one font stack. SVG figures load
-through `<img>`, so they cannot read CSS variables or web fonts: write
-the hex values and the system font stack below directly. Widgets read
-the same values from the `--fig-*` variables in `src/styles/global.css`.
-
-Fonts:
-
-| Role | Stack |
-|------|-------|
-| Sans (labels, prose) | `'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif` |
-| Mono (code identifiers only) | `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace` |
-
-Widgets inherit the page font (`font-family: inherit`) and use
-`var(--fig-font-mono)` for code.
-
-Palette (light / dark). Pick the color by meaning, not by look:
-
-| Token | Light | Dark | Use |
-|-------|-------|------|-----|
-| `text` | `#2C2C2A` | `#D3D1C7` | Main labels |
-| `text-2` | `#5F5E5A` | `#B4B2A9` | Secondary labels, arrows |
-| `line` | `#888780` | `#888780` | Box borders, grid |
-| `line-soft` | `#B4B2A9` | `#6F6E68` | Faint borders, dividers |
-| `fill` | `#F1EFE8` | `#444441` | Neutral box fill |
-| `surface` | `#FFFFFF` | `#1F1E1B` | Box fill on a filled panel |
-| `blue` | `#378ADD` | `#85B7EB` | Data flow, forward pass, active item |
-| `blue-ink` | `#185FA5` | `#85B7EB` | Blue text, strong blue stroke |
-| `blue-tint` | `#DCEBFA` | `#2A3A4D` | Blue box fill |
-| `amber` | `#EF9F27` | `#FAC775` | Highlight, cache, attention |
-| `amber-ink` | `#854F0B` | `#FAC775` | Amber text |
-| `amber-tint` | `#FAEEDA` | `#4A3A22` | Amber box fill |
-| `coral` | `#D85A30` | `#F0997B` | Gradient, backward pass, recompute |
-| `coral-tint` | `#FBE3D6` | `#4A2E22` | Coral box fill |
-| `teal` | `#1D9E75` | `#5DCAA5` | Done, enabled, reused |
-| `teal-ink` | `#0F6E56` | `#5DCAA5` | Teal text |
-| `teal-tint` | `#E1F5EE` | `#233B34` | Teal box fill |
-| `purple` | `#534AB7` | `#AFA9EC` | Compiler stage, local term, special step |
-| `purple-ink` | `#3C3489` | `#AFA9EC` | Purple text |
-| `purple-tint` | `#EEEDFE` | `#332D4D` | Purple box fill |
-| `red` | `#C0392B` | `#E07A6A` | Error, hazard, stall |
-| `red-tint` | `#F3D9D9` | `#4A2A2A` | Red box fill |
-
-Do not use the site accent (`--accent`, purple/cyan) in figures.
-
-Highlight with a tint fill, an ink text color and a border of the same
-hue (for example `blue-tint` / `blue-ink` / `blue`). Do not use a solid
-saturated fill with white text: in dark mode the fill token turns light
-and the box stands out too much. This also applies to badges and cards
-written in MDX, which use `var(--fig-*)` in a `style` attribute.
-
-A figure with math labels ($q_1$, $\alpha_j$) cannot be an `<img>` SVG,
-because KaTeX does not run inside it. Build it as an Astro component
-with an inline SVG and KaTeX HTML labels placed over it in viewBox
-percentages, as `BackpropWidget.astro` and `SelfAttentionDiagram.astro`
-do.
-
-Sizes: the page content is 882px wide and body text is 16px. Show an
-SVG figure at its viewBox width (`class="mx-auto w-full max-w-[<W>px]"`
-on `ThemeImage`) and keep the viewBox width at 900 or less, so a
-`font-size` of 12 to 14 renders at 12 to 14px. A label that renders
-below 10px is too small on a projector.
-
-Widget controls use the shared `.fig-btn` class (bordered style) and
-Korean labels with SVG icons: `재생` / `일시정지`, `이전`, `다음`
-(`완료` on the last step), `처음으로` (icon only, with that
-`aria-label`). The step counter reads `스텝 n / N`.
-
-### MDX Gotchas
-
-- **Curly braces**: `{` and `}` in plain text must be escaped as `\{` and `\}` (MDX treats them as JSX)
-- **Self-closing tags**: Use `<br />` and `<img ... />` (not `<br>` or `<img>`)
-- **HTML + Markdown**: Ensure blank lines between `<div>` tags and markdown content
-- **Math**: `$...$` inline and `$$...$$` display math work via remark-math
-
-## File Organization
-
-```
-pytorch-internal-lecture/
-├── src/
-│   ├── content/
-│   │   └── lectures/          # 7 MDX lecture files
-│   ├── components/            # Slide, Reveal, ThemeImage and figure components
-│   ├── layouts/               # LectureLayout.astro
-│   ├── pages/
-│   │   ├── index.astro        # Lecture listing page
-│   │   └── lectures/
-│   │       └── [...slug].astro # Dynamic lecture routes
-│   ├── scripts/
-│   │   └── slide-engine.js    # Vanilla JS slide navigation
-│   ├── styles/
-│   │   └── global.css         # Tailwind v4 + slide styles
-│   └── content.config.ts      # Content Collection schema
-├── public/
-│   └── images/01~07/          # 232 lecture images
-├── scripts/
-│   ├── extract_pptx.py           # PPTX content extractor
-│   └── extract_images.py         # PPTX image extractor
-├── slides/                    # Original Slidev source (reference)
-├── astro.config.mjs
-├── package.json
-└── AGENTS.md
-```
-
-## Development
+## Commands
 
 ```bash
-bun install         # Install dependencies
-bun run dev         # Start dev server (localhost:4321)
-bun run build       # Build static site to dist/
-bun run preview     # Preview production build
+bun install
+bun run dev      # localhost:4321
+bun run build    # must pass before a commit
+bun run test     # vitest, single run
 ```
+
+Use bun, not npm.
+
+## Writing lecture text
+
+- Write Korean prose and keep English technical terms as they are (`token`,
+  `dispatcher`, `FX graph`). Do not transliterate them into Hangul.
+- State the fact first, in short declarative sentences. Leave out mannered
+  phrasing that replaces a plain statement with a flourish, such as "공짜는 아닙니다"
+  or "~의 실체". When a literal phrase is available, use it.
+- Quote PyTorch source from the pinned tag `v2.14.0`. When a snippet shows
+  generated code, reproduce it with real codegen on that tag instead of editing
+  it by hand.
+- Keep the lecturer's examples and Q&A unless they are wrong. Ask before
+  deleting them.
+
+## MDX gotchas
+
+- Escape `{` and `}` in prose as `\{` and `\}`; MDX reads them as JSX.
+- Use self-closing tags: `<br />`, `<img ... />`.
+- Leave a blank line between an HTML tag such as `<div>` and Markdown inside it.
+- Math uses `$...$` and `$$...$$` (remark-math + KaTeX).
+- In an Astro component, a dark-mode rule must be written
+  `:global([data-theme='dark']) .x`. A plain `[data-theme='dark'] .x` gets
+  scoped and never matches.
+
+## Figures and widgets
+
+All figures and widgets share one palette and one font stack, so a new figure
+must look like the existing ones. Good references:
+`public/images/07/pipeline_hazard_{light,dark}.svg` and
+`src/components/SelfAttentionDiagram.astro`.
+
+### Where a figure goes
+
+- Plain diagram: a light/dark SVG pair
+  `public/images/NN/<name>-{light,dark}.svg`, embedded with `ThemeImage` at its
+  viewBox width:
+  `<ThemeImage lightSrc="..." darkSrc="..." alt="<one Korean sentence>" class="mx-auto w-full max-w-[<W>px]" />`
+- Diagram with math labels ($q_1$, $\alpha_j$): an Astro component with an
+  inline SVG and KaTeX labels positioned over it in viewBox percentages, because
+  KaTeX does not run inside an `<img>` SVG. Copy the approach of
+  `SelfAttentionDiagram.astro` or `BackpropWidget.astro`.
+- Do not use Mermaid. All former Mermaid diagrams were redrawn as SVG.
+
+### Colors
+
+The palette is the `--fig-*` variables in `src/styles/global.css`
+(light values under `:root`, dark values under `[data-theme='dark']`). Widgets
+use the variables. SVG figures load through `<img>` and cannot read CSS
+variables, so write the token's light hex in the `-light` file and its dark hex
+in the `-dark` file. Pick a token by meaning:
+
+| Meaning | Token family |
+| --- | --- |
+| Text, arrows, borders | `text`, `text-2`, `line`, `line-soft` |
+| Neutral box, box on a filled panel | `fill`, `surface` |
+| Data flow, forward pass, active item | `blue` |
+| Highlight, cache, attention weight | `amber` |
+| Gradient, backward pass, recompute | `coral` |
+| Done, enabled, reused | `teal` |
+| Compiler stage, special step | `purple` |
+| Error, hazard, stall | `red` |
+
+Each hue has a base and a `-tint` (fill) variant; blue, amber, teal and purple
+also have an `-ink` (text) variant, and coral and red use the base for text.
+Highlight a box with tint fill, ink text and a base-color border. Do not use a solid
+saturated fill with white text: the fill turns light in dark mode and the box
+glares. Do not use the site accent (`--accent`) in figures.
+
+### Fonts
+
+SVG figures cannot load web fonts, so write the system stacks
+directly:
+
+- Sans: `'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI',
+  system-ui, -apple-system, sans-serif`
+- Mono, for code identifiers only: `ui-monospace, SFMono-Regular, Menlo,
+  Consolas, monospace`
+
+Widgets use `font-family: inherit` and `var(--fig-font-mono)`.
+
+### Size
+
+The content column is 882px and body text is 16px. Keep the viewBox
+width at 900 or less and labels at font-size 12 to 14, so they render at 12 to
+14px. Text below 10px is unreadable on a projector.
+
+### Shape
+
+Connectors are right-angle (horizontal and vertical) routes, never
+curves or diagonals. Edges into the same target bend at the same x or y,
+parallel rails keep one offset, and arrowheads end exactly on box edges. Leave
+space between lines and text.
+
+### Widget controls
+
+Use the shared `.fig-btn` class with Korean labels and SVG
+icons: `재생` / `일시정지`, `이전`, `다음` (`완료` on the last step), and an icon-only reset
+button with `aria-label="처음으로"`. The counter reads `스텝 n / N`. Controls must not
+move between steps; give buttons whose label changes a fixed width.
+
+### Check the result
+
+Render every new or changed figure in both themes (light
+on white, dark on `#1c1c1d`) and look at it before committing.
