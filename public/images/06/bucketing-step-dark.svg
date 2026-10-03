@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 188" role="img" aria-label="bucket 16에 decode, padding, extend, prefill token을 담은 한 스텝">
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#8a8a9a" stroke-width="2"/></pattern></defs>
-<style>text{font-family:Pretendard,'Noto Sans KR',Inter,Helvetica,Arial,sans-serif;fill:#e0e0e0} .sub{fill:#aaa}</style>
+<style>text{font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif;fill:#e0e0e0} .sub{fill:#aaa}</style>
 <rect x="30" y="70" width="38" height="38" rx="4" fill="#5b9bf0" stroke="#5b9bf0" stroke-width="1.5"/><text x="49.0" y="94.76" text-anchor="middle" font-size="16" font-weight="bold" style="fill:#111">A</text>
 <rect x="74" y="70" width="38" height="38" rx="4" fill="#5b9bf0" stroke="#5b9bf0" stroke-width="1.5"/><text x="93.0" y="94.76" text-anchor="middle" font-size="16" font-weight="bold" style="fill:#111">B</text>
 <path d="M30,116 L30,124 L112,124 L112,116" fill="none" stroke="#5b9bf0" stroke-width="1.5"/>

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320"
-  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif">
 
-  <g font-family="ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace"
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
      font-size="14" fill="#D3D1C7" xml:space="preserve">
 
     <text x="60" y="40">slli    s2, s1, 2</text>

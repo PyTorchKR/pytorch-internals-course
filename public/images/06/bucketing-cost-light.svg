@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 390" role="img" aria-label="실제 token 수에 따른 스텝 비용 계단. 14 token은 bucket 16, 4 token request를 더하면 bucket 32로 넘어간다">
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#bbb" stroke-width="2"/></pattern></defs>
 <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#3a7bd5"/></marker></defs>
-<style>text{font-family:Pretendard,'Noto Sans KR',Inter,Helvetica,Arial,sans-serif;fill:#222} .sub{fill:#666}</style>
+<style>text{font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif;fill:#222} .sub{fill:#666}</style>
 <line x1="90" y1="320" x2="618" y2="320" stroke="#555" stroke-width="1.5"/>
 <line x1="90" y1="320" x2="90" y2="48" stroke="#555" stroke-width="1.5"/>
 <text class="sub" x="618" y="364" font-size="14" text-anchor="end">실제 입력 token 수</text>

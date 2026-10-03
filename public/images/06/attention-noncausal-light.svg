@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 270" role="img" aria-label="noncausal attention">
 <defs><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 Z" fill="#d85a30"/></marker></defs>
-<style>text{font-family:Inter,Helvetica,Arial,sans-serif;fill:#222}</style>
+<style>text{font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif;fill:#222}</style>
 <circle cx="70" cy="200" r="22" fill="#f4f4f4" stroke="#555" stroke-width="1.5"/>
 <circle cx="70" cy="70" r="22" fill="#f4f4f4" stroke="#555" stroke-width="1.5"/>
 <text x="70" y="248" text-anchor="middle" font-size="16">The</text>

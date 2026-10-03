@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 848 204" role="img" aria-label="decode, extend, prefill이 읽는 기존 KV cache와 새 token 비교">
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#bbb" stroke-width="2"/></pattern></defs>
-<style>text{font-family:Pretendard,'Noto Sans KR',Inter,Helvetica,Arial,sans-serif;fill:#222} .sub{fill:#666}</style>
+<style>text{font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif;fill:#222} .sub{fill:#666}</style>
 <rect x="150" y="11" width="16" height="16" rx="4" fill="#d9d9d9" stroke="#aaa" stroke-width="1.5"/>
 <text class="sub" x="174" y="24" font-size="14">이전 스텝까지 만든 KV cache (이번 입력 아님)</text>
 <rect x="450" y="11" width="16" height="16" rx="4" fill="#e07b39" stroke="#e07b39" stroke-width="1.5"/>

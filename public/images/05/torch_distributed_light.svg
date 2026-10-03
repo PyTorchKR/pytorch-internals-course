@@ -42,8 +42,8 @@
   .arrow-line    { stroke: var(--arrow); }
   .arrow-soft    { stroke: var(--arrow-soft); }
   .arrow-fill    { fill:  var(--arrow); }
-  .lbl-sans { font-family: 'Inter','Helvetica Neue',Arial,sans-serif; }
-  .lbl-mono { font-family: 'JetBrains Mono','Courier New',monospace; }
+  .lbl-sans { font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  .lbl-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 </style>
 <defs>
   <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">

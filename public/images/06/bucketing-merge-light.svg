@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 360" role="img" aria-label="짧은 group과 긴 group을 따로 실행할 때와 merge할 때의 shape 비교. merge하면 짧은 group이 padding되고, 측정한 비용이 더 낮을 때만 merge한다">
 <defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#bbb" stroke-width="2"/></pattern></defs>
-<style>text{font-family:Pretendard,'Noto Sans KR',Inter,Helvetica,Arial,sans-serif;fill:#222} .sub{fill:#666}</style>
+<style>text{font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif;fill:#222} .sub{fill:#666}</style>
 <text x="40" y="40" font-size="16" text-anchor="start" font-weight="bold">따로 실행: 스텝 2번</text>
 <text class="sub" x="40" y="60" font-size="13" text-anchor="start">group 1: 짧은 sequence 4개</text>
 <rect x="40" y="70" width="18" height="18" fill="#3a7bd5" stroke="#f0f0f0" stroke-width="1"/>
