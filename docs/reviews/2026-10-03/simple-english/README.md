@@ -35,7 +35,7 @@
 | 03 | 32 / 5 / 3 | 10개 개념 중 6개 통일, 4개 변경 없음 | #44 | 8·9·10·19번은 v2.14.0 소스·문서 확인 후 반영. 13·14번은 하위 불릿으로 분리. resume function, trace cache miss는 조사 후 결정 |
 | 04 | 36 / 2 / 2 | 12개 개념 중 11개 통일, 1개 변경 없음. FX graph도 통일 | #47 | 28번은 불릿 유지, 37번은 단계 문단을 "단계: 명사구" 리드인으로 재배열. "지도 학습"과 "training loop"는 리뷰 제안과 반대 방향으로 결정 |
 | 05 | 34 / 6 / 0 | 16개 개념 중 10개 통일, 6개 변경 없음·결정 없음 | #49 | 2·10·11·14·17·21·40번은 v2.14.0 소스·문서 확인 후 반영. torchrun 플래그는 하이픈 표기로 통일(컴포넌트 포함) |
-| 06 | 29 / 10 / 1 | 22개 개념 모두 결정, 그중 5개는 리뷰 제안과 반대 방향 | #51 | HBM/SRAM과 block은 FlashAttention 논문·Triton 문서 기준. 404가 된 Koyeb 출처 삭제(그림 유지 여부는 대기) |
+| 06 | 29 / 10 / 1 | 22개 개념 모두 결정, 그중 5개는 리뷰 제안과 반대 방향 | #51 | HBM/SRAM과 block은 FlashAttention 논문·Triton 문서 기준. Koyeb 글 URL이 바뀌어 PR #55에서 새 URL로 출처 복구 |
 | 07 | 33 / 5 / 2 | 21개 개념 중 20개 통일, 1개 변경 없음 | #53 | 일반 용어는 "단독은 한글, 영어 합성어는 영어", 모델은 ML/AI면 model·개념이면 모델 |
 
 ## 강의 전체에 걸친 패턴 (중요도 순)
@@ -47,21 +47,21 @@
 5. **A·B: 긴 문장과 다중 사실.** 집계는 아래 표. 25어절 초과 문장은 05강 FSDP 절(775~800), TP 절(906~938), 06강 223행(37어절), 07강 678행(약 50어절, 정의 4개)에 몰려 있다. 연결어미(-고/-며/-는데) 두 번 이상 사슬이 분리 기준이다.
 6. **C·D: 피동과 헤지.** 이중피동은 0건. 남은 것은 행위자를 아는데 숨긴 피동("trace되어 캡처됩니다" → "TF2는 … trace하여 캡처합니다")과 "~하게 됩니다" 우회, 그리고 확정 사실에 붙은 "~할 수도 있습니다"(03강 5건, 07강 4건)이다.
 
-## 사실 축 flag (문체 축 밖이라 제안 없음, 저자 확인 필요)
+## 사실 축 flag (문체 축 밖이라 제안 없음, 2026-10-03 모두 판정)
 
-| 강의:행 | 내용 |
-|---|---|
-| 02:251 | "각 층이 같은 방식으로 redispatch합니다" — call stack에서 `CompositeImplicitAutograd` 층은 redispatch가 아니라 새 op 호출(`at::_ops::mm::call`, #23)로 내려감 |
-| 02:130 각주 | "그 tensor"가 어느 입력인지 `should_fold` 소스로 확인 필요 |
-| 03:645 | "Backend Object를 생성" — 아래 코드는 함수 `my_backend`를 `backend=`에 넘김 |
-| 05:385 vs 408 | 385행 "checkpointing과 logging을 지원" vs 408행 "별도의 checkpoint 저장이 필요" |
-| 05:690 vs 980 | 690행 SP 정의가 980행 Megatron SP 설명과 다름 |
-| 05:382 vs 402-406 | 382행은 "agent가 모이고 worker는 아직 없다", 402-406행은 주어가 "각 프로세스" — 같은 단계를 다른 주체로 설명 |
-| 06:755 | "`exp`를 SFU 대신 일반 연산 유닛으로 옮김" vs FA4 논문 §3.1.3 "MUFU와 FMA에 분산"(09-05 근거표 #36) |
-| 06:761 | FlashInfer 통합 목록의 TensorRT-LLM은 09-05 근거표에서 미포함으로 확인됨 |
-| 07:380 vs 113·382 | "의존성이 약해서" vs "없어야" vs "거의 없습니다" — 조건의 세기가 다름 |
+| 강의:행 | 내용 | 상태 |
+|---|---|---|
+| 02:251 | "각 층이 같은 방식으로 redispatch합니다" — call stack에서 `CompositeImplicitAutograd` 층은 redispatch가 아니라 새 op 호출(`at::_ops::mm::call`, #23)로 내려감 | 해결 (PR #55): Autograd·tracing 층만 redispatch, CompositeImplicitAutograd 층은 일반 API로 다시 dispatch(#24 → #23 → #21) |
+| 02:130 각주 | "그 tensor"가 어느 입력인지 `should_fold` 소스로 확인 필요 | 해결 (PR #55): 작은 쪽 tensor가 grad를 요구하면 copy를 감수하고 fold, squeeze 경로는 batch 크기가 다를 때만. `should_fold`·`_matmul_impl` 확인 |
+| 03:645 | "Backend Object를 생성" — 아래 코드는 함수 `my_backend`를 `backend=`에 넘김 | 해결 (PR #44, 03강 항목 10): Custom Backends 문서 기준 |
+| 05:385 vs 408 | 385행 "checkpointing과 logging을 지원" vs 408행 "별도의 checkpoint 저장이 필요" | 해결 (PR #55): torchrun은 재시작과 logging만, checkpoint는 스크립트가 저장·로드(`elastic/train_script.md`) |
+| 05:690 vs 980 | 690행 SP 정의가 980행 Megatron SP 설명과 다름 | 해결 (PR #55): SP를 LayerNorm·Dropout 입력의 sequence 분할로 정의(`SequenceParallel` docstring, Korthikanti et al. 2022) |
+| 05:382 vs 402-406 | 382행은 "agent가 모이고 worker는 아직 없다", 402-406행은 주어가 "각 프로세스" — 같은 단계를 다른 주체로 설명 | 해결 (PR #49, 05강 항목 3과 용어 결정): 주체를 torchrun agent로 통일 |
+| 06:755 | "`exp`를 SFU 대신 일반 연산 유닛으로 옮김" vs FA4 논문 §3.1.3 "MUFU와 FMA에 분산"(09-05 근거표 #36) | 해결 (PR #55): `exp` 일부를 FMA 다항식 근사로 돌려 MUFU와 분담(FA4 논문 §3.1.3) |
+| 06:761 | FlashInfer 통합 목록의 TensorRT-LLM은 09-05 근거표에서 미포함으로 확인됨 | 문제없음: FlashInfer README Adoption 절이 SGLang·vLLM·TensorRT-LLM을 나열. 09-05 근거는 2025-01 논문 초록이라 그 뒤 목록이 바뀜 |
+| 07:380 vs 113·382 | "의존성이 약해서" vs "없어야" vs "거의 없습니다" — 조건의 세기가 다름 | 해결 (PR #55): "의존성이 없거나 충분히 떨어져 있어야"로 풀어 씀. 113행은 일반 pipelining 도입이라 유지 |
 
-2026-10-03 반영 뒤 상태: 02:251과 02:130 각주는 이번 반영에 포함되지 않아 그대로다. 문체 항목과 겹치던 02:553 "최하위"는 02강 항목 28로 고쳤다. 03:645 "Backend Object"는 03강 항목 10으로 고쳤다(문서 확인). 05:382 vs 402-406(rendezvous 주체)은 05강 항목 3과 용어 결정으로 torchrun agent에 맞췄다. 05:385 vs 408, 05:690 vs 980은 그대로다. 나머지 강의의 flag는 판정 대기.
+9건 중 8건을 고쳤고 1건(06:761)은 현재 기준으로 맞는 문장으로 판정했다. 행 번호는 리뷰 당시 기준이다.
 
 ## 지표
 
