@@ -69,7 +69,7 @@ ML Framework은 서로 다른 뿌리를 가진 네 가지 기술적 흐름 위�
 
 ### Heterogeneous Computing with GPU
 
-Heterogeneous Computing은 CPU와 GPU를 함께 활용하여 더 빠르게 계산할 수 있도록 해주는 시스템입니다. 일반적으로 CPU가 하던 계산 중 일부를 GPU로 넘겨(offloading) 더 빠르게 계산합니다.
+Heterogeneous Computing은 CPU와 GPU를 함께 써서 계산 속도를 높이는 시스템입니다. 일반적으로 CPU가 하던 계산 중 일부를 GPU로 넘겨(offloading) 더 빠르게 계산합니다.
 
 ML Framework은 GPU 같은 AI 가속기를 써야 하므로, CPU와 AI 가속기를 함께 쓰는 Heterogeneous Computing 위에서 동작합니다.
 
@@ -91,7 +91,7 @@ Programmable shader가 도입되자 개발자는 GPU의 연산을 프로그램�
 
 #### GPGPU의 등장 (2007년)
 
-2007년 NVIDIA는 **CUDA**(Compute Unified Device Architecture)를 발표해 GPGPU(General Purpose GPU) 프로그래밍의 사용 범위를 크게 확대했습니다.
+2007년 NVIDIA는 CUDA(Compute Unified Device Architecture)를 발표해 GPGPU(General Purpose GPU) 프로그래밍의 사용 범위를 크게 확대했습니다.
 
 - CUDA는 GPU를 위한 일반적인 parallel programming model로, 초기에는 High-Performance Computing(HPC) 시장을 타겟으로 했습니다. GPU의 성능이 슈퍼컴퓨터 수준에 가까워지자, NVIDIA는 일반 개발자도 이 성능을 쓸 수 있도록 CUDA를 도입했습니다.
 - 이후 CUDA는 deep learning을 포함한 GPU 가속 워크로드에 널리 사용되었습니다.
@@ -103,11 +103,11 @@ OpenCL과 HSA도 heterogeneous computing을 지원하지만, NVIDIA GPU 기반 M
 
 ### Supercomputing
 
-슈퍼컴퓨팅은 대규모 계산을 처리하기 위한 고성능 컴퓨팅 기술입니다. 현재는 머신러닝도 대표적인 workload지만, 전통적으로 물리학 simulation, 천문학, 기후 modeling, 항공우주와 에너지 연구 같은 과학·공학 분야에서 사용되었습니다. 미국의 National Laboratory도 이러한 슈퍼컴퓨터로 대규모 과학 계산을 수행합니다.
+슈퍼컴퓨팅은 대규모 계산을 처리하기 위한 고성능 컴퓨팅 기술입니다. 현재는 머신러닝도 대표적인 workload지만, 전통적으로 물리학 simulation, 천문학, 기후 modeling, 항공우주와 에너지 연구 같은 과학·공학 분야에서 사용되었습니다. 미국의 National Laboratory도 슈퍼컴퓨터로 대규모 과학 계산을 합니다.
 
 #### 슈퍼컴퓨팅과 인터넷 서비스의 차이
 
-슈퍼컴퓨팅은 많은 수의 컴퓨터를 네트워크로 연결해 하나의 큰 계산을 분산 처리하는 방식으로 작동합니다. 구글의 데이터센터나 클라우드 기술도 구조는 비슷하지만, 계산을 나누는 방식이 다릅니다:
+슈퍼컴퓨팅은 많은 컴퓨터를 네트워크로 연결해 하나의 큰 계산을 나누어 처리합니다. 구글의 데이터센터나 클라우드 기술도 구조는 비슷하지만, 계산을 나누는 방식이 다릅니다:
 
 - **인터넷 서비스**는 독립적이고 간단한 계산을 대량으로 처리하는 데 중점을 둡니다.
 - **슈퍼컴퓨팅**은 하나의 계산을 여러 컴퓨터에 분할하는 경우가 많아 작업 사이의 통신과 동기화가 필요합니다. 한 작업의 실패가 전체 job에 영향을 줄 수 있으므로 fault handling이 중요합니다.
@@ -116,9 +116,7 @@ OpenCL과 HSA도 heterogeneous computing을 지원하지만, NVIDIA GPU 기반 M
 
 #### 병렬/분산 프로그래밍 모델
 
-슈퍼컴퓨팅의 발전과 함께 다양한 병렬 및 분산 프로그래밍 모델이 등장했습니다:
-- **개념적인 모델** - SIMD, SPMD, MIMD
-- **구현 표준** - MPI, OpenMP
+슈퍼컴퓨팅의 발전과 함께 다양한 병렬 및 분산 프로그래밍 모델이 등장했습니다. 개념적인 모델로는 SIMD, SPMD, MIMD가 있고, 구현 표준으로는 MPI, OpenMP가 있습니다.
 
 PyTorch의 `torch.distributed`는 MPI에서 널리 사용되는 rank(프로세스마다 붙는 번호), process, collective communication(여러 프로세스가 함께 참여하는 통신)과 유사한 프로그래밍 모델을 제공합니다. 다만 PyTorch의 기본 분산 backend가 MPI 위에 구현된다는 의미는 아닙니다.
 
@@ -126,12 +124,12 @@ PyTorch의 `torch.distributed`는 MPI에서 널리 사용되는 rank(프로세�
 
 Matrix Multiplication은 과학 계산과 머신러닝에서 자주 사용되는 선형대수 연산입니다. BLAS(Basic Linear Algebra Subprograms, 선형대수 연산의 표준 API)는 matrix multiplication뿐 아니라 vector 및 matrix 연산을 함께 정의합니다.
 
-행렬 곱셈의 연산량은 행렬 크기에 따라 N³에 비례하므로, 이를 얼마나 빨리 처리하느냐가 전체 시스템 성능을 크게 좌우합니다.
+Matrix multiplication의 연산량은 행렬 크기에 따라 N³에 비례하므로, 이를 얼마나 빨리 처리하느냐가 전체 시스템 성능을 좌우합니다.
 
 알고리즘 측면의 최적화 기술로는 Strassen algorithm, DeepMind의 AlphaTensor 등이 있습니다.
 
-**표준 라이브러리 BLAS**
-- BLAS (Basic Linear Algebra Subprograms, 1979): 다양한 linear algebra 문제에 적용할 수 있는 low-level API로, Matrix multiplication을 위한 **GEMM**(General Matrix Multiply)을 포함합니다.
+표준 라이브러리 BLAS와 그 구현은 다음과 같습니다:
+- BLAS (Basic Linear Algebra Subprograms, 1979): 다양한 linear algebra 문제에 적용할 수 있는 low-level API로, Matrix multiplication을 위한 GEMM(General Matrix Multiply)을 포함합니다.
 - 각 하드웨어 vendor들은 자사 하드웨어에 최적화된 BLAS 구현을 출시합니다:
   - NVIDIA:
     - **cuBLAS** (2007, closed-source): NVIDIA GPU에 최적화된 BLAS 구현
@@ -166,7 +164,7 @@ PyTorch 2.0은 `torch.compile`을 통해 graph capture와 backend compilation을
 
 #### PyTorch에서의 ML compiler
 
-PyTorch 1.x에서도 JIT Trace가 모델을 정적 형태로 변환해주는 역할을 했지만, 본격적인 ML compiler로서의 역할은 제한적이었습니다.
+PyTorch 1.x에서도 JIT Trace가 모델을 정적 형태로 변환했지만, ML compiler로서의 기능은 제한적이었습니다.
 
 PyTorch 2.0은 ML compiler 기능을 대폭 강화했습니다:
 - Dynamo: JIT Trace를 대체하는 컴포넌트로, 컴파일러와 유사한 역할 수행
@@ -222,10 +220,10 @@ API 호출 시 operator가 곧바로 실행됩니다.
 #### Graph mode
 
 Graph mode에서는 API를 호출할 때마다 프레임워크가 graph를 조금씩 만듭니다. Graph가 완성되면 프레임워크는 목적에 맞게 graph를 변환한 뒤 실행합니다:
-- Back propagation을 위한 backward graph 생성
+- backpropagation을 위한 backward graph 생성
 - 성능 향상을 위한 최적화 수행 (예: op fusion)
 
-Eager execution 중에도 graph 자료구조를 사용할 수 있습니다. 예를 들어 autograd(PyTorch의 자동 미분 엔진)가 활성화되면 PyTorch는 forward 연산을 즉시 실행합니다. 동시에 backward 계산에 필요한 동적 autograd graph를 기록합니다. 이후 backward propagation은 이 graph의 `Function` node를 따라 실행됩니다. 이 동적 autograd graph는 `torch.compile`의 JIT 방식으로 캡처하여 최적화·컴파일하는 연산 graph와는 목적과 역할이 다릅니다.
+Eager execution 중에도 graph 자료구조를 사용할 수 있습니다. 예를 들어 autograd(PyTorch의 자동 미분 엔진)가 활성화되면 PyTorch는 forward 연산을 즉시 실행합니다. 동시에 backward 계산에 필요한 동적 autograd graph를 기록합니다. 이후 autograd는 이 graph의 `Function` node를 따라 backpropagation을 실행합니다. 이 동적 autograd graph는 `torch.compile`의 JIT 방식으로 캡처하여 최적화·컴파일하는 연산 graph와는 목적과 역할이 다릅니다.
 
 #### Graph mode를 접근하는 방법
 
@@ -236,7 +234,7 @@ Eager execution 중에도 graph 자료구조를 사용할 수 있습니다. 예�
 - 개발자는 일반적인 코드로 model의 연산을 작성
 - 프레임워크가 코드 분석이나 tracing을 통해 컴파일에 필요한 graph를 추출
 
-TF2와 PyTorch는 eager mode와 graph mode를 모두 지원합니다. JAX도 기본적으로는 eager로 실행되지만, `jax.jit`으로 감싼 함수는 tracing을 거쳐 graph로 컴파일됩니다.
+TF2와 PyTorch는 eager mode와 graph mode를 모두 지원합니다. JAX도 기본적으로는 코드를 eager mode로 실행합니다. 다만 `jax.jit`으로 감싼 함수는 JAX가 tracing을 거쳐 graph로 컴파일합니다.
 
 
 ### TF1 vs. PyTorch 코드 비교
@@ -252,7 +250,7 @@ with tf.Session() as sess:
     print(sess.run(c))
 ```
 
-TensorFlow 1.x에서는 `tf.constant`와 `tf.matmul` 같은 연산자들이 실제 계산을 수행하지 않고, 계산 과정을 graph로 만듭니다. `c`를 평가하기 전까지는 실제 값을 알 수 없으며, `Session`을 생성한 뒤 `sess.run(c)`(또는 `c.eval()`)를 호출해야 비로소 계산 결과를 얻을 수 있습니다.
+TensorFlow 1.x에서는 `tf.constant`와 `tf.matmul` 같은 연산자들이 실제로 계산하지 않고, 계산 과정을 graph로 만듭니다. `c`를 평가하기 전에는 실제 값을 알 수 없습니다. `Session`을 생성한 뒤 `sess.run(c)`(또는 `c.eval()`)를 호출해야 비로소 계산 결과를 얻습니다.
 
 #### PyTorch
 
@@ -285,7 +283,7 @@ y = tf.random.uniform((3, 4))
 foo(x, y)
 ```
 
-TF2는 기본이 eager mode입니다. `@tf.function` 데코레이터를 붙인 함수를 처음 호출하면, TF2는 함수 내부 연산을 trace하여 graph로 캡처합니다. 개발자는 eager 스타일로 코드를 작성하고, 프레임워크가 graph 추출을 담당하는 define-by-run 구조입니다.
+TF2는 기본이 eager mode입니다. `@tf.function` 데코레이터를 붙인 함수를 처음 호출하면, TF2는 함수 내부 연산을 trace하여 graph로 캡처합니다. 개발자는 eager 스타일로 코드를 작성합니다. 프레임워크는 이 코드에서 graph를 추출합니다. 이 구조를 define-by-run이라고 합니다.
 
 #### PyTorch 1 & 2
 
@@ -307,7 +305,7 @@ optimized_foo = torch.compile(foo)
 optimized_foo(x, y)
 ```
 
-PyTorch 1.x와 2.x 모두 eager execution을 기본 실행 방식으로 지원합니다. PyTorch 1.x에서는 `torch.jit.trace`로 graph를 생성할 수 있었습니다. PyTorch 2.x는 `torch.compile`을 도입했고, 개발자는 eager semantics를 유지한 채 이 기능을 선택적으로 적용합니다. TorchDynamo는 Python bytecode를 분석해 컴파일 가능한 FX graph(PyTorch가 연산을 기록하는 graph 형식) 구간을 생성합니다.
+PyTorch 1.x와 2.x 모두 eager execution을 기본 실행 방식으로 지원합니다. PyTorch 1.x에서는 `torch.jit.trace`로 graph를 생성할 수 있었습니다. PyTorch 2.x는 `torch.compile`을 도입했습니다. 개발자는 eager semantics를 유지한 채 `torch.compile`을 선택적으로 적용합니다. TorchDynamo는 Python bytecode를 분석해 컴파일 가능한 FX graph(PyTorch가 연산을 기록하는 graph 형식) 구간을 생성합니다.
 
 ### Interpretation vs. JIT/AOT Compilation
 
@@ -337,7 +335,7 @@ Eager vs. graph mode가 "graph를 만드는가"의 축이라면, 이 축은 "코
 Fisher, J.A. "Trace Scheduling: A Technique for Global Microcode Compaction" IEEE Trans. on Computers, 1981
 </div>
 
-PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파일 타임에 활용해 최적화를 수행하는 더 넓은 개념이며, Trace scheduling은 PGO에서 사용하는 특정 기법 중 하나입니다. Trace scheduling은 브랜치 예측으로 자주 실행되는 동적 실행 경로(Trace)를 추출합니다. 그리고 이 경로에 맞게 명령어를 스케줄링합니다. 양질의 프로파일 데이터가 필요하며, 올바른 트레이스를 만들어 롤백 없이 효율적인 성능을 제공하는 것이 핵심입니다.
+PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파일 타임에 활용해 최적화하는 넓은 개념입니다. Trace scheduling은 PGO에서 사용하는 기법 중 하나입니다. Trace scheduling은 브랜치 예측으로 자주 실행되는 동적 실행 경로(Trace)를 추출합니다. 그리고 이 경로에 맞게 명령어를 스케줄링합니다. 양질의 프로파일 데이터가 필요하며, 올바른 트레이스를 만들어 롤백 없이 효율적인 성능을 제공하는 것이 핵심입니다.
 
 
 ## PyTorch에 통합된 기술
@@ -348,7 +346,7 @@ PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파�
 
 PyTorch는 앞에서 설명한 numerical computing API, heterogeneous execution, distributed communication, graph capture 및 compiler backend를 하나의 framework에서 제공합니다.
 
-**vLLM**은 이러한 통합 구조를 활용하는 사례입니다. vLLM의 hardware plugin은 가능한 경우 device-specific 기능을 PyTorch backend와 custom operator로 제공합니다. 상위 serving engine은 공통 PyTorch interface를 사용합니다. 이 구조에서 PyTorch는 model·utility와 hardware backend 사이의 공통 interface, 곧 "Narrow Waist" 역할을 합니다.
+vLLM은 이러한 통합 구조를 활용하는 사례입니다. vLLM의 hardware plugin은 가능한 경우 device-specific 기능을 PyTorch backend와 custom operator로 제공합니다. 상위 serving engine은 공통 PyTorch interface를 사용합니다. 이 구조에서 PyTorch는 model·utility와 hardware backend 사이의 공통 interface, 곧 "Narrow Waist" 역할을 합니다.
 
 
 ### PyTorch 2.0
@@ -366,7 +364,7 @@ PyTorch 2.0은 PyTorch 1.0의 특성을 거의 모두 계승(inherit)합니다. 
 
 #### Backend Integration Points
 
-PyTorch에서 새 하드웨어 backend를 연결하는 지점은 세 곳입니다:
+PyTorch에서 새 hardware backend를 연결하는 지점은 세 곳입니다:
 
 | 접점 | 입력 단위 | 연결 층 |
 |------|----------|--------|
@@ -397,4 +395,4 @@ PyTorch에서 새 하드웨어 backend를 연결하는 지점은 세 곳입니�
 > - **프로그래밍 모델**: CUDA C++는 스레드 중심, Triton은 데이터 블록(타일) 중심
 > - **최적화 방식**: CUDA C++는 세밀한 직접 제어, Triton은 컴파일러 자동화에 중점
 >
-> Triton은 단순한 Python API가 아니라 Python syntax를 사용하는 kernel programming DSL입니다. PyTorch Inductor는 NVIDIA GPU용 kernel을 생성할 때 Triton을 주요 code generation backend 중 하나로 사용합니다. 이는 모든 PyTorch operator나 모든 하드웨어 backend가 Triton을 사용한다는 의미는 아닙니다.
+> Triton은 단순한 Python API가 아니라 Python syntax를 사용하는 kernel programming DSL입니다. PyTorch Inductor는 NVIDIA GPU용 kernel을 생성할 때 Triton을 주요 code generation backend 중 하나로 사용합니다. 이는 모든 PyTorch operator나 모든 hardware backend가 Triton을 사용한다는 의미는 아닙니다.
