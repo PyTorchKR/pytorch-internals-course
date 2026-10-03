@@ -39,6 +39,8 @@ This project is a presentation system for a Korean-language lecture series on Py
 | `Slide.astro` | Slide container | `layout`: `default` / `cover` / `center`; `class`: additional CSS |
 | `Reveal.astro` | Progressive disclosure (click-to-reveal) | `items`: `true` (reveal children one-by-one) / `false` (reveal whole block) |
 | `Mermaid.astro` | Mermaid diagram rendering (client-side) | `scale`: number (default 1.0); `wide`: boolean (default false, removes max-width 60% constraint) |
+| `ThemeImage.astro` | Light/dark pair of `<img>` SVG figures | `lightSrc`, `darkSrc`, `alt`, `class` |
+| Figure widgets (`BackpropWidget`, `KvCacheWidget`, `SelfAttentionDiagram`, ...) | Interactive or math-labeled figures; follow "Figure and Widget Style" | none |
 
 ### Slide Engine (`src/scripts/slide-engine.js`)
 
@@ -175,6 +177,18 @@ Palette (light / dark). Pick the color by meaning, not by look:
 | `red-tint` | `#F3D9D9` | `#4A2A2A` | Red box fill |
 
 Do not use the site accent (`--accent`, purple/cyan) in figures.
+
+Highlight with a tint fill, an ink text color and a border of the same
+hue (for example `blue-tint` / `blue-ink` / `blue`). Do not use a solid
+saturated fill with white text: in dark mode the fill token turns light
+and the box stands out too much. This also applies to badges and cards
+written in MDX, which use `var(--fig-*)` in a `style` attribute.
+
+A figure with math labels ($q_1$, $\alpha_j$) cannot be an `<img>` SVG,
+because KaTeX does not run inside it. Build it as an Astro component
+with an inline SVG and KaTeX HTML labels placed over it in viewBox
+percentages, as `BackpropWidget.astro` and `SelfAttentionDiagram.astro`
+do.
 
 Sizes: keep the SVG `viewBox` width between 640 and 900 so that a
 `font-size` of 12 to 14 reads at body size. Text smaller than 10 is
