@@ -37,6 +37,6 @@
     <text x="600" y="300">addi    s1, s1, 1</text>
   </g>
 
-  <rect x="50" y="126" width="525" height="40" rx="6" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="6 3"/>
-  <rect x="230" y="168" width="525" height="40" rx="6" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <rect x="50" y="126" width="525" height="40" rx="6" fill="none" stroke="#FAC775" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <rect x="230" y="168" width="525" height="40" rx="6" fill="none" stroke="#FAC775" stroke-width="1.5" stroke-dasharray="6 3"/>
 </svg>

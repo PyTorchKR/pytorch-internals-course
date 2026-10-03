@@ -10,7 +10,7 @@
   <rect x="210" y="100" width="140" height="40" rx="4" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
   <rect x="360" y="100" width="140" height="40" rx="4" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
 
-  <line x1="50" y1="180" x2="525" y2="180" stroke="#73726c" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="50" y1="180" x2="525" y2="180" stroke="#5F5E5A" stroke-width="1" marker-end="url(#arrow)"/>
   <text x="495" y="200" font-size="14" fill="#5F5E5A">time</text>
 
   <text x="560" y="170" font-size="13" fill="#5F5E5A">Latency가 Throughput 결정</text>
@@ -21,7 +21,7 @@
   <rect x="270" y="365" width="140" height="40" rx="4" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
   <rect x="360" y="415" width="140" height="40" rx="4" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
 
-  <line x1="50" y1="480" x2="525" y2="480" stroke="#73726c" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="50" y1="480" x2="525" y2="480" stroke="#5F5E5A" stroke-width="1" marker-end="url(#arrow)"/>
   <text x="495" y="500" font-size="14" fill="#5F5E5A">time</text>
 
   <text x="560" y="400" font-size="13" fill="#5F5E5A">시작 간격이 Throughput 결정</text>

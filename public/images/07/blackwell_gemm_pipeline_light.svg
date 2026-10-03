@@ -11,22 +11,22 @@
   <!-- row labels -->
   <g>
     <text x="20" y="82" font-size="14" fill="#2C2C2A">TMA</text>
-    <text x="20" y="99" font-size="11" fill="#73726c">GMEM → SMEM</text>
+    <text x="20" y="99" font-size="11" fill="#5F5E5A">GMEM → SMEM</text>
 
     <text x="20" y="144" font-size="14" fill="#2C2C2A">Tensor Core (tcgen05)</text>
-    <text x="20" y="161" font-size="11" fill="#73726c">SMEM → TMEM 누적</text>
+    <text x="20" y="161" font-size="11" fill="#5F5E5A">SMEM → TMEM 누적</text>
 
     <text x="20" y="206" font-size="14" fill="#2C2C2A">Epilogue Warp-Group</text>
-    <text x="20" y="223" font-size="11" fill="#73726c">TMEM → GMEM</text>
+    <text x="20" y="223" font-size="11" fill="#5F5E5A">TMEM → GMEM</text>
   </g>
 
   <!-- TMA row: green tiles -->
   <g>
-    <rect x="200" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1.5"/>
-    <rect x="328" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1.5"/>
-    <rect x="456" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1.5"/>
-    <rect x="584" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1.5"/>
-    <rect x="712" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1.5"/>
+    <rect x="200" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+    <rect x="328" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+    <rect x="456" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+    <rect x="584" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
+    <rect x="712" y="60" width="120" height="44" rx="4" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>
     <g font-size="13" fill="#0F6E56" text-anchor="middle">
       <text x="260" y="87">tile k−1</text>
       <text x="388" y="87">tile k</text>
@@ -38,11 +38,11 @@
 
   <!-- Tensor Core row: blue tiles, shifted by one slot -->
   <g>
-    <rect x="328" y="122" width="120" height="44" rx="4" fill="#E7F0FA" stroke="#378ADD" stroke-width="1.5"/>
-    <rect x="456" y="122" width="120" height="44" rx="4" fill="#E7F0FA" stroke="#378ADD" stroke-width="1.5"/>
-    <rect x="584" y="122" width="120" height="44" rx="4" fill="#E7F0FA" stroke="#378ADD" stroke-width="1.5"/>
-    <rect x="712" y="122" width="120" height="44" rx="4" fill="#E7F0FA" stroke="#378ADD" stroke-width="1.5"/>
-    <g font-size="13" fill="#175A96" text-anchor="middle">
+    <rect x="328" y="122" width="120" height="44" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.5"/>
+    <rect x="456" y="122" width="120" height="44" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.5"/>
+    <rect x="584" y="122" width="120" height="44" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.5"/>
+    <rect x="712" y="122" width="120" height="44" rx="4" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.5"/>
+    <g font-size="13" fill="#185FA5" text-anchor="middle">
       <text x="388" y="149">tile k−1</text>
       <text x="516" y="149">tile k</text>
       <text x="644" y="149">tile k+1</text>
@@ -67,5 +67,5 @@
 
   <!-- caption -->
   <text x="440" y="266" text-anchor="middle" font-size="13" fill="#5F5E5A">세로로 같은 위치 = 같은 시각</text>
-  <text x="440" y="286" text-anchor="middle" font-size="12" fill="#73726c">단계 사이의 완료 통지는 mbarrier가 전달</text>
+  <text x="440" y="286" text-anchor="middle" font-size="12" fill="#5F5E5A">단계 사이의 완료 통지는 mbarrier가 전달</text>
 </svg>
