@@ -207,7 +207,6 @@ pytorch-internal-lecture/
 ├── public/
 │   └── images/01~07/          # 232 lecture images
 ├── scripts/
-│   ├── convert_slidev_to_mdx.py  # Slidev→MDX converter
 │   ├── extract_pptx.py           # PPTX content extractor
 │   └── extract_images.py         # PPTX image extractor
 ├── slides/                    # Original Slidev source (reference)
@@ -224,13 +223,3 @@ bun run dev         # Start dev server (localhost:4321)
 bun run build       # Build static site to dist/
 bun run preview     # Preview production build
 ```
-
-## Conversion Script
-
-To re-convert Slidev sources to MDX:
-
-```bash
-uv run --script scripts/convert_slidev_to_mdx.py slides/ src/content/lectures/
-```
-
-The script handles: slide separation, v-clicks→Reveal, mermaid blocks, speaker note removal, curly brace escaping, self-closing tags, and code line highlighting conversion.
