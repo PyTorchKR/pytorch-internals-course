@@ -616,7 +616,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
 
 설명을 위해 한 번에 key 하나, 즉 column 하나씩 처리하는 형태로 적었습니다. 실제 FlashAttention은 같은 recurrence를 column 여러 개를 묶은 block 단위로 수행합니다. 또 매 스텝 나누지 않고 정규화 전 값을 누적했다가 마지막에 $d_N'$으로 한 번만 나눕니다.
 
-<div class="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 items-start mt-6">
+<div class="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 items-stretch mt-6">
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-5" style="font-size:1.05rem">
     <p class="font-bold mb-2">Algorithm FlashAttention</p>
     <div class="pl-4">
@@ -632,26 +632,26 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
     </div>
   </div>
 
-  <div class="flex flex-col gap-2">
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Q는 모든 step에 동일</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$Q[k,:]$, query는 한 row 고정</p>
+  <div class="flex flex-col gap-2 h-full">
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p style="margin:0" class="text-sm font-bold text-slate-900 dark:text-slate-100">Q는 모든 step에 동일</p>
+      <p style="margin:2px 0 0" class="text-xs text-slate-600 dark:text-slate-300">$Q[k,:]$, query는 한 row 고정</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">K는 $i$번째 column만 읽어들임</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$K^T[:, i]$, 순차 streaming load (실제 구현은 block 단위)</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p style="margin:0" class="text-sm font-bold text-slate-900 dark:text-slate-100">K는 $i$번째 column만 읽어들임</p>
+      <p style="margin:2px 0 0" class="text-xs text-slate-600 dark:text-slate-300">$K^T[:, i]$, 순차 streaming load (실제 구현은 block 단위)</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">매 step마다 max값 update</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$m_i \leftarrow \max(m_{i-1}, x_i)$</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p style="margin:0" class="text-sm font-bold text-slate-900 dark:text-slate-100">매 step마다 max값 update</p>
+      <p style="margin:2px 0 0" class="text-xs text-slate-600 dark:text-slate-300">$m_i \leftarrow \max(m_{i-1}, x_i)$</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Update된 max값으로 보정</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$d_i', o_i'$를 $e^{m_{i-1}-m_i}$로 rescale</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p style="margin:0" class="text-sm font-bold text-slate-900 dark:text-slate-100">Update된 max값으로 보정</p>
+      <p style="margin:2px 0 0" class="text-xs text-slate-600 dark:text-slate-300">$d_i', o_i'$를 $e^{m_{i-1}-m_i}$로 rescale</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">최종 결과를 HBM에 저장</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$O[k,:] \leftarrow o_N'$, single write</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p style="margin:0" class="text-sm font-bold text-slate-900 dark:text-slate-100">최종 결과를 HBM에 저장</p>
+      <p style="margin:2px 0 0" class="text-xs text-slate-600 dark:text-slate-300">$O[k,:] \leftarrow o_N'$, single write</p>
     </div>
   </div>
 </div>
