@@ -1,47 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 470" width="680" height="470" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif">
 <defs>
-<marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="#7d858f"/></marker>
-<marker id="ad" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="#9aa3af"/></marker>
+<marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="#5F5E5A"/></marker>
+<marker id="ad" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 z" fill="#888780"/></marker>
 </defs>
-<rect x="40" y="44" width="600" height="116" rx="12" fill="#eef3fb" stroke="#c9d8f0"/>
-<text x="52" y="34" text-anchor="start" font-size="12" font-weight="600" fill="#2457a6">Forward pass</text>
-<rect x="40" y="300" width="580" height="100" rx="12" fill="#fcf1ea" stroke="#f0d3c2"/>
-<text x="52" y="290" text-anchor="start" font-size="12" font-weight="600" fill="#c2410c">Backward pass</text>
-<rect x="60" y="70" width="100" height="26" rx="6" fill="#dde7f6"/><text x="110.0" y="87.5" text-anchor="middle" font-size="12" font-weight="400" fill="#1d4687">Training data</text>
-<rect x="60" y="104" width="100" height="26" rx="6" fill="#dde7f6"/><text x="110.0" y="121.5" text-anchor="middle" font-size="12" font-weight="400" fill="#1d4687">Weight</text>
-<path d="M160 83 H182 V100" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round"/>
-<path d="M160 117 H182 V100" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round"/>
-<path d="M182 100 H204" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<rect x="204" y="76" width="110" height="48" rx="9" fill="#ffffff" stroke="#2457a6" stroke-width="1.5"/>
-<text x="259" y="105" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328">Forward</text>
-<path d="M314 100 H440" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="377" y="92" text-anchor="middle" font-size="12" font-weight="400" fill="#6b7280">output</text>
-<rect x="330" y="127" width="84" height="26" rx="6" fill="#dde7f6"/><text x="372.0" y="144.5" text-anchor="middle" font-size="12" font-weight="400" fill="#1d4687">Reference</text>
-<path d="M414 140 H470 V128" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<rect x="440" y="72" width="120" height="56" rx="9" fill="#ffffff" stroke="#2457a6" stroke-width="1.5"/>
-<text x="500" y="105" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328">Loss function</text>
-<path d="M560 100 H580" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<rect x="580" y="82" width="48" height="36" rx="9" fill="#dde7f6" stroke="#2457a6" stroke-width="1.5"/>
-<text x="604" y="105" text-anchor="middle" font-size="13" font-weight="600" fill="#1d4687">loss</text>
-<path d="M628 100 H656 V342 H565" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<path d="M259 124 V318" fill="none" stroke="#9aa3af" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ad)"/>
-<path d="M500 128 V318" fill="none" stroke="#9aa3af" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ad)"/>
-<path d="M352 222 H259 M407 222 H500" fill="none" stroke="#9aa3af" stroke-width="1"/>
-<circle cx="259" cy="222" r="2.5" fill="#9aa3af"/>
-<circle cx="500" cy="222" r="2.5" fill="#9aa3af"/>
-<text x="379.5" y="226" text-anchor="middle" font-size="12" font-weight="400" fill="#6b7280">autodiff</text>
-<rect x="435" y="318" width="130" height="48" rx="9" fill="#ffffff" stroke="#c2410c" stroke-width="1.5"/>
-<text x="500" y="338" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2328">Gradient function</text>
-<text x="500" y="355" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2328">of loss</text>
-<path d="M435 342 H314" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="374" y="334" text-anchor="middle" font-size="12" font-weight="400" fill="#6b7280">gradient input</text>
-<rect x="204" y="318" width="110" height="48" rx="9" fill="#ffffff" stroke="#c2410c" stroke-width="1.5"/>
-<text x="259" y="347" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328">Backward</text>
-<text x="259" y="388" text-anchor="middle" font-size="11.5" font-weight="400" fill="#6b7280">gradient of Forward</text>
-<path d="M204 342 H120 V420" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="128" y="415" text-anchor="start" font-size="12" font-weight="400" fill="#6b7280">gradient output</text>
-<rect x="70" y="420" width="100" height="36" rx="9" fill="#ffffff" stroke="#c2410c" stroke-width="1.5"/>
-<text x="120" y="443" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2328">Optimizer</text>
-<path d="M70 438 H20 V117 H60" fill="none" stroke="#7d858f" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="28" y="236" text-anchor="start" font-size="12" font-weight="400" fill="#6b7280">update</text>
+<rect x="40" y="44" width="600" height="116" rx="12" fill="#FFFFFF" stroke="#378ADD"/>
+<text x="52" y="34" text-anchor="start" font-size="12" font-weight="600" fill="#185FA5">Forward pass</text>
+<rect x="40" y="300" width="580" height="100" rx="12" fill="#FFFFFF" stroke="#D85A30"/>
+<text x="52" y="290" text-anchor="start" font-size="12" font-weight="600" fill="#D85A30">Backward pass</text>
+<rect x="60" y="70" width="100" height="26" rx="6" fill="#DCEBFA"/><text x="110.0" y="87.5" text-anchor="middle" font-size="12" font-weight="400" fill="#185FA5">Training data</text>
+<rect x="60" y="104" width="100" height="26" rx="6" fill="#DCEBFA"/><text x="110.0" y="121.5" text-anchor="middle" font-size="12" font-weight="400" fill="#185FA5">Weight</text>
+<path d="M160 83 H182 V100" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round"/>
+<path d="M160 117 H182 V100" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round"/>
+<path d="M182 100 H204" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="204" y="76" width="110" height="48" rx="9" fill="#FFFFFF" stroke="#185FA5" stroke-width="1.5"/>
+<text x="259" y="105" text-anchor="middle" font-size="14" font-weight="600" fill="#2C2C2A">Forward</text>
+<path d="M314 100 H440" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="377" y="92" text-anchor="middle" font-size="12" font-weight="400" fill="#5F5E5A">output</text>
+<rect x="330" y="127" width="84" height="26" rx="6" fill="#DCEBFA"/><text x="372.0" y="144.5" text-anchor="middle" font-size="12" font-weight="400" fill="#185FA5">Reference</text>
+<path d="M414 140 H470 V128" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="440" y="72" width="120" height="56" rx="9" fill="#FFFFFF" stroke="#185FA5" stroke-width="1.5"/>
+<text x="500" y="105" text-anchor="middle" font-size="14" font-weight="600" fill="#2C2C2A">Loss function</text>
+<path d="M560 100 H580" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<rect x="580" y="82" width="48" height="36" rx="9" fill="#DCEBFA" stroke="#185FA5" stroke-width="1.5"/>
+<text x="604" y="105" text-anchor="middle" font-size="13" font-weight="600" fill="#185FA5">loss</text>
+<path d="M628 100 H656 V342 H565" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<path d="M259 124 V318" fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ad)"/>
+<path d="M500 128 V318" fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ad)"/>
+<path d="M352 222 H259 M407 222 H500" fill="none" stroke="#888780" stroke-width="1"/>
+<circle cx="259" cy="222" r="2.5" fill="#888780"/>
+<circle cx="500" cy="222" r="2.5" fill="#888780"/>
+<text x="379.5" y="226" text-anchor="middle" font-size="12" font-weight="400" fill="#5F5E5A">autodiff</text>
+<rect x="435" y="318" width="130" height="48" rx="9" fill="#FFFFFF" stroke="#D85A30" stroke-width="1.5"/>
+<text x="500" y="338" text-anchor="middle" font-size="12.5" font-weight="600" fill="#2C2C2A">Gradient function</text>
+<text x="500" y="355" text-anchor="middle" font-size="12.5" font-weight="600" fill="#2C2C2A">of loss</text>
+<path d="M435 342 H314" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="374" y="334" text-anchor="middle" font-size="12" font-weight="400" fill="#5F5E5A">gradient input</text>
+<rect x="204" y="318" width="110" height="48" rx="9" fill="#FFFFFF" stroke="#D85A30" stroke-width="1.5"/>
+<text x="259" y="347" text-anchor="middle" font-size="14" font-weight="600" fill="#2C2C2A">Backward</text>
+<text x="259" y="388" text-anchor="middle" font-size="11.5" font-weight="400" fill="#5F5E5A">gradient of Forward</text>
+<path d="M204 342 H120 V420" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="128" y="415" text-anchor="start" font-size="12" font-weight="400" fill="#5F5E5A">gradient output</text>
+<rect x="70" y="420" width="100" height="36" rx="9" fill="#FFFFFF" stroke="#D85A30" stroke-width="1.5"/>
+<text x="120" y="443" text-anchor="middle" font-size="13" font-weight="600" fill="#2C2C2A">Optimizer</text>
+<path d="M70 438 H20 V117 H60" fill="none" stroke="#5F5E5A" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="28" y="236" text-anchor="start" font-size="12" font-weight="400" fill="#5F5E5A">update</text>
 </svg>
