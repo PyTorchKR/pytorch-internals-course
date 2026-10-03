@@ -190,9 +190,11 @@ with an inline SVG and KaTeX HTML labels placed over it in viewBox
 percentages, as `BackpropWidget.astro` and `SelfAttentionDiagram.astro`
 do.
 
-Sizes: keep the SVG `viewBox` width between 640 and 900 so that a
-`font-size` of 12 to 14 reads at body size. Text smaller than 10 is
-too small on a projector.
+Sizes: the page content is 882px wide and body text is 16px. Show an
+SVG figure at its viewBox width (`class="mx-auto w-full max-w-[<W>px]"`
+on `ThemeImage`) and keep the viewBox width at 900 or less, so a
+`font-size` of 12 to 14 renders at 12 to 14px. A label that renders
+below 10px is too small on a projector.
 
 Widget controls use the shared `.fig-btn` class (bordered style) and
 Korean labels with SVG icons: `재생` / `일시정지`, `이전`, `다음`
