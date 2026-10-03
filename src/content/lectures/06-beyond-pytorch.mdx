@@ -6,6 +6,7 @@ lecture: 6
 
 import Mermaid from '../../components/Mermaid.astro';
 import PrefillDecodeDiagram from '../../components/PrefillDecodeDiagram.astro';
+import KvCacheWidget from '../../components/KvCacheWidget.astro';
 import AttentionTilingDiagram from '../../components/AttentionTilingDiagram.astro';
 import ThemeImage from '../../components/ThemeImage.astro';
 
@@ -247,9 +248,7 @@ Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 �
 
 새 token 하나의 attention을 계산하려면 그 token의 query를 이전 모든 token의 key·value와 곱해야 합니다. 그런데 이전 token들의 K·V는 한 번 계산되고 나면 스텝이 지나도 변하지 않는 값입니다. 아무것도 저장해 두지 않으면 새 token을 만들 때마다 sequence 전체를 첫 레이어부터 다시 통과시켜 같은 K·V를 재계산해야 합니다. 이 낭비는 매 스텝 prefill 하나를 통째로 다시 하는 것과 맞먹습니다.
 
-<div class="flex justify-center mt-4">
-  <img src="/images/06/nvidia-kv-cache.gif" alt="KV cache가 없으면 매 스텝 모든 token의 Q·K·V 행렬을 다시 계산하지만, KV cache가 있으면 마지막 query 하나와 cache에서 가져온 K·V만으로 attention을 계산하는 비교 애니메이션" class="max-w-3xl w-full mx-auto" />
-</div>
+<KvCacheWidget />
 
 **KV cache**는 한 번 계산한 K·V를 저장해 두고 재사용합니다. 위 그림처럼 cache가 있으면 새 token의 query 하나만 가지고, K·V는 cache에서 가져와 attention을 계산할 수 있습니다. Cache의 동작은 **append-only**입니다. 매 스텝 새 token의 K·V만 계산해 cache 끝에 append하고, 기존 항목은 수정 없이 읽기만 합니다(retrieve). Prefill은 첫 token을 만들면서 프롬프트 전체의 KV cache도 함께 만듭니다. 뒤에서 볼 PD Disaggregation에서 Prefill pool이 Decode pool로 넘기는 것이 이 KV cache입니다.
 
