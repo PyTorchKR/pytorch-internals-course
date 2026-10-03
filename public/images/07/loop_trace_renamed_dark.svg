@@ -18,8 +18,8 @@
 <text x="94" y="287" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7" xml:space="preserve">add   t3′, t2′, t1′</text>
 <text x="94" y="305" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7" xml:space="preserve">sw    t3′, 0(s3′)</text>
 <text x="94" y="323" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#D3D1C7" xml:space="preserve">addi  s1″, s1′, 1</text>
-<path d="M 280 145 C 314 145, 314 211, 280 211" fill="none" stroke="#5DCAA5" stroke-width="1.8" marker-end="url(#m-ok)"/>
-<text x="310.5" y="182.0" font-size="11" font-family="ui-monospace, Menlo, Consolas, monospace" fill="#5DCAA5">s1′</text>
+<path d="M 280 145 H 314 V 211 H 280" fill="none" stroke="#5DCAA5" stroke-width="1.8" marker-end="url(#m-ok)"/>
+<text x="320" y="182" font-size="11" font-family="ui-monospace, Menlo, Consolas, monospace" fill="#5DCAA5">s1′</text>
 <text x="84" y="366" font-size="11" fill="#B4B2A9">새 이름(′)을 받은 값은 저장 공간이 겹치지 않아 False Dependency 없음</text>
 <text x="84" y="381" font-size="11" fill="#5DCAA5">남는 의존은 s1′ 하나</text>
 </svg>

@@ -58,8 +58,8 @@
 <rect x="190" y="40" width="200" height="50" rx="25" class="f-rendez s-stroke" stroke-width="1"/>
 <text x="290" y="71" text-anchor="middle" class="lbl-sans t-peach" font-size="18" font-weight="500">Rendezvous</text>
 
-<path d="M 250 90 C 240 140, 190 160, 155 188" fill="none" class="arrow-soft" stroke-width="1" stroke-dasharray="3 4"/>
-<path d="M 330 90 C 340 140, 400 160, 435 188" fill="none" class="arrow-soft" stroke-width="1" stroke-dasharray="3 4"/>
+<path d="M 250 90 V 139 H 160 V 188" fill="none" class="arrow-soft" stroke-width="1" stroke-dasharray="3 4"/>
+<path d="M 330 90 V 139 H 420 V 188" fill="none" class="arrow-soft" stroke-width="1" stroke-dasharray="3 4"/>
 
 <!-- Node 1 -->
 <rect x="50" y="188" width="220" height="480" rx="6" class="f-node s-stroke" stroke-width="1"/>
@@ -165,8 +165,8 @@
 </g>
 
 <g class="arrow-line" stroke-width="1" fill="none" marker-end="url(#arrow)">
-  <path d="M 890 406 C 890 450, 962 470, 962 496"/>
-  <path d="M 1052 406 C 1052 450, 1138 470, 1138 496"/>
+  <path d="M 890 406 V 453 H 962 V 496"/>
+  <path d="M 1052 406 V 453 H 1138 V 496"/>
 </g>
 
 <!-- CPU / GPU -->
@@ -179,9 +179,9 @@
 </g>
 
 <g class="arrow-line" stroke-width="1" fill="none" marker-end="url(#arrow)">
-  <path d="M 728 406 C 728 560, 820 620, 882 660"/>
-  <path d="M 962 560 C 962 620, 1060 640, 1090 660"/>
-  <path d="M 1138 560 C 1090 620, 980 640, 920 660"/>
-  <path d="M 1138 560 C 1138 610, 1130 640, 1120 660"/>
+  <path d="M 728 406 V 632 H 882 V 660"/>
+  <path d="M 962 560 V 632 H 1090 V 660"/>
+  <path d="M 1138 560 V 600 H 920 V 660"/>
+  <path d="M 1138 560 V 660"/>
 </g>
 </svg>

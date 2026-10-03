@@ -23,6 +23,6 @@
 <circle cx="314" cy="192" r="6" fill="#5b9bf0"/>
 <circle cx="378" cy="64" r="6" fill="#5b9bf0"/>
 <text x="304" y="180" font-size="13" text-anchor="end">token 14 → bucket 16</text>
-<path d="M322,186 Q370.0,128 374,74" fill="none" stroke="#5b9bf0" stroke-width="2" marker-end="url(#arr)"/>
+<path d="M314,186 V128 H378 V70" fill="none" stroke="#5b9bf0" stroke-width="2" marker-end="url(#arr)"/>
 <text x="368" y="52" font-size="13" text-anchor="end" font-weight="bold">token 4개 request 추가: 18 → bucket 32</text>
 </svg>
