@@ -1,42 +1,42 @@
-<svg width="100%" viewBox="0 0 680 290" xmlns="http://www.w3.org/2000/svg" style="font-family: sans-serif; background: #ffffff;">
+<svg width="100%" viewBox="0 0 680 290" xmlns="http://www.w3.org/2000/svg" style="font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif; background: #ffffff;">
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M2 1L8 5L2 9" fill="none" stroke="#444441" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
   </defs>
 
   <!-- call stack box -->
-  <rect x="140" y="36" width="250" height="242" rx="8" fill="none" stroke="#C2C0B6" stroke-width="1.2" stroke-dasharray="6 3"/>
+  <rect x="140" y="36" width="250" height="242" rx="8" fill="none" stroke="#B4B2A9" stroke-width="1.2" stroke-dasharray="6 3"/>
   <text x="152" y="52" font-size="12" font-weight="600" fill="#2C2C2A">call stack</text>
-  <text x="230" y="52" font-size="10.5" fill="#444441">(thread마다 하나)</text>
+  <text x="230" y="52" font-size="10.5" fill="#5F5E5A">(thread마다 하나)</text>
 
-  <rect x="150" y="72" width="230" height="50" rx="6" fill="#E3EDF9" stroke="#3A7BD5" stroke-width="1"/>
-  <text x="162" y="92" font-size="12" font-weight="600" fill="#2C5EA0">frame 2 (지금 실행 중)</text>
-  <text x="162" y="110" font-size="10.5" fill="#444441">code object · local 변수 · value stack</text>
+  <rect x="150" y="72" width="230" height="50" rx="6" fill="#DCEBFA" stroke="#378ADD" stroke-width="1"/>
+  <text x="162" y="92" font-size="12" font-weight="600" fill="#185FA5">frame 2 (지금 실행 중)</text>
+  <text x="162" y="110" font-size="10.5" fill="#5F5E5A">code object · local 변수 · value stack</text>
 
-  <rect x="150" y="144" width="230" height="50" rx="6" fill="#EEECEA" stroke="#C2C0B6" stroke-width="1"/>
+  <rect x="150" y="144" width="230" height="50" rx="6" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1"/>
   <text x="162" y="164" font-size="12" font-weight="600" fill="#2C2C2A">frame 1</text>
-  <text x="162" y="182" font-size="10.5" fill="#444441">code object · local 변수 · value stack</text>
+  <text x="162" y="182" font-size="10.5" fill="#5F5E5A">code object · local 변수 · value stack</text>
 
-  <rect x="150" y="216" width="230" height="50" rx="6" fill="#EEECEA" stroke="#C2C0B6" stroke-width="1"/>
+  <rect x="150" y="216" width="230" height="50" rx="6" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="1"/>
   <text x="162" y="236" font-size="12" font-weight="600" fill="#2C2C2A">frame 0</text>
-  <text x="162" y="254" font-size="10.5" fill="#444441">code object · local 변수 · value stack</text>
-  <line x1="265" y1="123" x2="265" y2="142" stroke="#444441" stroke-width="1.2" marker-end="url(#arr)"/>
-  <text x="274" y="136" font-size="10" fill="#444441">호출한 frame</text>
-  <line x1="265" y1="195" x2="265" y2="214" stroke="#444441" stroke-width="1.2" marker-end="url(#arr)"/>
-  <text x="274" y="208" font-size="10" fill="#444441">호출한 frame</text>
+  <text x="162" y="254" font-size="10.5" fill="#5F5E5A">code object · local 변수 · value stack</text>
+  <line x1="265" y1="123" x2="265" y2="142" stroke="#5F5E5A" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="274" y="136" font-size="10" fill="#5F5E5A">호출한 frame</text>
+  <line x1="265" y1="195" x2="265" y2="214" stroke="#5F5E5A" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="274" y="208" font-size="10" fill="#5F5E5A">호출한 frame</text>
 
   <!-- evaluation loop -->
-  <rect x="480" y="72" width="192" height="64" rx="6" fill="#FBEEDD" stroke="#D97B1E" stroke-width="1"/>
-  <text x="492" y="92" font-size="12" font-weight="600" fill="#A85D15">evaluation loop</text>
-  <text x="492" y="110" font-size="10.5" fill="#444441">_PyEval_EvalFrameDefault(frame)</text>
-  <text x="492" y="126" font-size="10.5" fill="#444441">받은 frame의 bytecode를 하나씩 실행</text>
-  <line x1="382" y1="97" x2="478" y2="97" stroke="#444441" stroke-width="1.2" marker-end="url(#arr)"/>
-  <text x="430" y="90" text-anchor="middle" font-size="9.5" fill="#444441">frame을 인자로 전달</text>
+  <rect x="480" y="72" width="192" height="64" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1"/>
+  <text x="492" y="92" font-size="12" font-weight="600" fill="#854F0B">evaluation loop</text>
+  <text x="492" y="110" font-size="10.5" fill="#5F5E5A">_PyEval_EvalFrameDefault(frame)</text>
+  <text x="492" y="126" font-size="10.5" fill="#5F5E5A">받은 frame의 bytecode를 하나씩 실행</text>
+  <line x1="382" y1="97" x2="478" y2="97" stroke="#5F5E5A" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="430" y="90" text-anchor="middle" font-size="9.5" fill="#5F5E5A">frame을 인자로 전달</text>
 
   <!-- Dynamo hook -->
-  <rect x="480" y="160" width="192" height="50" rx="6" fill="none" stroke="#3A7BD5" stroke-width="1" stroke-dasharray="5 3"/>
-  <text x="492" y="180" font-size="12" font-weight="600" fill="#2C5EA0">Dynamo (PEP 523)</text>
-  <text x="492" y="198" font-size="10.5" fill="#444441">이 evaluation 함수를 자기 것으로 교체</text>
-  <line x1="576" y1="158" x2="576" y2="138" stroke="#3A7BD5" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arr)"/>
+  <rect x="480" y="160" width="192" height="50" rx="6" fill="none" stroke="#378ADD" stroke-width="1" stroke-dasharray="5 3"/>
+  <text x="492" y="180" font-size="12" font-weight="600" fill="#185FA5">Dynamo (PEP 523)</text>
+  <text x="492" y="198" font-size="10.5" fill="#5F5E5A">이 evaluation 함수를 자기 것으로 교체</text>
+  <line x1="576" y1="158" x2="576" y2="138" stroke="#378ADD" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arr)"/>
 </svg>

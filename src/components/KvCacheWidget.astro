@@ -43,16 +43,15 @@
   </div>
 
   <div class="kvc-controls">
-    <button class="kvc-btn" data-kvc-play type="button" aria-label="Play">
+    <button class="fig-btn kvc-btn-play" data-kvc-play type="button" aria-label="재생">
       <svg class="kvc-icon kvc-icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
       <svg class="kvc-icon kvc-icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>
-      <span class="kvc-btn-label">Play</span>
+      <span class="kvc-btn-label">재생</span>
     </button>
-    <button class="kvc-btn" data-kvc-reset type="button" aria-label="Reset">
+    <button class="fig-btn" data-kvc-reset type="button" aria-label="처음으로">
       <svg class="kvc-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-      <span>Reset</span>
     </button>
-    <input type="range" class="kvc-slider" data-kvc-slider min="0" max="4" step="1" value="0" aria-label="Step slider" />
+    <input type="range" class="kvc-slider" data-kvc-slider min="0" max="4" step="1" value="0" aria-label="스텝 슬라이더" />
     <span class="kvc-step-l" data-kvc-step-l>스텝 0 / 4</span>
   </div>
 
@@ -76,47 +75,27 @@
 <style is:global>
   /* Same palette as .pd-widget so the two widgets look like siblings. */
   .kvc-widget {
-    --kvc-bg-secondary: #f4f4f3;
-    --kvc-bg-info: #e6f0ff;
-    --kvc-bg-primary: #fafaf8;
-    --kvc-bg-calc: #fbe3d6;
-    --kvc-bg-cache: #dcdcda;
-    --kvc-text-primary: #1a1a1a;
-    --kvc-text-secondary: #525252;
-    --kvc-text-tertiary: #8a8a8a;
-    --kvc-text-info: #2563eb;
-    --kvc-border-secondary: #cfcfcf;
-    --kvc-border-tertiary: #e3e3e3;
-    --kvc-fb-color: #d85a30;
-    --kvc-fb-text: #993c1d;
-    --kvc-mode-off: #be123c;
-    --kvc-mode-on: #036c4f;
+    --kvc-bg-secondary: var(--bg-surface);
+    --kvc-bg-info: var(--fig-blue-tint);
+    --kvc-bg-primary: var(--fig-surface);
+    --kvc-bg-calc: var(--fig-coral-tint);
+    --kvc-bg-cache: var(--fig-fill);
+    --kvc-text-primary: var(--fig-text);
+    --kvc-text-secondary: var(--fig-text-2);
+    --kvc-text-tertiary: var(--fig-line);
+    --kvc-text-info: var(--fig-blue-ink);
+    --kvc-border-secondary: var(--fig-line-soft);
+    --kvc-fb-color: var(--fig-coral);
+    --kvc-fb-text: var(--fig-coral);
+    --kvc-mode-off: var(--fig-red);
+    --kvc-mode-on: var(--fig-teal-ink);
 
     --kvc-radius-md: 6px;
-    --kvc-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --kvc-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --kvc-font-mono: var(--fig-font-mono);
 
     padding: 1rem 0;
     color: var(--kvc-text-primary);
-    font-family: var(--kvc-font-sans);
-  }
-
-  [data-theme='dark'] .kvc-widget {
-    --kvc-bg-secondary: #2a2d31;
-    --kvc-bg-info: #0c447c;
-    --kvc-bg-primary: #1c1c1d;
-    --kvc-bg-calc: #5a3414;
-    --kvc-bg-cache: #44474d;
-    --kvc-text-primary: #d2d2d2;
-    --kvc-text-secondary: #a8a8a8;
-    --kvc-text-tertiary: #828282;
-    --kvc-text-info: #85b7eb;
-    --kvc-border-secondary: #424246;
-    --kvc-border-tertiary: #353539;
-    --kvc-fb-color: #ef9f27;
-    --kvc-fb-text: #f4b878;
-    --kvc-mode-off: #fb7185;
-    --kvc-mode-on: #34d399;
+    font-family: inherit;
   }
 
   .kvc-widget .kvc-sr-only {
@@ -193,7 +172,7 @@
   }
 
   .kvc-widget .kvc-ct {
-    font-family: var(--kvc-font-sans);
+    font-family: inherit;
     font-size: 12px;
     fill: var(--kvc-text-primary);
     text-anchor: middle;
@@ -201,21 +180,21 @@
     pointer-events: none;
   }
   .kvc-widget .kvc-tok {
-    font-family: var(--kvc-font-sans);
+    font-family: inherit;
     font-size: 12px;
     fill: var(--kvc-text-primary);
   }
   .kvc-widget .kvc-tok-end { text-anchor: end; dominant-baseline: central; }
   .kvc-widget .kvc-tok-mid { text-anchor: middle; }
   .kvc-widget .kvc-next {
-    font-family: var(--kvc-font-sans);
+    font-family: inherit;
     font-size: 12px;
     font-weight: 500;
     fill: var(--kvc-fb-text);
     dominant-baseline: central;
   }
   .kvc-widget .kvc-hint {
-    font-family: var(--kvc-font-sans);
+    font-family: inherit;
     font-size: 12px;
     font-style: italic;
     fill: var(--kvc-text-tertiary);
@@ -228,19 +207,19 @@
     stroke-dasharray: 4 3;
   }
   .kvc-widget .kvc-box-title {
-    font-family: var(--kvc-font-sans);
+    font-family: inherit;
     font-size: 12px;
     font-weight: 500;
     fill: var(--kvc-text-secondary);
   }
   .kvc-widget .kvc-read-tag {
-    font-family: var(--kvc-font-sans);
+    font-family: inherit;
     font-size: 12px;
     fill: var(--kvc-text-info);
     text-anchor: start;
   }
   .kvc-widget .kvc-app {
-    font-family: var(--kvc-font-sans);
+    font-family: inherit;
     font-size: 11px;
     fill: var(--kvc-fb-text);
     dominant-baseline: central;
@@ -259,24 +238,11 @@
   .kvc-widget .kvc-controls {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px;
   }
-  .kvc-widget .kvc-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid var(--kvc-border-secondary);
-    border-radius: var(--kvc-radius-md);
-    background: var(--kvc-bg-primary);
-    color: var(--kvc-text-primary);
-    font-family: var(--kvc-font-sans);
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .kvc-widget .kvc-btn:hover { background: var(--kvc-bg-secondary); border-color: var(--kvc-text-tertiary); }
-  .kvc-widget .kvc-btn:focus-visible { outline: 2px solid var(--kvc-text-info); outline-offset: 2px; }
   .kvc-widget .kvc-icon { display: inline-block; flex-shrink: 0; }
   .kvc-widget .kvc-icon-pause { display: none; }
-  .kvc-widget .kvc-btn.is-playing .kvc-icon-play { display: none; }
-  .kvc-widget .kvc-btn.is-playing .kvc-icon-pause { display: inline-block; }
+  .kvc-widget .kvc-btn-play { min-width: 104px; justify-content: center; }
+  .kvc-widget .fig-btn.is-playing .kvc-icon-play { display: none; }
+  .kvc-widget .fig-btn.is-playing .kvc-icon-pause { display: inline-block; }
   .kvc-widget .kvc-slider { flex: 1; min-width: 100px; accent-color: var(--kvc-text-info); }
   .kvc-widget .kvc-step-l {
     font-size: 13px; color: var(--kvc-text-secondary);
@@ -288,7 +254,7 @@
     border-radius: var(--kvc-radius-md);
     padding: 12px 16px;
     margin-top: 12px;
-    min-height: 110px;
+    min-height: 150px;
   }
   .kvc-widget .kvc-expl-tag { font-size: 12px; color: var(--kvc-text-tertiary); font-weight: 500; margin-bottom: 4px; }
   .kvc-widget .kvc-expl-text { font-size: 14px; line-height: 1.6; color: var(--kvc-text-primary); }
@@ -453,13 +419,13 @@
         return {
           tag: 'Prefill 완료',
           text: line('Prefill이 프롬프트 3개 token의 K·V를 계산해 KV cache에 넣었습니다.') +
-            line('Play를 누르면 decode 스텝이 진행됩니다.'),
+            line('재생을 누르면 decode 스텝이 진행됩니다.'),
         };
       }
       const n = seqLen(t);
       let text =
-        line(OFF + 'token ' + n + '개의 K·V를 모두 다시 계산합니다.') +
-        line(ON + '새 token의 K·V 1개만 계산해 cache 끝에 append합니다. 앞의 ' + (n - 1) + '개는 읽기만 합니다.');
+        line(OFF + 'token ' + n + '개로 prefill을 다시 하는 것과 같습니다. 모든 token의 Q·K·V를 다시 계산합니다.') +
+        line(ON + '새 token의 Q·K·V만 계산하고 K·V를 cache 끝에 append합니다. 앞의 ' + (n - 1) + '개 K·V는 읽기만 합니다. 지난 token의 Q는 다시 쓰지 않아 저장하지 않습니다.');
       if (t === N) {
         text += line('누적 ' + cumNoCache(t) + '개 대 ' + t + '개. 생성 길이 N이 늘면 O(N²) 대 O(N)으로 커집니다.');
       }
@@ -490,8 +456,8 @@
     function setPlayingUI(isPlaying: boolean) {
       if (!playBtn) return;
       playBtn.classList.toggle('is-playing', isPlaying);
-      if (playLabel) playLabel.textContent = isPlaying ? 'Pause' : 'Play';
-      playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+      if (playLabel) playLabel.textContent = isPlaying ? '일시정지' : '재생';
+      playBtn.setAttribute('aria-label', isPlaying ? '일시정지' : '재생');
     }
 
     function pause() {

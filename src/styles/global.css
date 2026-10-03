@@ -48,6 +48,31 @@
   /* Back to top */
   --back-to-top-bg: rgba(0, 0, 0, 0.4);
 
+  /* Figure and widget palette — see AGENTS.md "Figure and Widget Style" */
+  --fig-text: #2C2C2A;
+  --fig-text-2: #5F5E5A;
+  --fig-line: #888780;
+  --fig-line-soft: #B4B2A9;
+  --fig-fill: #F1EFE8;
+  --fig-surface: #FFFFFF;
+  --fig-blue: #378ADD;
+  --fig-blue-ink: #185FA5;
+  --fig-blue-tint: #DCEBFA;
+  --fig-amber: #EF9F27;
+  --fig-amber-ink: #854F0B;
+  --fig-amber-tint: #FAEEDA;
+  --fig-coral: #D85A30;
+  --fig-coral-tint: #FBE3D6;
+  --fig-teal: #1D9E75;
+  --fig-teal-ink: #0F6E56;
+  --fig-teal-tint: #E1F5EE;
+  --fig-purple: #534AB7;
+  --fig-purple-ink: #3C3489;
+  --fig-purple-tint: #EEEDFE;
+  --fig-red: #C0392B;
+  --fig-red-tint: #F3D9D9;
+  --fig-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
   color-scheme: light;
 }
 
@@ -93,6 +118,30 @@
   /* Back to top */
   --back-to-top-bg: rgba(255, 255, 255, 0.5);
   --back-to-top-color: #000000;
+
+  /* Figure and widget palette (dark) */
+  --fig-text: #D3D1C7;
+  --fig-text-2: #B4B2A9;
+  --fig-line: #888780;
+  --fig-line-soft: #6F6E68;
+  --fig-fill: #444441;
+  --fig-surface: #1F1E1B;
+  --fig-blue: #85B7EB;
+  --fig-blue-ink: #85B7EB;
+  --fig-blue-tint: #2A3A4D;
+  --fig-amber: #FAC775;
+  --fig-amber-ink: #FAC775;
+  --fig-amber-tint: #4A3A22;
+  --fig-coral: #F0997B;
+  --fig-coral-tint: #4A2E22;
+  --fig-teal: #5DCAA5;
+  --fig-teal-ink: #5DCAA5;
+  --fig-teal-tint: #233B34;
+  --fig-purple: #AFA9EC;
+  --fig-purple-ink: #AFA9EC;
+  --fig-purple-tint: #332D4D;
+  --fig-red: #E07A6A;
+  --fig-red-tint: #4A2A2A;
 
   color-scheme: dark;
 }
@@ -847,45 +896,6 @@ a:hover {
   color: var(--text);
 }
 
-/* Mermaid (pre-rendered SVGs) */
-.mermaid-wrapper {
-  display: flex;
-  justify-content: center;
-  margin: 1.5rem 0;
-  width: 100%;
-}
-
-.mermaid-svg {
-  width: 100%;
-}
-
-/* Label widths are measured with the build machine's CJK font; viewers'
-   fallback fonts can be a few px wider, and foreignObject clips by default,
-   cutting off the last Hangul glyph. Let labels overflow instead. */
-.mermaid-svg foreignObject {
-  overflow: visible;
-}
-
-.mermaid-wrapper svg {
-  max-width: 60%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-}
-
-.mermaid-wide svg {
-  max-width: 100%;
-}
-
-/* Fallback for diagrams not yet pre-rendered */
-.mermaid-fallback {
-  background: var(--surface-2, #f0f0f0);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
-  white-space: pre-wrap;
-}
-
 /* Grid */
 .article-body .grid {
   margin: 1rem 0;
@@ -1152,10 +1162,24 @@ a:hover {
     max-width: 100%;
     overflow-x: auto;
   }
-
-  /* Mermaid pre-rendered SVGs: allow them to use the full mobile width
-     instead of being capped at 60%. */
-  .mermaid-wrapper svg {
-    max-width: 100%;
-  }
 }
+
+/* ===== Shared widget button (interactive figures) ===== */
+.fig-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.fig-btn:hover { background: var(--accent-shadow); }
+.fig-btn:disabled { opacity: 0.4; cursor: default; }
+.fig-btn svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }

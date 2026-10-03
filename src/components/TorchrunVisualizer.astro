@@ -17,7 +17,7 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
 <div class="trv-root">
   <div class="trv-stage-card">
     <div>
-      <span class="trv-stage-num">1 / 8</span>
+      <span class="trv-stage-num">스텝 1 / 8</span>
       <span class="trv-stage-title"></span>
     </div>
     <div class="trv-stage-desc"></div>
@@ -29,20 +29,20 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
         <rect x="10" y="6" width="295" height="68" rx="6"
               fill="var(--bg-surface)"
               stroke="var(--border)" stroke-width="0.5"/>
-        <text x="20" y="18" font-family="monospace" font-size="10" fill="var(--text-muted)">user@<tspan fill="var(--text)" font-weight="500">node-0</tspan> $ torchrun \</text>
-        <text x="20" y="30" font-family="monospace" font-size="10" fill="var(--text)">    --nnodes=2 --nproc-per-node=8 \</text>
-        <text x="20" y="42" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv-id=job1 --rdzv-backend=c10d \</text>
-        <text x="20" y="54" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv-endpoint=192.168.0.2:29500 \</text>
-        <text x="20" y="66" font-family="monospace" font-size="10" fill="var(--text)">    dist_matmul_allreduce.py</text>
+        <text x="20" y="18" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text-muted)">user@<tspan fill="var(--text)" font-weight="500">node-0</tspan> $ torchrun \</text>
+        <text x="20" y="30" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    --nnodes=2 --nproc-per-node=8 \</text>
+        <text x="20" y="42" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    --rdzv-id=job1 --rdzv-backend=c10d \</text>
+        <text x="20" y="54" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    --rdzv-endpoint=192.168.0.2:29500 \</text>
+        <text x="20" y="66" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    dist_matmul_allreduce.py</text>
 
         <rect x="375" y="6" width="295" height="68" rx="6"
               fill="var(--bg-surface)"
               stroke="var(--border)" stroke-width="0.5"/>
-        <text x="385" y="18" font-family="monospace" font-size="10" fill="var(--text-muted)">user@<tspan fill="var(--text)" font-weight="500">node-1</tspan> $ torchrun \</text>
-        <text x="385" y="30" font-family="monospace" font-size="10" fill="var(--text)">    --nnodes=2 --nproc-per-node=8 \</text>
-        <text x="385" y="42" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv-id=job1 --rdzv-backend=c10d \</text>
-        <text x="385" y="54" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv-endpoint=192.168.0.2:29500 \</text>
-        <text x="385" y="66" font-family="monospace" font-size="10" fill="var(--text)">    dist_matmul_allreduce.py</text>
+        <text x="385" y="18" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text-muted)">user@<tspan fill="var(--text)" font-weight="500">node-1</tspan> $ torchrun \</text>
+        <text x="385" y="30" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    --nnodes=2 --nproc-per-node=8 \</text>
+        <text x="385" y="42" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    --rdzv-id=job1 --rdzv-backend=c10d \</text>
+        <text x="385" y="54" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    --rdzv-endpoint=192.168.0.2:29500 \</text>
+        <text x="385" y="66" font-family="var(--fig-font-mono)" font-size="10" fill="var(--text)">    dist_matmul_allreduce.py</text>
       </g>
 
       <g class="trv-rdzv-coord">
@@ -50,7 +50,7 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
               fill="var(--trv-coord-bg)"
               stroke="var(--trv-info)" stroke-width="1"/>
         <text x="340" y="36" text-anchor="middle" font-size="11" font-weight="500" fill="var(--trv-info)">Rendezvous · TCPStore</text>
-        <text x="340" y="52" text-anchor="middle" font-size="10" font-family="monospace" fill="var(--text-muted)">:29500 · WORLD=16</text>
+        <text x="340" y="52" text-anchor="middle" font-size="10" font-family="var(--fig-font-mono)" fill="var(--text-muted)">:29500 · WORLD=16</text>
       </g>
 
       <g>
@@ -107,7 +107,7 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
               fill="var(--trv-coord-bg)"
               stroke="var(--trv-amber)" stroke-width="1"/>
         <text x="340" y="272" text-anchor="middle" font-size="11" font-weight="500" fill="var(--trv-amber)">Process Group</text>
-        <text x="340" y="288" text-anchor="middle" font-size="10" font-family="monospace" fill="var(--text-muted)">backend = nccl</text>
+        <text x="340" y="288" text-anchor="middle" font-size="10" font-family="var(--fig-font-mono)" fill="var(--text-muted)">backend = nccl</text>
       </g>
 
       <g class="trv-cleanup-label">
@@ -121,61 +121,37 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
   </div>
 
   <div class="trv-controls">
-    <button class="trv-btn trv-btn-prev" type="button">← 이전</button>
-    <button class="trv-btn trv-btn-play" type="button">▶ 자동재생</button>
-    <button class="trv-btn trv-btn-next" type="button">다음 →</button>
+    <button class="fig-btn trv-btn-prev" type="button" aria-label="이전"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg><span>이전</span></button>
+    <button class="fig-btn trv-btn-play" type="button" aria-label="재생"><svg class="trv-icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><svg class="trv-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg><span class="trv-play-label">재생</span></button>
+    <button class="fig-btn trv-btn-next" type="button" aria-label="다음"><span>다음</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
     <div class="trv-progress"></div>
-    <button class="trv-btn trv-btn-reset" type="button" aria-label="처음으로">↻</button>
+    <button class="fig-btn trv-btn-reset" type="button" aria-label="처음으로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
   </div>
 </div>
 
 <style>
-  /* ── Light mode defaults ─────────────────────────────────────── */
   .trv-root {
-    /* Visualization-specific colors */
-    --trv-info: #185FA5;
-    --trv-info-text: #ffffff;
-    --trv-amber: #BA7517;
+    --trv-info: var(--fig-blue-ink);
+    --trv-info-text: var(--fig-surface);
+    --trv-amber: var(--fig-amber);
 
-    --trv-coord-bg: #fafaf8;
-    --trv-node-bg: #ece8df;
+    --trv-coord-bg: var(--fig-surface);
+    --trv-node-bg: color-mix(in srgb, var(--fig-fill) 60%, var(--fig-surface));
 
-    --trv-node0-fill: #E6F1FB;
-    --trv-node0-stroke: #185FA5;
-    --trv-node0-pill-bg: #B5D4F4;
-    --trv-node0-pill-text: #185FA5;
+    --trv-node0-fill: var(--fig-blue-tint);
+    --trv-node0-stroke: var(--fig-blue-ink);
+    --trv-node0-pill-bg: color-mix(in srgb, var(--fig-blue) 30%, var(--fig-surface));
+    --trv-node0-pill-text: var(--fig-blue-ink);
 
-    --trv-node1-fill: #EEEDFE;
-    --trv-node1-stroke: #534AB7;
-    --trv-node1-pill-bg: #CECBF6;
-    --trv-node1-pill-text: #534AB7;
+    --trv-node1-fill: var(--fig-purple-tint);
+    --trv-node1-stroke: var(--fig-purple);
+    --trv-node1-pill-bg: color-mix(in srgb, var(--fig-purple) 30%, var(--fig-surface));
+    --trv-node1-pill-text: var(--fig-purple-ink);
 
     color: var(--text);
     line-height: 1.5;
     max-width: 720px;
     margin: 0 auto;
-  }
-
-  /* ── Dark mode overrides ─────────────────────────────────────── */
-  /* :global() prevents Astro from scoping [data-theme='dark']; the attribute
-     lives on <html> which has no component scope id. */
-  :global([data-theme='dark']) .trv-root {
-    --trv-info: #85B7EB;
-    --trv-info-text: #042C53;
-    --trv-amber: #EF9F27;
-
-    --trv-coord-bg: #2a2a2a;
-    --trv-node-bg: #232323;
-
-    --trv-node0-fill: #0C447C;
-    --trv-node0-stroke: #85B7EB;
-    --trv-node0-pill-bg: #185FA5;
-    --trv-node0-pill-text: #B5D4F4;
-
-    --trv-node1-fill: #3C3489;
-    --trv-node1-stroke: #AFA9EC;
-    --trv-node1-pill-bg: #534AB7;
-    --trv-node1-pill-text: #CECBF6;
   }
 
   /* ── Stage card ──────────────────────────────────────────────── */
@@ -221,20 +197,11 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
     flex-wrap: wrap;
   }
 
-  .trv-btn {
-    padding: 4px 14px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--bg-surface);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .trv-btn:hover { background: var(--accent-shadow); }
-  .trv-btn:disabled { opacity: 0.4; cursor: default; }
+  .trv-btn-play { min-width: 104px; justify-content: center; }
+  .trv-icon-pause { display: none; }
+  .trv-btn-play.is-playing .trv-icon-play { display: none; }
+  .trv-btn-play.is-playing .trv-icon-pause { display: inline-block; }
+  .trv-btn-reset { flex-shrink: 0; }
 
   .trv-progress {
     flex: 1;
@@ -442,7 +409,7 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
 
         glowSVG +=
           '<rect class="trv-compute-glow" x="' + (x - 3) + '" y="' + (y - 3) +
-          '" width="62" height="66" rx="9" fill="#EF9F27"/>';
+          '" width="62" height="66" rx="9" fill="var(--fig-amber)"/>';
 
         procSVG +=
           '<g class="trv-proc-box" style="transition-delay:' + delay + 's">' +
@@ -460,7 +427,7 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
 
         badgeSVG +=
           '<rect class="trv-data-badge" x="' + (x + 8) + '" y="' + (y + 5) +
-          '" width="40" height="3" rx="1.5" fill="#1D9E75"/>';
+          '" width="40" height="3" rx="1.5" fill="var(--fig-teal)"/>';
 
         // GPU top up to its row bus.
         lineSVG += rdzvPath('M ' + cx + ' ' + y + ' V ' + (rowI === 0 ? busY0 : busY1));
@@ -494,7 +461,7 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
     function applyStage(idx: number) {
       currentStage = idx;
       const stage = stages[idx];
-      stageNum.textContent = (idx + 1) + ' / ' + stages.length;
+      stageNum.textContent = '스텝 ' + (idx + 1) + ' / ' + stages.length;
       stageTitle.textContent = stage.title;
       stageDesc.textContent = stage.desc;
 
@@ -509,13 +476,20 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
       btnNext.disabled = idx === stages.length - 1;
     }
 
+    const playLabel = btnPlay.querySelector('.trv-play-label') as HTMLElement;
+    function setPlayUI(on: boolean) {
+      btnPlay.classList.toggle('is-playing', on);
+      playLabel.textContent = on ? '일시정지' : '재생';
+      btnPlay.setAttribute('aria-label', on ? '일시정지' : '재생');
+    }
+
     function goPrev() { if (currentStage > 0) { stopPlay(); applyStage(currentStage - 1); } }
     function goNext() { if (currentStage < stages.length - 1) { applyStage(currentStage + 1); } }
     function togglePlay() { if (isPlaying) stopPlay(); else startPlay(); }
     function startPlay() {
       if (currentStage === stages.length - 1) applyStage(0);
       isPlaying = true;
-      btnPlay.textContent = '⏸ 일시정지';
+      setPlayUI(true);
       scheduleNext();
     }
     function scheduleNext() {
@@ -531,7 +505,7 @@ const ringPath = 'M 54 198 L 123 198 L 192 198 L 261 198 L 261 354 L 192 354 L 1
     function stopPlay() {
       isPlaying = false;
       if (playTimer !== null) clearTimeout(playTimer);
-      btnPlay.textContent = '▶ 자동재생';
+      setPlayUI(false);
     }
     function resetAnim() { stopPlay(); applyStage(0); }
 

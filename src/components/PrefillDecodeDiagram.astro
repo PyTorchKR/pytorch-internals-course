@@ -27,22 +27,21 @@
   </div>
 
   <div class="pd-controls">
-    <button class="pd-btn" data-pd-play type="button" aria-label="Play">
+    <button class="fig-btn pd-btn-play" data-pd-play type="button" aria-label="재생">
       <svg class="pd-icon pd-icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
       <svg class="pd-icon pd-icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>
-      <span class="pd-btn-label">Play</span>
+      <span class="pd-btn-label">재생</span>
     </button>
-    <button class="pd-btn" data-pd-reset type="button" aria-label="Reset">
+    <button class="fig-btn" data-pd-reset type="button" aria-label="처음으로">
       <svg class="pd-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-      <span>Reset</span>
     </button>
-    <input type="range" class="pd-slider" data-pd-slider min="0" max="12" step="1" value="0" aria-label="Step slider" />
+    <input type="range" class="pd-slider" data-pd-slider min="0" max="12" step="1" value="0" aria-label="스텝 슬라이더" />
     <span class="pd-step-l" data-pd-step-l>스텝 0 / 12</span>
   </div>
 
   <div class="pd-expl">
     <div class="pd-expl-tag" data-pd-expl-tag>대기</div>
-    <div class="pd-expl-text" data-pd-expl-text>아직 계산 전입니다. Play를 누르면 layer가 계산될 때마다 그 layer의 attention 점이 나타납니다.</div>
+    <div class="pd-expl-text" data-pd-expl-text>아직 계산 전입니다. 재생을 누르면 layer가 계산될 때마다 그 layer의 attention 점이 나타납니다.</div>
   </div>
 
   <div class="pd-metrics">
@@ -65,41 +64,24 @@
    * not apply to those dynamic elements, breaking the styles.
    */
   .pd-widget {
-    /* Light mode defaults — match site theme (--bg, --bg-surface, --text, --text-muted, --border) */
-    --pd-bg-secondary: #f4f4f3;
-    --pd-bg-info: #e6f0ff;
-    --pd-bg-primary: #fafaf8;
-    --pd-text-primary: #1a1a1a;
-    --pd-text-secondary: #525252;
-    --pd-text-tertiary: #8a8a8a;
-    --pd-text-info: #2563eb;
-    --pd-border-secondary: #cfcfcf;
-    --pd-border-tertiary: #e3e3e3;
-    --pd-fb-color: #d85a30;
-    --pd-fb-text: #993c1d;
+    --pd-bg-secondary: var(--bg-surface);
+    --pd-bg-info: var(--fig-blue-tint);
+    --pd-bg-primary: var(--fig-surface);
+    --pd-text-primary: var(--fig-text);
+    --pd-text-secondary: var(--fig-text-2);
+    --pd-text-tertiary: var(--fig-line);
+    --pd-text-info: var(--fig-blue-ink);
+    --pd-border-secondary: var(--fig-line-soft);
+    --pd-border-tertiary: var(--fig-line-soft);
+    --pd-fb-color: var(--fig-coral);
+    --pd-fb-text: var(--fig-coral);
 
     --pd-radius-md: 6px;
-    --pd-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --pd-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --pd-font-mono: var(--fig-font-mono);
 
     padding: 1rem 0;
     color: var(--pd-text-primary);
-    font-family: var(--pd-font-sans);
-  }
-
-  /* Dark mode overrides — [data-theme='dark'] is on <html>, this is an is:global block */
-  [data-theme='dark'] .pd-widget {
-    --pd-bg-secondary: #2a2d31;
-    --pd-bg-info: #0c447c;
-    --pd-bg-primary: #1c1c1d;
-    --pd-text-primary: #d2d2d2;
-    --pd-text-secondary: #a8a8a8;
-    --pd-text-tertiary: #828282;
-    --pd-text-info: #85b7eb;
-    --pd-border-secondary: #424246;
-    --pd-border-tertiary: #353539;
-    --pd-fb-color: #ef9f27;
-    --pd-fb-text: #f4b878;
+    font-family: inherit;
   }
 
   .pd-widget .pd-sr-only {
@@ -175,7 +157,7 @@
 
   /* Labels */
   .pd-widget .pd-lbl {
-    font-family: var(--pd-font-sans);
+    font-family: inherit;
     font-size: 12px;
     fill: var(--pd-text-primary);
     text-anchor: middle;
@@ -189,7 +171,7 @@
     fill: var(--pd-text-info);
   }
   .pd-widget .pd-lbl-out {
-    font-family: var(--pd-font-sans);
+    font-family: inherit;
     font-size: 14px;
     font-weight: 500;
     opacity: 0;
@@ -200,7 +182,7 @@
   }
   .pd-widget .pd-lbl-out.is-shown { opacity: 1; }
   .pd-widget .pd-lbl-in {
-    font-family: var(--pd-font-sans);
+    font-family: inherit;
     font-size: 12px;
     font-weight: 500;
     opacity: 0;
@@ -210,14 +192,14 @@
   }
   .pd-widget .pd-lbl-in.is-shown { opacity: 1; }
   .pd-widget .pd-lbl-phase {
-    font-family: var(--pd-font-sans);
+    font-family: inherit;
     font-size: 13px;
     fill: var(--pd-text-secondary);
     text-anchor: middle;
     pointer-events: none;
   }
   .pd-widget .pd-lbl-tag {
-    font-family: var(--pd-font-sans);
+    font-family: inherit;
     font-size: 11px;
     fill: var(--pd-text-tertiary);
     text-anchor: middle;
@@ -225,7 +207,7 @@
     pointer-events: none;
   }
   .pd-widget .pd-lbl-axis {
-    font-family: var(--pd-font-sans);
+    font-family: inherit;
     font-size: 11px;
     fill: var(--pd-text-secondary);
     text-anchor: middle;
@@ -256,32 +238,11 @@
     flex-wrap: wrap;
     margin-top: 14px;
   }
-  .pd-widget .pd-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid var(--pd-border-secondary);
-    border-radius: var(--pd-radius-md);
-    background: var(--pd-bg-primary);
-    color: var(--pd-text-primary);
-    font-family: var(--pd-font-sans);
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .pd-widget .pd-btn:hover {
-    background: var(--pd-bg-secondary);
-    border-color: var(--pd-text-tertiary);
-  }
-  .pd-widget .pd-btn:focus-visible {
-    outline: 2px solid var(--pd-text-info);
-    outline-offset: 2px;
-  }
   .pd-widget .pd-icon { display: inline-block; flex-shrink: 0; }
   .pd-widget .pd-icon-pause { display: none; }
-  .pd-widget .pd-btn.is-playing .pd-icon-play { display: none; }
-  .pd-widget .pd-btn.is-playing .pd-icon-pause { display: inline-block; }
+  .pd-widget .pd-btn-play { min-width: 104px; justify-content: center; }
+  .pd-widget .fig-btn.is-playing .pd-icon-play { display: none; }
+  .pd-widget .fig-btn.is-playing .pd-icon-pause { display: inline-block; }
 
   .pd-widget .pd-slider {
     flex: 1;
@@ -515,7 +476,7 @@
     };
 
     const STEPS: Step[] = [
-      { tag: '대기', text: '아직 계산 전입니다. Play를 누르면 layer가 계산될 때마다 그 layer의 attention 점이 나타납니다.' },
+      { tag: '대기', text: '아직 계산 전입니다. 재생을 누르면 layer가 계산될 때마다 그 layer의 attention 점이 나타납니다.' },
       { active: ['cp-0-0', 'cp-1-0', 'cp-2-0', 'cp-3-0'], phase: 'p', tag: 'Prefill · Layer 0 (input embedding)', text: '프롬프트 token 4개를 한 번에 임베딩합니다. attention은 아직 없으므로 점도 없습니다.' },
       { active: ['cp-0-1', 'cp-1-1', 'cp-2-1', 'cp-3-1'], phase: 'p', tag: 'Prefill · Layer 1 (causal self-attention)', text: 'token 4개가 같은 layer를 동시에 통과합니다. 각 token은 자기 자신과 앞 token만 참조하므로 점이 1+2+3+4=10개 생깁니다(causal mask).' },
       { active: ['cp-0-2', 'cp-1-2', 'cp-2-2', 'cp-3-2'], phase: 'p', tag: 'Prefill · Layer 2', text: 'Layer 2에서도 같은 모양의 점이 생깁니다. 이 layer까지의 K/V가 cache에 쌓입니다.' },
@@ -638,8 +599,8 @@
     function setPlayingUI(isPlaying: boolean) {
       if (!playBtn) return;
       playBtn.classList.toggle('is-playing', isPlaying);
-      if (playLabel) playLabel.textContent = isPlaying ? 'Pause' : 'Play';
-      playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+      if (playLabel) playLabel.textContent = isPlaying ? '일시정지' : '재생';
+      playBtn.setAttribute('aria-label', isPlaying ? '일시정지' : '재생');
     }
 
     function play() {

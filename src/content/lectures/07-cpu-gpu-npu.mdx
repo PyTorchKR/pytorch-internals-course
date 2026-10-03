@@ -443,7 +443,7 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
   </div>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
-    <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"재배치할 명령어 윈도우가 넓어짐"</div>
+    <div style={{ fontSize: '0.85em', color: 'var(--fig-blue-ink)', marginBottom: '4px', textAlign: 'center' }}>"재배치할 명령어 윈도우가 넓어짐"</div>
     <ThemeImage lightSrc="/images/07/loop_trace_deps_light.svg" darkSrc="/images/07/loop_trace_deps_dark.svg" alt="speculative trace 두 iteration 사이의 의존: 빨간 점선은 같은 이름 s2, t1을 다시 써서 생기는 False Dependency, 초록 실선은 addi s1에서 다음 iteration의 slli로 값이 넘어가는 True Dependency" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>speculative trace를 만들면<br/>같은 이름을 다시 쓰는 곳에 가짜 의존(빨강)이 생기고<br/>(그림은 대표로 s2, t1만 그리고, 분기 blt(#8)는 생략했습니다)</div>
   </div>
@@ -454,7 +454,7 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
   </div>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
-    <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"값을 쓸 때마다 새 이름을 주면 가짜 의존이 사라짐"</div>
+    <div style={{ fontSize: '0.85em', color: 'var(--fig-blue-ink)', marginBottom: '4px', textAlign: 'center' }}>"값을 쓸 때마다 새 이름을 주면 가짜 의존이 사라짐"</div>
     <ThemeImage lightSrc="/images/07/loop_trace_renamed_light.svg" darkSrc="/images/07/loop_trace_renamed_dark.svg" alt="renaming 후 trace: iteration i+1이 쓰는 값이 s2′, t1′처럼 새 이름을 받아 False Dependency가 사라지고, 두 iteration 사이에는 s1′ 하나만 남음" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>renaming 후에는<br/>값이 넘어가는 s1′ 하나만 남는다</div>
   </div>
@@ -465,7 +465,7 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
   </div>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
-    <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"의존 경로가 없는 명령어는 병렬 처리 가능"</div>
+    <div style={{ fontSize: '0.85em', color: 'var(--fig-blue-ink)', marginBottom: '4px', textAlign: 'center' }}>"의존 경로가 없는 명령어는 병렬 처리 가능"</div>
     <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 그 명령어가 만드는 값(slli s2, slli s2′ …), edge 이름은 그 edge로 전달되는 값. iteration 사이를 잇는 값은 루프 카운터 s1′ 하나뿐" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>남은 의존만 그리면<br/>data-flow graph</div>
   </div>
@@ -567,7 +567,7 @@ VLIW는 여기에 정반대 방향의 답을 내놓습니다. OOO와 똑같은 �
     lightSrc="/images/07/loop_vliw_light.svg"
     darkSrc="/images/07/loop_vliw_dark.svg"
     alt="VLIW modulo schedule: II=3, ALU 2개·MEM·MUL 4개 유닛에 3 iteration의 명령어를 배치한 표. prologue, 3 cycle마다 반복되는 kernel, epilogue로 나뉘고 짝수·홀수 iteration이 레지스터 세트 A/B를 번갈아 쓴다"
-    class="w-full max-w-5xl mx-auto"
+    class="mx-auto w-full max-w-[880px]"
   />
   <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>VLIW: 컴파일러가 미리 만든 modulo schedule(II = 3). kernel 구간을 하드웨어가 그대로 반복</div>
 </div>
@@ -996,7 +996,7 @@ NPU에서는 Compute Unit뿐 아니라 DMA도 소프트웨어가 따로 프로�
     lightSrc="/images/07/command_processor_arch_light.svg"
     darkSrc="/images/07/command_processor_arch_dark.svg"
     alt="NPU 명령 관점 구조: Command Processor가 command stream을 Compute Unit·L1 DMA·L2 DMA별 command queue에 나눠 넣고, Sync Network가 유닛 사이의 signal/wait를 전달"
-    class="h-36 mx-auto"
+    class="mx-auto w-full max-w-[900px]"
 />
 
 이런 command stream은 여러 Functional Unit의 동작을 소프트웨어가 함께 스케줄한다는 점에서 앞 절의 Horizontal Encoding과 유사합니다. 다만 모든 NPU ISA가 VLIW이거나 reconfigurable architecture인 것은 아니므로, 여기서는 스케줄링 방식의 유사성만 비교합니다.
@@ -1009,7 +1009,7 @@ NPU에서는 Compute Unit뿐 아니라 DMA도 소프트웨어가 따로 프로�
     lightSrc="/images/07/npu_compiler_light.svg"
     darkSrc="/images/07/npu_compiler_dark.svg"
     alt="NPU compiler: model 그래프와 아키텍처 정보(Compute Unit, Command Processor, DMA, Scratchpad)를 입력으로 받아 유닛별 command queue를 생성"
-    class="h-36 mx-auto"
+    class="mx-auto w-full max-w-[900px]"
 />
 
 ML model은 일반적으로 노드 단위의 그래프 형태로 컴파일러에 들어옵니다. 그런데 그래프의 한 노드(예: 큰 matmul, attention 한 블록)를 한 cycle에 끝낼 수 있는 경우는 거의 없습니다. 그래서 노드를 하드웨어가 한 번에 처리할 수 있는 작은 단위로 더 잘게 쪼개야 합니다.

@@ -4,7 +4,6 @@ date: "2025-01-15"
 lecture: 5
 ---
 
-import Mermaid from '../../components/Mermaid.astro';
 import ThemeImage from '../../components/ThemeImage.astro';
 import TorchrunVisualizer from '../../components/TorchrunVisualizer.astro';
 
@@ -114,33 +113,7 @@ Rank는 프로세스의 고유 식별자인데, 두 가지 종류가 있습니�
 
 Rendezvous(랑데뷰)는 분산 job의 membership을 구성하고 process별 rank, world size, rendezvous store(참여자들이 정보를 주고받는 key-value 저장소) 정보를 합의하는 과정입니다. `torchrun` agent(각 node에서 worker process를 띄우고 감시하는 torchrun 프로세스)는 rendezvous 결과를 이용해 그 node의 worker process를 실행합니다. Elastic job(실행 중에 참여 node 수가 바뀔 수 있는 job)에서 membership이 바뀌면, agent는 worker group을 종료하고 rendezvous와 restart를 다시 할 수 있습니다. 실행 중인 process group에 node가 그대로 추가되지는 않습니다.
 
-<Mermaid>
-{`flowchart TB
-    RDV(["Rendezvous"])
-    subgraph World["World"]
-        direction LR
-        subgraph Node1["Node 1"]
-            direction TB
-            R0["Rank 0<br/>(local rank 0)"]
-            R1["Rank 1<br/>(local rank 1)"]
-            R2["Rank 2<br/>(local rank 2)"]
-            R0 ~~~ R1 ~~~ R2
-        end
-        subgraph Node2["Node 2"]
-            direction TB
-            R3["Rank 3<br/>(local rank 0)"]
-            R4["Rank 4<br/>(local rank 1)"]
-            R5["Rank 5<br/>(local rank 2)"]
-            R3 ~~~ R4 ~~~ R5
-        end
-    end
-    RDV -.-> Node1
-    RDV -.-> Node2
-    classDef worldStyle fill:#64748b15,stroke:#64748b,stroke-width:1px
-    classDef nodeStyle fill:#64748b30,stroke:#64748b,stroke-width:1px
-    class World worldStyle
-    class Node1,Node2 nodeStyle`}
-</Mermaid>
+<ThemeImage lightSrc="/images/05/rank-world-light.svg" darkSrc="/images/05/rank-world-dark.svg" alt="Rendezvous가 Node 1과 Node 2를 잇고, World 안의 각 Node에 Rank 0~2와 Rank 3~5가 local rank 0~2로 들어 있는 구조도" class="mx-auto w-full max-w-[640px]" />
 
 ### Overall Architecture
 
@@ -179,58 +152,14 @@ Process Group은 서로 통신하는 프로세스들의 집합입니다. 기본(
 
 **Default process_group**
 
-<Mermaid wide>
-{`flowchart LR
-    subgraph PG["process_group (default)"]
-        subgraph C1[" "]
-            direction TB
-            R0["Rank 0"]
-            R1["Rank 1"]
-            R2["Rank 2"]
-            R0 ~~~ R1 ~~~ R2
-        end
-        subgraph C2[" "]
-            direction TB
-            R3["Rank 3"]
-            R4["Rank 4"]
-            R5["Rank 5"]
-            R3 ~~~ R4 ~~~ R5
-        end
-    end
-    classDef pgStyle fill:#64748b15,stroke:#64748b,stroke-width:1px
-    classDef hiddenStyle fill:none,stroke:none
-    class PG pgStyle
-    class C1,C2 hiddenStyle`}
-</Mermaid>
+<ThemeImage lightSrc="/images/05/process-group-default-light.svg" darkSrc="/images/05/process-group-default-dark.svg" alt="하나의 process_group 안에 Rank 0~5가 모두 들어 있는 기본 구성도" class="mx-auto w-full max-w-[360px]" />
 
 </div>
 <div>
 
 **process_group with 2 subgroups**
 
-<Mermaid wide>
-{`flowchart LR
-    subgraph PG["process_group"]
-        subgraph SG1["subgroup 1"]
-            direction TB
-            R0["Rank 0"]
-            R1["Rank 1"]
-            R2["Rank 2"]
-            R0 ~~~ R1 ~~~ R2
-        end
-        subgraph SG2["subgroup 2"]
-            direction TB
-            R3["Rank 3"]
-            R4["Rank 4"]
-            R5["Rank 5"]
-            R3 ~~~ R4 ~~~ R5
-        end
-    end
-    classDef pgStyle fill:#64748b15,stroke:#64748b,stroke-width:1px
-    classDef sgStyle fill:#64748b30,stroke:#64748b,stroke-width:1px
-    class PG pgStyle
-    class SG1,SG2 sgStyle`}
-</Mermaid>
+<ThemeImage lightSrc="/images/05/process-group-subgroups-light.svg" darkSrc="/images/05/process-group-subgroups-dark.svg" alt="process_group 안에 Rank 0~2의 subgroup 1과 Rank 3~5의 subgroup 2가 나뉘어 있는 구성도" class="mx-auto w-full max-w-[360px]" />
 
 </div>
 </div>
@@ -255,7 +184,7 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
   <div><strong>Gather</strong> : 반대로 여러 프로세스의 데이터를 한 곳으로 모으는 연산</div>
 </div>
 
-<hr style="margin: 0.5rem 0; border-top: 1px solid #94a3b8;" />
+<hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
   <img src="/images/05/torch_distributed_scatter.png" alt="Scatter 연산: 하나의 프로세스가 가진 데이터를 여러 프로세스에 분산" class="h-56 mx-auto diagram-bg p-2 rounded" />
@@ -269,7 +198,7 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
   <div><strong>All-Reduce</strong> : 같은 연산을 수행하되 결과를 <strong>모든</strong> 프로세스에 공유</div>
 </div>
 
-<hr style="margin: 0.5rem 0; border-top: 1px solid #94a3b8;" />
+<hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
   <img src="/images/05/torch_distributed_reduce.png" alt="Reduce 연산: 여러 프로세스의 데이터를 연산으로 합쳐 하나의 프로세스에 저장" class="h-56 mx-auto diagram-bg p-2 rounded" />
@@ -283,7 +212,7 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
   <div><strong>All-Gather</strong> : 각 프로세스가 가진 서로 다른 데이터를 모든 프로세스에 수집. FSDP에서 sharded parameter를 복원할 때 활용</div>
 </div>
 
-<hr style="margin: 0.5rem 0; border-top: 1px solid #94a3b8;" />
+<hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
   <img src="/images/05/torch_distributed_broadcast.png" alt="Broadcast 연산: 한 프로세스의 데이터를 모든 프로세스에 동일하게 전달" class="h-56 mx-auto diagram-bg p-2 rounded" />

@@ -4,7 +4,6 @@ date: "2024-12-18"
 lecture: 3
 ---
 
-import Mermaid from '../../components/Mermaid.astro';
 import ThemeImage from '../../components/ThemeImage.astro';
 
 
@@ -109,25 +108,10 @@ L9:  output(r);
 
 위 소스 코드를 graph 형태로 표현한 것이 **control flow graph (CFG)** 입니다.
 
-<Mermaid>
-{`graph TD
-    L12["L1-2<br/>input❨a,b,c❩<br/>d ← b∗b - 4∗a∗c"]
-    D{"d = ?"}
-    L4["L4<br/>r ← 2"]
-    L6["L6<br/>r ← 1"]
-    L8["L8<br/>r ← 0"]
-    J1["J1"]
-    L9["L9<br/>output❨r❩"]
-
-    L12 --> D
-    D -->|"d > 0"| L4
-    D -->|"d = 0"| L6
-    D -->|"d < 0"| L8
-    L4 --> J1
-    L6 --> J1
-    L8 --> J1
-    J1 --> L9`}
-</Mermaid>
+<ThemeImage
+  lightSrc="/images/03/control-flow-graph-light.svg"
+  darkSrc="/images/03/control-flow-graph-dark.svg"
+  alt="위 소스 코드의 control flow graph로, 조건 d의 부호에 따라 L4, L6, L8로 갈라진 뒤 J1에서 합쳐져 L9로 이어집니다." class="mx-auto w-full max-w-[640px]" />
 
 - **노드(Node)**: 분기점이 없는 연속적인 코드 블록(시퀀스)입니다. 한 노드 안의 코드는 항상 순서대로 실행됩니다. 이 예제에서도 분기 없이 이어지는 L1-2를 한 노드로 묶었습니다. 실제 컴파일러에서도 여러 instruction의 시퀀스가 하나의 노드를 이룹니다.
 - **엣지(Edge)**: 노드 간의 연결로, 프로그램의 실행 흐름(branch, jump)을 나타냅니다. CFG는 한 노드에서 다른 노드로 이동할 수 있는 모든 경로를 화살표로 표시합니다.
@@ -138,10 +122,10 @@ L9:  output(r);
 
 예를 들어 `d = 0`일 때의 Trace는 다음과 같습니다:
 
-<Mermaid>
-{`graph LR
-    L12["L1-2"] --> D["d=?"] --> L6["L6"] --> J1["J1"] --> L9["L9"]`}
-</Mermaid>
+<ThemeImage
+  lightSrc="/images/03/trace-linear-list-light.svg"
+  darkSrc="/images/03/trace-linear-list-dark.svg"
+  alt="d = 0일 때의 Trace로, L1-2, d=?, L6, J1, L9 노드가 한 줄로 이어집니다." class="mx-auto w-full max-w-[640px]" />
 
 이때 프로그램과 입력을 받아 종료될 때까지 실행하면서 trace만 만들어내는 가상의 실행 엔진을 생각해 볼 수 있습니다.
 
@@ -477,33 +461,10 @@ Trace 생성의 입력과 결과물은 다음과 같습니다.
 - **Transformed bytecode**: FX graph를 호출하는 bytecode와, 다음 코드로 넘어가기 위한 부분 포함
 - **Resume functions(continuation functions)**: graph break 이후 실행을 재개할 함수. Branch에서 break가 발생한 경우, 분기에 따라 여러 개의 resume function이 존재할 수 있음
 
-<Mermaid>
-{`graph TB
-    PF["함수 호출 → 새 frame"]
-    CE["Cache Entry의 Guard 검사"]
-    TB["Transformed bytecode 실행"]
-    FX["Captured FX graph 계산"]
-    RF1["Resume function (분기 A)"]
-    RF2["Resume function (분기 B)"]
-    NEXT["다음 entry"]
-    ALLFAIL["모든 entry 실패"]
-    LIMIT{"recompile_limit<br/>(기본 8) 초과?"}
-    RECOMPILE["Recompile<br/>새 Cache Entry 추가"]
-    SKIP["컴파일 중단<br/>eager로 실행"]
-
-    PF --> CE
-    CE -->|Pass| TB
-    CE -->|Fail| NEXT
-    NEXT -->|검사할 entry 남음| CE
-    NEXT -->|모두 실패| ALLFAIL
-    TB --> FX
-    TB -->|Select| RF1
-    TB -->|Select| RF2
-    ALLFAIL --> LIMIT
-    LIMIT -->|No| RECOMPILE
-    RECOMPILE -->|새 entry의 bytecode 실행| TB
-    LIMIT -->|Yes| SKIP`}
-</Mermaid>
+<ThemeImage
+  lightSrc="/images/03/dynamo-cache-entry-flow-light.svg"
+  darkSrc="/images/03/dynamo-cache-entry-flow-dark.svg"
+  alt="함수 호출 시 Cache Entry의 Guard를 검사해 통과하면 transformed bytecode를 실행하고, 모두 실패하면 recompile_limit에 따라 recompile하거나 eager로 실행하는 흐름입니다." class="mx-auto w-full max-w-[900px]" />
 
 #### Resume이 불가능한 graph break: skipped functions
 
@@ -569,13 +530,10 @@ Dynamo는 bytecode analysis로 FX graph와 guard를 생성하고, guard가 유�
 
 PyTorch 2.x compiler stack은 graph를 backend가 처리할 수 있는 operator 집합과 내부 IR로 변환합니다. 이 변환을 lowering이라고 합니다. Lowering은 상위 연산을 더 작고 단순한 연산의 조합으로 바꾸는 과정입니다. 아래 그림은 Inductor를 사용하는 대표적인 경로입니다. 실제 decomposition(복합 op을 더 작은 ATen op으로 분해) 단계와 사용되는 IR은 backend와 graph에 따라 달라집니다:
 
-<Mermaid wide>
-{`graph LR
-    D["Dynamo"] -->|FX graph - Torch IR| A["AOTAutograd"]
-    A -->|FX graph - ATen IR| I["Inductor"]
-    I -->|생성된 Triton kernel 소스| T["Triton compiler"]
-    T -->|PTX / cubin| G["GPU"]`}
-</Mermaid>
+<ThemeImage
+  lightSrc="/images/03/ir-lowering-path-light.svg"
+  darkSrc="/images/03/ir-lowering-path-dark.svg"
+  alt="Dynamo에서 AOTAutograd, Inductor, Triton compiler를 거쳐 GPU까지 이어지는 IR lowering 경로입니다." class="mx-auto w-full max-w-[900px]" />
 
 **1. Dynamo** → FX graph (Torch IR)
 

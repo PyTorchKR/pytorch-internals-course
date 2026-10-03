@@ -1,28 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 390" role="img" aria-label="실제 token 수에 따른 스텝 비용 계단. 14 token은 bucket 16, 4 token request를 더하면 bucket 32로 넘어간다">
-<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#8a8a9a" stroke-width="2"/></pattern></defs>
-<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#5b9bf0"/></marker></defs>
-<style>text{font-family:Pretendard,'Noto Sans KR',Inter,Helvetica,Arial,sans-serif;fill:#e0e0e0} .sub{fill:#aaa}</style>
-<line x1="90" y1="320" x2="618" y2="320" stroke="#bbb" stroke-width="1.5"/>
-<line x1="90" y1="320" x2="90" y2="48" stroke="#bbb" stroke-width="1.5"/>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#888780" stroke-width="2"/></pattern></defs>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#85B7EB"/></marker></defs>
+<style>text{font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif;fill:#D3D1C7} .sub{fill:#B4B2A9}</style>
+<line x1="90" y1="320" x2="618" y2="320" stroke="#B4B2A9" stroke-width="1.5"/>
+<line x1="90" y1="320" x2="90" y2="48" stroke="#B4B2A9" stroke-width="1.5"/>
 <text class="sub" x="618" y="364" font-size="14" text-anchor="end">실제 입력 token 수</text>
 <text class="sub" x="80" y="38" font-size="14" text-anchor="start">스텝 비용</text>
 <text class="sub" x="218" y="338" font-size="13" text-anchor="middle">8</text>
 <text class="sub" x="82" y="260" font-size="13" text-anchor="end">bucket 8</text>
-<line x1="90" y1="256" x2="618" y2="256" stroke="#7a7a8a" stroke-width="1" stroke-dasharray="2 4"/>
+<line x1="90" y1="256" x2="618" y2="256" stroke="#6F6E68" stroke-width="1" stroke-dasharray="2 4"/>
 <text class="sub" x="346" y="338" font-size="13" text-anchor="middle">16</text>
 <text class="sub" x="82" y="196" font-size="13" text-anchor="end">bucket 16</text>
-<line x1="90" y1="192" x2="618" y2="192" stroke="#7a7a8a" stroke-width="1" stroke-dasharray="2 4"/>
+<line x1="90" y1="192" x2="618" y2="192" stroke="#6F6E68" stroke-width="1" stroke-dasharray="2 4"/>
 <text class="sub" x="602" y="338" font-size="13" text-anchor="middle">32</text>
 <text class="sub" x="82" y="68" font-size="13" text-anchor="end">bucket 32</text>
-<line x1="90" y1="64" x2="618" y2="64" stroke="#7a7a8a" stroke-width="1" stroke-dasharray="2 4"/>
+<line x1="90" y1="64" x2="618" y2="64" stroke="#6F6E68" stroke-width="1" stroke-dasharray="2 4"/>
 <polygon points="90,320 90,256 218,256 218,192 346,192 346,64 602,64 602,64" fill="url(#hatch)" opacity="0.8"/>
-<line x1="90" y1="320" x2="602" y2="64" stroke="#aaa" stroke-width="1.5" stroke-dasharray="6 4"/>
+<line x1="90" y1="320" x2="602" y2="64" stroke="#B4B2A9" stroke-width="1.5" stroke-dasharray="6 4"/>
 <text class="sub" x="466.0" y="180.0" font-size="13" text-anchor="start">padding이 없다면</text>
-<polyline points="90,256 90,256 218,256 218,192 346,192 346,64 602,64" fill="none" stroke="#f0915a" stroke-width="3"/>
-<text x="608" y="68" font-size="13" text-anchor="start" font-weight="bold" style="fill:#f0915a">실제 비용</text>
-<circle cx="314" cy="192" r="6" fill="#5b9bf0"/>
-<circle cx="378" cy="64" r="6" fill="#5b9bf0"/>
+<polyline points="90,256 90,256 218,256 218,192 346,192 346,64 602,64" fill="none" stroke="#FAC775" stroke-width="3"/>
+<text x="608" y="68" font-size="13" text-anchor="start" font-weight="bold" style="fill:#FAC775">실제 비용</text>
+<circle cx="314" cy="192" r="6" fill="#85B7EB"/>
+<circle cx="378" cy="64" r="6" fill="#85B7EB"/>
 <text x="304" y="180" font-size="13" text-anchor="end">token 14 → bucket 16</text>
-<path d="M314,186 V128 H378 V70" fill="none" stroke="#5b9bf0" stroke-width="2" marker-end="url(#arr)"/>
+<path d="M314,186 V128 H378 V70" fill="none" stroke="#85B7EB" stroke-width="2" marker-end="url(#arr)"/>
 <text x="368" y="52" font-size="13" text-anchor="end" font-weight="bold">token 4개 request 추가: 18 → bucket 32</text>
 </svg>

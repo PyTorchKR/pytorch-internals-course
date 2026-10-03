@@ -313,31 +313,19 @@ const triPath = lowerTriPath();
 </div>
 
 <style>
-  /* ── Light mode defaults ─────────────────────────────────────── */
   .attn-tile-root {
-    --at-text: #525252;
-    --at-muted: #666666;
-    --at-strong: #378ADD;
-    --at-light: #B5D4F4;
-    --at-danger: #A32D2D;
-    --at-grid: #fafaf8;
+    --at-text: var(--fig-text);
+    --at-muted: var(--fig-text-2);
+    --at-strong: var(--fig-blue);
+    --at-light: var(--fig-blue-tint);
+    --at-danger: var(--fig-red);
+    --at-grid: var(--fig-surface);
 
     width: 100%;
     max-width: 720px;
     margin: 0 auto;
     color: var(--at-text);
-  }
-
-  /* ── Dark mode overrides ─────────────────────────────────────── */
-  /* :global() prevents Astro from scoping [data-theme='dark']; the attribute
-     lives on <html> which has no component scope id. */
-  :global([data-theme='dark']) .attn-tile-root {
-    --at-text: #d2d2d2;
-    --at-muted: #a8a8a8;
-    --at-strong: #85B7EB;
-    --at-light: #2A4D74;
-    --at-danger: #EF9F27;
-    --at-grid: #1c1c1d;
+    font-family: inherit;
   }
 
   .attn-tile-svg {

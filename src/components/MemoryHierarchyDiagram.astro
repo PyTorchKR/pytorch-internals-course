@@ -5,7 +5,7 @@
  * 프로세서의 메모리 계층 구조 다이어그램.
  * Compute Unit → Interconnect → On-Chip Memory → Memory Wall → DRAM 계층을 보여줍니다.
  *
- * 사이트 루트의 data-theme 토글에 자동으로 대응하는 색상을 사용합니다 (rgba 중립 + 강조색).
+ * 사이트 루트의 data-theme 토글에 자동으로 대응하는 색상을 사용합니다 (--fig-* 팔레트).
  *
  * MDX 사용 예:
  *   import MemoryHierarchyDiagram from '../../components/MemoryHierarchyDiagram.astro';
@@ -92,24 +92,24 @@ const unitArray = Array.from({ length: units });
   .mh-box {
     padding: 10px;
     text-align: center;
-    border: 1px solid rgba(125, 125, 125, 0.4);
+    border: 1px solid var(--fig-line);
     border-radius: 6px;
     font-size: 0.85em;
     background: transparent;
   }
 
   .mh-box-accent {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.5);
+    background: var(--fig-blue-tint);
+    border-color: var(--fig-blue);
   }
 
   .mh-interconnect {
     padding: 8px 16px;
     text-align: center;
-    border: 1px solid rgba(125, 125, 125, 0.4);
+    border: 1px solid var(--fig-line);
     border-radius: 20px;
     font-size: 0.85em;
-    background: rgba(125, 125, 125, 0.08);
+    background: var(--fig-fill);
     width: 100%;
   }
 
@@ -117,8 +117,8 @@ const unitArray = Array.from({ length: units });
     padding: 4px 16px;
     text-align: center;
     font-size: 0.8em;
-    color: rgb(239, 68, 68);
-    border-top: 2px dashed rgba(239, 68, 68, 0.6);
+    color: var(--fig-red);
+    border-top: 2px dashed var(--fig-red);
     width: 100%;
   }
 

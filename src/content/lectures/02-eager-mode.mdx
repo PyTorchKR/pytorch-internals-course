@@ -4,7 +4,6 @@ date: "2024-12-11"
 lecture: 2
 ---
 
-import Mermaid from '../../components/Mermaid.astro';
 import ThemeImage from '../../components/ThemeImage.astro';
 import DispatchFlowDiagram from '../../components/DispatchFlowDiagram.astro';
 
@@ -654,15 +653,7 @@ Tensor는 Python과 C++ 양쪽에서 같은 객체로 다뤄져야 하고, GPU �
 
 #### Tensor의 구조
 
-<Mermaid>
-{`graph TD
-    T["at::Tensor"] --> TI["c10::TensorImpl"]
-    TI -->|data| S["c10::Storage"]
-    TI --> MD["metadata"]
-    TI --> AG["AutogradMeta"]
-    AG -->|grad| G["at::Tensor (gradient)"]
-    S -->|intrusive_ptr| SI["c10::StorageImpl"]`}
-</Mermaid>
+<ThemeImage lightSrc="/images/02/tensor-structure-light.svg" darkSrc="/images/02/tensor-structure-dark.svg" alt="at::Tensor가 c10::TensorImpl을 가리키고, TensorImpl이 Storage, metadata, AutogradMeta를 갖는 구조를 나타낸 그림." class="mx-auto w-full max-w-[720px]" />
 
 참고: [PyTorch internals (Edward Z. Yang)](http://blog.ezyang.com/2019/05/pytorch-internals/)
 
@@ -1081,26 +1072,7 @@ Stream은 host가 device로 전달한 command가 담긴 queue입니다:
 - Device는 stream에서 FIFO 순서로 command를 처리
 - 각 device마다 stream pool이 존재
 
-<Mermaid>
-{`flowchart LR
-    HOST["host"]
-
-    subgraph D1["device 1 · stream pool"]
-        Q1[["stream (FIFO)"]]
-        Q2[["stream (FIFO)"]]
-    end
-
-    subgraph D2["device 2 · stream pool"]
-        Q3[["stream (FIFO)"]]
-        Q4[["stream (FIFO)"]]
-    end
-
-    HOST -- "command 삽입" --> Q1
-    HOST --> Q2
-    HOST --> Q3
-    HOST --> Q4
-`}
-</Mermaid>
+<ThemeImage lightSrc="/images/02/stream-pool-light.svg" darkSrc="/images/02/stream-pool-dark.svg" alt="host가 device 1과 device 2의 stream pool에 있는 각 stream에 command를 삽입하는 관계를 나타낸 그림." class="mx-auto w-full max-w-[700px]" />
 
 (`c10/core/Stream.h` | XPU의 `sycl::queue`에 대응)
 
@@ -1132,24 +1104,7 @@ bool Stream::query() const {
 
 Event는 device progress를 확인하거나 stream 간의 dependence를 제어하기 위해 사용합니다.
 
-<Mermaid>
-{`sequenceDiagram
-    participant H as Host
-    participant S1 as Stream 1
-    participant E as Event
-    participant S2 as Stream 2
-
-    H->>E: 생성
-    H->>S1: event.record(stream1)
-    Note over S1: record command 삽입
-    Note over E: was_marked_for_recording = true
-    H->>S2: event.block(stream2)
-    Note over S2: wait 명령 삽입<br/>(record 완료까지 대기)
-    S1->>S1: 앞선 command 처리
-    S1->>E: record command 처리
-    Note over E: 완료: query() = true
-    E-->>S2: wait 해제, 이후 command 처리`}
-</Mermaid>
+<ThemeImage lightSrc="/images/02/event-sequence-light.svg" darkSrc="/images/02/event-sequence-dark.svg" alt="Host, Stream 1, Event, Stream 2 사이에서 event.record와 event.block이 순서를 맞추는 과정을 나타낸 시퀀스 다이어그램." class="mx-auto w-full max-w-[880px]" />
 
 ##### `event.record(stream)`
 - Stream에 record command를 삽입
@@ -1527,30 +1482,7 @@ libtorch_python.so  libtorch.so  libtorch_xxx.so  libc10_xxx.so  libc10.so
 
 ### Eager Mode의 Shared Object들
 
-<Mermaid>
-{`flowchart TD
-    A[libtorch_python.so] --> B[libtorch.so]
-
-    B --> C[libtorch_cuda.so]
-    B --> D[libtorch_cpu.so]
-    B --> E[libtorch_xpu.so]:::xpu
-
-    C --> D
-    E --> D
-    C --> F[libc10_cuda.so]
-    E --> G[libc10_xpu.so]:::xpu
-
-    F --> H[libc10.so]
-    D --> H[libc10.so]
-    G --> H
-
-    F --> I[libcudart.so]:::external
-    G --> J[libsycl.so]:::external
-
-    classDef xpu fill:#8c6fc9,color:#fff,stroke:#7157a8
-    classDef external fill:none,stroke:#888,stroke-dasharray: 6 4
-`}
-</Mermaid>
+<ThemeImage lightSrc="/images/02/shared-objects-light.svg" darkSrc="/images/02/shared-objects-dark.svg" alt="libtorch_python.so부터 libc10.so까지 Eager Mode shared object들의 의존 관계를 나타낸 그림." class="mx-auto w-full max-w-[800px]" />
 
 - `libtorch.so`는 여러 so를 한꺼번에 묶는 wrapper 역할. 실구현체는 들어있지 않음
 - `libtorch_cuda.so`/`libc10_cuda.so`는 `USE_CUDA=1`, `libtorch_xpu.so`/`libc10_xpu.so`는 `USE_XPU=1`로 빌드했을 때만 생김
@@ -1580,35 +1512,7 @@ libtorch_python.so  libtorch.so  libtorch_xxx.so  libc10_xxx.so  libc10.so
 
 #### 사람이 작성한 코드 vs. 생성된 코드
 
-<Mermaid wide>
-{`flowchart TD
-  root((Source Code))
-  hw["사람이 작성한 코드"]
-  gen["생성된 코드"]
-
-  root --> hw
-  root --> gen
-
-  hw --> aten["aten/src/ATen"]
-  hw --> c10["c10"]
-
-  aten --> aten_core["core"]
-  aten --> aten_native["native"]
-  aten --> aten_device["cuda, xpu, ..."]
-
-  c10 --> c10_core["core"]
-  c10 --> c10_device["cuda, xpu, ..."]
-
-  gen --> build["build/aten/src/ATen"]
-  gen --> torch["torch"]
-
-  torch --> torch_include["include/torch/csrc/<br/>autograd/generated"]
-  torch --> torch_csrc["csrc/autograd/generated"]
-
-  style hw fill:#4a86c9,stroke:#3b6ba1,color:#fff
-  style gen fill:#d58830,stroke:#aa6c25,color:#fff
-`}
-</Mermaid>
+<ThemeImage lightSrc="/images/02/source-tree-light.svg" darkSrc="/images/02/source-tree-dark.svg" alt="Source Code가 사람이 작성한 코드와 생성된 코드로 나뉘고 각각 하위 디렉터리로 이어지는 트리를 나타낸 그림." class="mx-auto w-full max-w-[850px]" />
 
 #### Directory Structure: aten (중요한 것들 위주)
 
