@@ -534,9 +534,9 @@ OOO Processor는 명령어가 들어올 때마다 코드에 적힌 Architectural
 
 이 그림은 앞 절에서 개념적으로 설명한 "동적으로 Data-Flow Graph를 만들어서 실행하는 엔진"의 실제 구현 단면입니다. 앞 절의 추상화된 자료구조들이 각각 별도의 장치로 구현되어 함께 동작합니다.
 
-- **Register Alias Table (RAT)**: Architectural Register를 그 시점의 비어 있는 Physical Register로 매핑 (register renaming)
-- **Reservation Station / Scheduler**: 명령어 윈도우 안의 명령어들이 어떤 값을 기다리고, 어디로 결과를 보내는지 매 cycle 갱신하며 실행 가능해진 명령어를 실행 유닛으로 내보냄
-- **Reorder Buffer (ROB)**: 내부적으로는 out-of-order로 실행되더라도, 결과를 외부로 commit할 때는 원래 프로그램 순서대로 정리 (in-order retire) 하고, misprediction 시 rollback의 기준점이 됨
+- **Register Alias Table (RAT)**: Architectural Register를 그 시점에 비어 있는 Physical Register에 매핑합니다(register renaming).
+- **Reservation Station / Scheduler**: 명령어 윈도우 안의 명령어가 어떤 값을 기다리고 결과를 어디로 보내는지 매 cycle 갱신합니다. 실행 가능해진 명령어는 실행 유닛으로 내보냅니다.
+- **Reorder Buffer (ROB)**: 내부에서는 out-of-order로 실행하더라도, 결과는 원래 프로그램 순서대로 commit합니다(in-order retire). misprediction이 나면 rollback의 기준점이 됩니다.
 
 요약하면, 앞 절에서 "Reservation Station + RAT + Instruction Window"로 설명한 자료구조들이 실제 Intel Core 안에서도 같은 이름의 장치로 있고, 여기에 in-order commit을 위한 Reorder Buffer가 더해집니다. 그림에서 RAT 역할은 "Integer/FP Rename & Allocator" 블록이 맡습니다.
 
@@ -704,7 +704,7 @@ Modulo Scheduling에서는 OOO Processor가 실행 중에 하던 일을 컴파�
 
 지금까지 다룬 내용을 크게 세 가지로 정리할 수 있습니다.
 
-- **Loop Pipelining = loop iteration을 중첩, Latency Hiding**: 한 iteration이 끝나기 전에 다음 iteration을 시작해 명령어 실행을 겹치는 것이 요점. 거의 모든 프로그램이 실행 시간을 루프에 쏟기 때문에, 이 효과를 잘 내는 것이 곧 성능 향상의 관건이 됩니다.
+- **Loop Pipelining = loop iteration을 중첩, Latency Hiding**: 한 iteration이 끝나기 전에 다음 iteration을 시작해 명령어 실행을 겹치는 것이 요점입니다. 거의 모든 프로그램이 실행 시간 대부분을 루프에서 쓰므로, 이 효과가 성능을 좌우합니다.
 - **Out-of-Order Processor**에서는 하드웨어가 동적으로 이 효과를 만들어냅니다. 그 이론적 기반은 1960년대의 **Tomasulo Algorithm**[^tomasulo]으로, 오늘날의 ROB·Reservation Station·RAT까지 곧장 이어집니다.
 - **VLIW (또는 Reconfigurable) Processor**에서는 소프트웨어(컴파일러)가 정적으로 이 효과를 만들어냅니다. 대표적인 컴파일러 알고리즘이 1994년의 Iterative Modulo Scheduling입니다.
 
