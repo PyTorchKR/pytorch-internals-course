@@ -25,9 +25,11 @@
 <text x="604" y="105" text-anchor="middle" font-size="13" font-weight="600" fill="#b9cff2">loss</text>
 <path d="M628 100 H656 V342 H565" fill="none" stroke="#8a929b" stroke-width="1.75" stroke-linejoin="round" marker-end="url(#a)"/>
 <path d="M259 124 V318" fill="none" stroke="#6b737d" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ad)"/>
-<text x="267" y="222" text-anchor="start" font-size="12" font-weight="400" fill="#9aa0a6">autodiff</text>
 <path d="M500 128 V318" fill="none" stroke="#6b737d" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ad)"/>
-<text x="508" y="222" text-anchor="start" font-size="12" font-weight="400" fill="#9aa0a6">autodiff</text>
+<path d="M352 222 H259 M407 222 H500" fill="none" stroke="#6b737d" stroke-width="1"/>
+<circle cx="259" cy="222" r="2.5" fill="#6b737d"/>
+<circle cx="500" cy="222" r="2.5" fill="#6b737d"/>
+<text x="379.5" y="226" text-anchor="middle" font-size="12" font-weight="400" fill="#9aa0a6">autodiff</text>
 <rect x="435" y="318" width="130" height="48" rx="9" fill="#202327" stroke="#f0915c" stroke-width="1.5"/>
 <text x="500" y="338" text-anchor="middle" font-size="12.5" font-weight="600" fill="#e6e6e6">Gradient function</text>
 <text x="500" y="355" text-anchor="middle" font-size="12.5" font-weight="600" fill="#e6e6e6">of loss</text>
