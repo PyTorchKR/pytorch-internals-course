@@ -9,60 +9,46 @@
 
 <div class="bp-widget">
   <div class="bp-header">
-    <span class="bp-title">Backprop <span class="bp-accent">Intuition</span></span>
-    <span class="bp-step-lbl" id="bp-step-lbl">STEP 1 / 7</span>
+    <span class="bp-title">Backprop Intuition</span>
+    <span class="bp-step-lbl" id="bp-step-lbl">1 / 7</span>
   </div>
 
   <div class="bp-prog" id="bp-prog"></div>
 
   <div class="bp-circuit-wrap">
+    <div class="bp-circuit-inner">
     <div class="bp-eq-overlay" id="bp-eq-overlay"></div>
     <svg id="bp-ckt" viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="bp-ah-off" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
-          <path d="M0,0 L7,2.5 L0,5 z" fill="#ccc9c0"/>
+          <path d="M0,0 L7,2.5 L0,5 z" class="bp-mk-off"/>
         </marker>
         <marker id="bp-ah-fwd" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
-          <path d="M0,0 L7,2.5 L0,5 z" fill="#1a6fba"/>
+          <path d="M0,0 L7,2.5 L0,5 z" class="bp-mk-fwd"/>
         </marker>
         <marker id="bp-ah-bwd" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
-          <path d="M0,0 L7,2.5 L0,5 z" fill="#c0392b"/>
+          <path d="M0,0 L7,2.5 L0,5 z" class="bp-mk-grad"/>
         </marker>
       </defs>
 
       <!-- EDGES -->
       <!-- x → ADD -->
-      <path id="bp-pe1" class="bp-edge-path" d="M 140 55 H 200 L 268 86"
-        fill="none" stroke="#d8d4cc" stroke-width="2" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe1" class="bp-edge bp-edge-fwdline" d="M 140 55 H 200 L 268 86" fill="none" marker-end="url(#bp-ah-off)"/>
       <!-- y → ADD -->
-      <path id="bp-pe2" class="bp-edge-path" d="M 140 130 H 200 L 268 98"
-        fill="none" stroke="#d8d4cc" stroke-width="2" marker-end="url(#bp-ah-off)"/>
-      <path id="bp-pe1b" class="bp-edge-path" d="M 261 80 L 200 49 H 140"
-        fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="5,3"
-        marker-end="url(#bp-ah-bwd)" opacity="0"/>
-      <path id="bp-pe2b" class="bp-edge-path" d="M 261 104 L 200 136 H 140"
-        fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="5,3"
-        marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe2" class="bp-edge bp-edge-fwdline" d="M 140 130 H 200 L 268 98" fill="none" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe1b" class="bp-edge bp-edge-grad" d="M 261 80 L 200 49 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe2b" class="bp-edge bp-edge-grad" d="M 261 104 L 200 136 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
 
       <!-- ADD → MUL -->
-      <path id="bp-pe3" class="bp-edge-path" d="M 337 92 H 355 L 428 151"
-        fill="none" stroke="#d8d4cc" stroke-width="2" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe3" class="bp-edge bp-edge-fwdline" d="M 337 92 H 355 L 428 151" fill="none" marker-end="url(#bp-ah-off)"/>
       <!-- z → MUL -->
-      <path id="bp-pe4" class="bp-edge-path" d="M 140 205 H 355 L 428 163"
-        fill="none" stroke="#d8d4cc" stroke-width="2" marker-end="url(#bp-ah-off)"/>
-      <path id="bp-pe3b" class="bp-edge-path" d="M 421 145 L 355 86 H 337"
-        fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="5,3"
-        marker-end="url(#bp-ah-bwd)" opacity="0"/>
-      <path id="bp-pe4b" class="bp-edge-path" d="M 421 169 L 355 211 H 140"
-        fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="5,3"
-        marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe4" class="bp-edge bp-edge-fwdline" d="M 140 205 H 355 L 428 163" fill="none" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe3b" class="bp-edge bp-edge-grad" d="M 421 145 L 355 86 H 337" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe4b" class="bp-edge bp-edge-grad" d="M 421 169 L 355 211 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
 
       <!-- MUL → Output -->
-      <path id="bp-pe5" class="bp-edge-path" d="M 497 157 H 560"
-        fill="none" stroke="#d8d4cc" stroke-width="2" marker-end="url(#bp-ah-off)"/>
-      <path id="bp-pe5b" class="bp-edge-path" d="M 560 151 H 497"
-        fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="5,3"
-        marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe5" class="bp-edge bp-edge-fwdline" d="M 497 157 H 560" fill="none" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe5b" class="bp-edge bp-edge-grad" d="M 560 151 H 497" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
 
       <!--
         Label placement rule: each label sits next to its own edge color.
@@ -73,138 +59,125 @@
       <!-- FORWARD LABELS (blue) — next to the blue forward edge -->
       <!-- e1: fwd at y=55 (below bwd y=49) → blue label below -->
       <g id="bp-fl-e1" class="bp-lbl" opacity="0">
-        <rect x="157" y="58" width="44" height="20" rx="4" class="bp-pill-fwd"/>
         <text x="179" y="72" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-fwd-txt">-2</text>
+          font-size="12.5" class="bp-val bp-val-fwd">-2</text>
       </g>
       <!-- e2: fwd at y=130 (above bwd y=136) → blue label above -->
       <g id="bp-fl-e2" class="bp-lbl" opacity="0">
-        <rect x="160" y="108" width="36" height="20" rx="4" class="bp-pill-fwd"/>
         <text x="178" y="122" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-fwd-txt">5</text>
+          font-size="12.5" class="bp-val bp-val-fwd">5</text>
       </g>
       <!-- e3: fwd at y≈92 (below bwd y≈86) → blue label below -->
       <g id="bp-fl-e3" class="bp-lbl" opacity="0">
-        <rect x="343" y="98" width="54" height="20" rx="4" class="bp-pill-fwd"/>
         <text x="370" y="112" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-fwd-txt">q = 3</text>
+          font-size="12.5" class="bp-val bp-val-fwd">q = 3</text>
       </g>
       <!-- e4: fwd at y=205 (above bwd y=211) → blue label above -->
       <g id="bp-fl-e4" class="bp-lbl" opacity="0">
-        <rect x="252" y="183" width="44" height="20" rx="4" class="bp-pill-fwd"/>
         <text x="274" y="197" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-fwd-txt">-4</text>
+          font-size="12.5" class="bp-val bp-val-fwd">-4</text>
       </g>
       <!-- e5: fwd at y=157 (below bwd y=151) → blue label below -->
       <g id="bp-fl-e5" class="bp-lbl" opacity="0">
-        <rect x="501" y="161" width="46" height="20" rx="4" class="bp-pill-fwd"/>
         <text x="524" y="175" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-fwd-txt">-12</text>
+          font-size="12.5" class="bp-val bp-val-fwd">-12</text>
       </g>
 
       <!-- BACKWARD LABELS (red) — next to the red backward edge -->
       <!-- e1: bwd at y=49 (above fwd y=55) → red label above -->
       <g id="bp-bl-e1" class="bp-lbl" opacity="0">
-        <rect x="157" y="27" width="66" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="187" y="41" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-bwd-txt">&part; = -4</text>
+          font-size="12.5" class="bp-val bp-val-grad">&part; = -4</text>
       </g>
       <!-- e2: bwd at y=136 (below fwd y=130) → red label below -->
       <g id="bp-bl-e2" class="bp-lbl" opacity="0">
-        <rect x="160" y="140" width="66" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="190" y="154" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-bwd-txt">&part; = -4</text>
+          font-size="12.5" class="bp-val bp-val-grad">&part; = -4</text>
       </g>
       <!-- e3: bwd at y≈86 (above fwd y≈92) → red label above -->
       <g id="bp-bl-e3" class="bp-lbl" opacity="0">
-        <rect x="343" y="64" width="66" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="373" y="78" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-bwd-txt">&part; = -4</text>
+          font-size="12.5" class="bp-val bp-val-grad">&part; = -4</text>
       </g>
       <!-- e4: bwd at y=211 (below fwd y=205) → red label below -->
       <g id="bp-bl-e4" class="bp-lbl" opacity="0">
-        <rect x="252" y="215" width="60" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="279" y="229" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-bwd-txt">&part; = 3</text>
+          font-size="12.5" class="bp-val bp-val-grad">&part; = 3</text>
       </g>
       <!-- e5: bwd at y=151 (above fwd y=157) → red label above -->
       <g id="bp-bl-e5" class="bp-lbl" opacity="0">
-        <rect x="501" y="129" width="50" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="523" y="143" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="13" font-weight="700" class="bp-pill-bwd-txt">&part; = 1</text>
+          font-size="12.5" class="bp-val bp-val-grad">&part; = 1</text>
       </g>
 
       <!-- INPUT NODES -->
       <rect class="bp-node-rect" x="30" y="35" width="110" height="40" rx="7"/>
       <text x="85" y="48" text-anchor="middle"
-        font-family="'Pretendard',-apple-system,sans-serif" class="bp-node-label" font-size="10" font-weight="500" letter-spacing="1">INPUT</text>
+        class="bp-node-label" font-size="10">입력</text>
       <text x="85" y="66" text-anchor="middle"
-        class="bp-node-val" font-family="'Courier New',monospace" font-size="15" font-weight="700">x = -2</text>
+        class="bp-node-val" font-size="15">x = -2</text>
       <g id="bp-badge-x" class="bp-badge" opacity="0">
-        <rect x="30" y="80" width="110" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="85" y="94" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="12" font-weight="700" class="bp-pill-bwd-txt">&part;f/&part;x = -4</text>
+          font-size="12" class="bp-val bp-val-grad">&part;f/&part;x = -4</text>
       </g>
 
       <rect class="bp-node-rect" x="30" y="110" width="110" height="40" rx="7"/>
       <text x="85" y="123" text-anchor="middle"
-        font-family="'Pretendard',-apple-system,sans-serif" class="bp-node-label" font-size="10" font-weight="500" letter-spacing="1">INPUT</text>
+        class="bp-node-label" font-size="10">입력</text>
       <text x="85" y="141" text-anchor="middle"
-        class="bp-node-val" font-family="'Courier New',monospace" font-size="15" font-weight="700">y = 5</text>
+        class="bp-node-val" font-size="15">y = 5</text>
       <g id="bp-badge-y" class="bp-badge" opacity="0">
-        <rect x="30" y="155" width="110" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="85" y="169" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="12" font-weight="700" class="bp-pill-bwd-txt">&part;f/&part;y = -4</text>
+          font-size="12" class="bp-val bp-val-grad">&part;f/&part;y = -4</text>
       </g>
 
       <rect class="bp-node-rect" x="30" y="185" width="110" height="40" rx="7"/>
       <text x="85" y="198" text-anchor="middle"
-        font-family="'Pretendard',-apple-system,sans-serif" class="bp-node-label" font-size="10" font-weight="500" letter-spacing="1">INPUT</text>
+        class="bp-node-label" font-size="10">입력</text>
       <text x="85" y="216" text-anchor="middle"
-        class="bp-node-val" font-family="'Courier New',monospace" font-size="15" font-weight="700">z = -4</text>
+        class="bp-node-val" font-size="15">z = -4</text>
       <g id="bp-badge-z" class="bp-badge" opacity="0">
-        <rect x="30" y="230" width="110" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="85" y="244" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="12" font-weight="700" class="bp-pill-bwd-txt">&part;f/&part;z = 3</text>
+          font-size="12" class="bp-val bp-val-grad">&part;f/&part;z = 3</text>
       </g>
 
       <!-- GATES -->
       <rect id="bp-r-add" class="bp-gate-rect" x="265" y="74" width="72" height="36" rx="18"
         stroke-width="1.5"/>
       <text x="301" y="102" text-anchor="middle"
-        font-family="'Courier New',monospace" font-size="28" font-weight="700" fill="#1a6fba">+</text>
+        font-size="24" class="bp-gate-glyph" id="bp-g-add">+</text>
 
       <rect id="bp-r-mul" class="bp-gate-rect" x="425" y="139" width="72" height="36" rx="18"
         stroke-width="1.5"/>
       <text x="461" y="167" text-anchor="middle"
-        font-family="'Courier New',monospace" font-size="28" font-weight="700" fill="#6b3fa0">&times;</text>
+        font-size="24" class="bp-gate-glyph" id="bp-g-mul">&times;</text>
 
       <!-- OUTPUT -->
       <rect class="bp-node-rect" x="560" y="139" width="112" height="36" rx="7"/>
       <text x="616" y="152" text-anchor="middle"
-        font-family="'Pretendard',-apple-system,sans-serif" class="bp-node-label" font-size="10" font-weight="500" letter-spacing="1">OUTPUT</text>
+        class="bp-node-label" font-size="10">출력</text>
       <text id="bp-val-f" class="bp-node-val" x="616" y="168" text-anchor="middle"
-        font-family="'Courier New',monospace" font-size="15" font-weight="700">f = ?</text>
+        font-size="15">f = ?</text>
       <g id="bp-badge-f" class="bp-badge" opacity="0">
-        <rect x="560" y="180" width="112" height="21" rx="4" class="bp-pill-bwd"/>
         <text x="616" y="194" text-anchor="middle"
-          font-family="'Courier New',monospace" font-size="12" font-weight="700" class="bp-pill-bwd-txt">&part;f/&part;f = 1</text>
+          font-size="12" class="bp-val bp-val-grad">&part;f/&part;f = 1</text>
       </g>
 
       <!-- LEGEND -->
-      <rect class="bp-legend-bg" x="572" y="6" width="140" height="48" rx="5"/>
-      <rect x="582" y="17" width="8" height="8" rx="2" fill="#1a6fba"/>
-      <text class="bp-legend-txt" x="596" y="25" font-family="'Pretendard',-apple-system,sans-serif" font-size="10">forward</text>
-      <rect x="582" y="33" width="8" height="8" rx="2" fill="#c0392b"/>
-      <text class="bp-legend-txt" x="596" y="41" font-family="'Pretendard',-apple-system,sans-serif" font-size="10">gradient &part;f / &part;&middot;</text>
+      <line x1="586" y1="20" x2="606" y2="20" class="bp-legend-fwd"/>
+      <text class="bp-legend-txt" x="612" y="24" font-size="11">forward 값</text>
+      <line x1="586" y1="38" x2="606" y2="38" class="bp-legend-grad"/>
+      <text class="bp-legend-txt" x="612" y="42" font-size="11">gradient</text>
     </svg>
+    </div>
   </div>
+  <p class="bp-scroll-hint">회로가 잘려 보이면 옆으로 밀어서 보세요.</p>
 
   <div class="bp-body">
     <!-- Left: description -->
     <div class="bp-left">
       <div class="bp-desc">
-        <div id="bp-phase-tag" class="bp-phase-tag bp-pt-init">INIT</div>
+        <div id="bp-phase-tag" class="bp-phase bp-ph-init">준비</div>
         <div class="bp-desc-title" id="bp-desc-title">회로 초기화</div>
         <div class="bp-desc-body" id="bp-desc-body"></div>
       </div>
@@ -213,12 +186,12 @@
     <!-- Right: gate cards stacked -->
     <div class="bp-right">
       <div class="bp-gc bp-gc-add" id="bp-gc-add">
-        <div class="bp-gc-name bp-gc-name-add">+ ADD Gate</div>
+        <div class="bp-gc-name">ADD gate <span class="bp-gc-sym">+</span></div>
         <div class="bp-gc-rule" id="bp-gr-add"></div>
         <div class="bp-gc-formula" id="bp-gf-add"></div>
       </div>
       <div class="bp-gc bp-gc-mul" id="bp-gc-mul">
-        <div class="bp-gc-name bp-gc-name-mul">&times; MUL Gate</div>
+        <div class="bp-gc-name">MUL gate <span class="bp-gc-sym">&times;</span></div>
         <div class="bp-gc-rule" id="bp-gr-mul"></div>
         <div class="bp-gc-formula" id="bp-gf-mul"></div>
       </div>
@@ -227,217 +200,192 @@
 
   <!-- Nav -->
   <div class="bp-nav">
-    <button id="bp-btn-prev" disabled>&larr; PREV</button>
-    <button id="bp-btn-next" class="bp-btn-primary">NEXT &rarr;</button>
-    <button id="bp-btn-reset" class="bp-btn-reset">&circlearrowleft; 처음으로</button>
+    <button id="bp-btn-prev" type="button" disabled>이전</button>
+    <button id="bp-btn-next" type="button" class="bp-btn-primary">다음</button>
+    <button id="bp-btn-reset" type="button" class="bp-btn-reset">처음으로</button>
   </div>
 </div>
 
 <style>
   .bp-widget {
-    padding: 0.75rem 0 0;
+    --bp-ink: var(--text);
+    --bp-muted: var(--text-muted);
+    --bp-panel: var(--bg-surface);
+    --bp-line: var(--border);
+    --bp-idle: #c6cad0;
+    --bp-fwd: #2457a6;
+    --bp-fwd-soft: rgba(36, 87, 166, 0.08);
+    --bp-grad: #c2410c;
+    --bp-grad-soft: rgba(194, 65, 12, 0.08);
+    --bp-done: #2f7d5b;
+    --bp-mono: 'Roboto Mono', ui-monospace, monospace;
+    font-family: 'Pretendard Std', 'Pretendard', -apple-system, sans-serif;
+    font-feature-settings: 'tnum' 1;
     max-width: 800px;
     margin: 0 auto;
+    padding: 0.75rem 0 0;
+    color: var(--bp-ink);
+    outline: none;
   }
+  :global([data-theme='dark']) .bp-widget {
+    --bp-idle: #4b5057;
+    --bp-fwd: #7fa9e6;
+    --bp-fwd-soft: rgba(127, 169, 230, 0.12);
+    --bp-grad: #f0915c;
+    --bp-grad-soft: rgba(240, 145, 92, 0.12);
+    --bp-done: #6cc49a;
+  }
+  .bp-widget:focus-visible { box-shadow: 0 0 0 2px var(--bp-fwd); border-radius: 12px; }
 
   /* Header */
   .bp-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1.5px solid var(--border);
+    margin-bottom: 10px;
   }
-  .bp-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.2px;
-  }
-  .bp-accent { color: #1a6fba; }
-  [data-theme='dark'] .bp-accent { color: #4a96c4; }
-  .bp-step-lbl {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-  }
+  .bp-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .bp-step-lbl { font-size: 12px; color: var(--bp-muted); font-variant-numeric: tabular-nums; }
 
-  /* Progress */
-  .bp-prog { display: flex; gap: 3px; margin-bottom: 8px; }
-  .bp-seg { height: 2px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.3s; }
-  .bp-seg-done { background: var(--text-muted); }
-  .bp-seg-active { background: #1a6fba; }
-  [data-theme='dark'] .bp-seg-active { background: #4a96c4; }
+  /* Progress: one segment per step */
+  .bp-prog { display: flex; gap: 4px; margin-bottom: 12px; }
+  .bp-seg { height: 3px; flex: 1; border-radius: 3px; background: var(--bp-line); transition: background 0.25s; }
+  .bp-seg-done { background: var(--bp-muted); opacity: 0.55; }
+  .bp-seg-active { background: var(--bp-fwd); }
 
-  /* Circuit */
+  /* Circuit panel */
   .bp-circuit-wrap {
-    background: var(--bg-surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 4px 4px 2px;
-    margin-bottom: 8px;
     position: relative;
+    background: var(--bp-panel);
+    border-radius: 14px;
+    padding: 6px 6px 2px;
+    margin-bottom: 12px;
   }
   .bp-eq-overlay {
-    position: absolute;
-    top: 6px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    z-index: 1;
-    pointer-events: none;
-    font-size: 13px;
-    color: var(--text-muted);
+    position: absolute; top: 8px; left: 0; right: 0;
+    text-align: center; pointer-events: none; z-index: 1;
+    font-size: 13px; color: var(--bp-muted);
   }
-  .bp-eq-overlay .katex { font-size: 1em !important; color: var(--text-muted) !important; }
+  .bp-eq-overlay :global(.katex) { font-size: 1em !important; color: var(--bp-muted) !important; }
+  .bp-circuit-inner { position: relative; }
   #bp-ckt { width: 100%; height: auto; display: block; }
-  .bp-edge-path { transition: stroke 0.3s, stroke-width 0.3s; }
-  .bp-lbl { transition: opacity 0.3s; }
-  .bp-gate-rect { transition: stroke 0.3s, fill 0.3s; }
-  .bp-badge { transition: opacity 0.3s; }
+  .bp-scroll-hint { display: none; }
 
-  /* SVG node styles */
-  .bp-node-rect { fill: var(--bg-surface); stroke: var(--text-muted); stroke-width: 1.5; }
-  .bp-node-label { fill: var(--text-muted); }
-  .bp-node-val { fill: var(--text); }
-  .bp-gate-rect { fill: var(--bg-surface); stroke: var(--text-muted); }
-  .bp-eq-text { fill: var(--text-muted); }
-  .bp-legend-bg { fill: var(--bg-surface); stroke: var(--border); stroke-width: 1; }
-  .bp-legend-txt { fill: var(--text-muted); }
+  /* SVG: nodes, gates, edges */
+  .bp-node-rect { fill: var(--bp-panel); stroke: rgba(0, 0, 0, 0.2); stroke-width: 1.25; }
+  :global([data-theme='dark']) .bp-node-rect { stroke: #50555c; }
+  .bp-node-label { fill: var(--bp-muted); font-size: 10.5px; font-family: inherit; }
+  .bp-node-val { fill: var(--bp-ink); font-family: var(--bp-mono); font-size: 14px; font-weight: 500; }
+  .bp-gate-rect { fill: var(--bp-panel); stroke: var(--bp-idle); stroke-width: 1.25; transition: stroke 0.25s, fill 0.25s; }
+  .bp-gate-rect.is-fwd { stroke: var(--bp-fwd); fill: var(--bp-fwd-soft); stroke-width: 1.75; }
+  .bp-gate-rect.is-grad { stroke: var(--bp-grad); fill: var(--bp-grad-soft); stroke-width: 1.75; }
+  .bp-gate-glyph { fill: var(--bp-muted); font-family: inherit; font-weight: 400; transition: fill 0.25s; }
+  .bp-gate-glyph.is-fwd { fill: var(--bp-fwd); }
+  .bp-gate-glyph.is-grad { fill: var(--bp-grad); }
 
-  /* Pills */
-  .bp-pill-fwd { fill: #e8f1fa; stroke: #1a6fba; stroke-width: 1; }
-  .bp-pill-fwd-txt { fill: #1a6fba; }
-  .bp-pill-bwd { fill: #fdf0ee; stroke: #c0392b; stroke-width: 1; }
-  .bp-pill-bwd-txt { fill: #c0392b; }
-  [data-theme='dark'] .bp-pill-fwd { fill: #111e2a; stroke: #4a96c4; }
-  [data-theme='dark'] .bp-pill-fwd-txt { fill: #4a96c4; }
-  [data-theme='dark'] .bp-pill-bwd { fill: #260f0c; stroke: #c84c3c; }
-  [data-theme='dark'] .bp-pill-bwd-txt { fill: #c84c3c; }
+  .bp-edge { transition: stroke 0.25s, opacity 0.25s; }
+  .bp-edge-fwdline { stroke: var(--bp-idle); stroke-width: 1.75; }
+  .bp-edge-fwdline.is-on { stroke: var(--bp-fwd); stroke-width: 2; }
+  .bp-edge-grad { stroke: var(--bp-grad); stroke-width: 1.75; stroke-dasharray: 5 4; }
+  .bp-mk-off { fill: var(--bp-idle); }
+  .bp-mk-fwd { fill: var(--bp-fwd); }
+  .bp-mk-grad { fill: var(--bp-grad); }
 
-  /* Two-column body */
+  /* Value labels: text with a halo in the panel color, no boxes */
+  .bp-val {
+    font-family: var(--bp-mono); font-weight: 500;
+    paint-order: stroke; stroke: var(--bp-panel); stroke-width: 5px; stroke-linejoin: round;
+  }
+  .bp-val-fwd { fill: var(--bp-fwd); }
+  .bp-val-grad { fill: var(--bp-grad); }
+  .bp-lbl, .bp-badge { transition: opacity 0.25s; }
+
+  .bp-legend-fwd { stroke: var(--bp-fwd); stroke-width: 2; }
+  .bp-legend-grad { stroke: var(--bp-grad); stroke-width: 2; stroke-dasharray: 4 3; }
+  .bp-legend-txt { fill: var(--bp-muted); font-family: inherit; }
+
+  /* Body: explanation and gate rules */
   .bp-body {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 10px;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 20px;
+    margin-bottom: 14px;
+    padding: 4px 2px 0;
   }
-  .bp-left {
-    display: flex;
-    flex-direction: column;
-  }
-  .bp-right {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+  .bp-left { min-width: 0; }
+  .bp-right { display: flex; flex-direction: column; gap: 4px; border-left: 1px solid var(--bp-line); padding-left: 16px; }
 
-  /* Description */
-  .bp-desc {
-    background: var(--bg-surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    flex: 1;
+  .bp-phase {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 500; color: var(--bp-muted);
+    margin-bottom: 6px;
   }
-  .bp-phase-tag {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-  }
-  .bp-pt-init { background: rgba(128,128,128,0.15); color: var(--text-muted); }
-  .bp-pt-fwd { background: #e8f1fa; color: #1a6fba; }
-  .bp-pt-bwd { background: #fdf0ee; color: #c0392b; }
-  .bp-pt-done { background: #eef6f1; color: #1a8a60; }
-  [data-theme='dark'] .bp-pt-fwd { background: #111e2a; color: #4a96c4; }
-  [data-theme='dark'] .bp-pt-bwd { background: #260f0c; color: #c84c3c; }
-  [data-theme='dark'] .bp-pt-done { background: #0c2018; color: #389068; }
+  .bp-phase::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .bp-ph-fwd { color: var(--bp-fwd); }
+  .bp-ph-bwd { color: var(--bp-grad); }
+  .bp-ph-done { color: var(--bp-done); }
 
-  .bp-desc-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 10px;
-    letter-spacing: -0.2px;
+  .bp-desc-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .bp-desc-body { font-size: 13.5px; line-height: 1.8; }
+  .bp-desc-body :global(p) { margin: 0 0 4px; }
+  .bp-widget .bp-desc-body :global(table) {
+    display: table; border-collapse: collapse; width: 100%; margin: 0;
+    border: 0; overflow: visible; white-space: normal; font-size: inherit;
   }
-  .bp-desc-body {
-    font-size: 13px;
-    line-height: 1.85;
-    color: var(--text);
-  }
-  .bp-desc-body p { margin: 0 0 4px; }
-  .bp-desc-body table { border-collapse: collapse; width: 100%; }
-  .bp-desc-body td { padding: 2px 0; vertical-align: middle; }
-  .bp-desc-body .katex { font-size: 1em !important; }
-  .bp-desc-body .katex-display { margin: 4px 0 !important; }
+  .bp-widget .bp-desc-body :global(tr),
+  .bp-widget .bp-desc-body :global(td) { border: 0; background: transparent; }
+  .bp-widget .bp-desc-body :global(td) { padding: 3px 12px 3px 0; vertical-align: middle; white-space: normal; }
+  .bp-desc-body :global(.katex) { font-size: 1em !important; }
 
-  /* Gate cards */
   .bp-gc {
-    background: var(--bg-surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px 10px;
-    opacity: 0.4;
-    transition: opacity 0.3s, border-color 0.3s, box-shadow 0.3s;
-    flex: 1;
+    padding: 8px 0 10px 12px;
+    border-left: 2px solid transparent;
+    margin-left: -14px;
+    opacity: 0.45;
+    transition: opacity 0.25s, border-color 0.25s;
   }
-  .bp-gc-lit { opacity: 1; }
-  .bp-gc-lit.bp-gc-add { border-color: #1a6fba; box-shadow: 0 2px 12px rgba(26,111,186,0.10); }
-  .bp-gc-lit.bp-gc-mul { border-color: #6b3fa0; box-shadow: 0 2px 12px rgba(107,63,160,0.10); }
-  [data-theme='dark'] .bp-gc-lit.bp-gc-add { border-color: #4a96c4; box-shadow: 0 2px 12px rgba(74,150,196,0.15); }
-  [data-theme='dark'] .bp-gc-lit.bp-gc-mul { border-color: #8c62bc; box-shadow: 0 2px 12px rgba(140,98,188,0.15); }
+  .bp-gc + .bp-gc { border-top: 1px solid var(--bp-line); }
+  .bp-gc-lit { opacity: 1; border-left-color: var(--bp-fwd); }
+  .bp-widget.is-bwd .bp-gc-lit { border-left-color: var(--bp-grad); }
+  .bp-gc-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .bp-gc-sym { font-weight: 400; color: var(--bp-muted); }
+  .bp-gc-rule { font-size: 12.5px; color: var(--bp-muted); line-height: 1.6; margin-bottom: 6px; }
+  .bp-gc-rule :global(strong) { color: var(--bp-ink); font-weight: 600; }
+  .bp-gc-formula { font-size: 12px; line-height: 2; color: var(--bp-ink); }
+  .bp-widget.is-bwd .bp-gc-formula :global(.katex),
+  .bp-widget.is-bwd .bp-gc-formula :global(.katex *) { color: var(--bp-grad) !important; }
 
-  .bp-gc-name { font-size: 12px; font-weight: 700; letter-spacing: 0.2px; margin-bottom: 6px; }
-  .bp-gc-name-add { color: #1a6fba; }
-  .bp-gc-name-mul { color: #6b3fa0; }
-  [data-theme='dark'] .bp-gc-name-add { color: #4a96c4; }
-  [data-theme='dark'] .bp-gc-name-mul { color: #8c62bc; }
-  .bp-gc-rule { font-size: 11.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 8px; }
-  .bp-gc-formula { font-size: 11.5px; line-height: 2; }
-  .bp-gc-formula .katex, .bp-gc-formula .katex * { color: #c0392b !important; }
-  [data-theme='dark'] .bp-gc-formula .katex,
-  [data-theme='dark'] .bp-gc-formula .katex * { color: #c84c3c !important; }
-
-  /* Nav */
+  /* Navigation */
   .bp-nav { display: flex; gap: 8px; align-items: center; justify-content: center; }
   .bp-nav button {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 8px 20px;
-    border-radius: 8px;
-    border: 1.5px solid var(--border);
-    background: var(--bg-surface);
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.15s;
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 7px 18px; border-radius: 999px;
+    border: 1px solid var(--bp-line); background: transparent; color: var(--bp-ink);
+    cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
   }
-  .bp-nav button:hover:not(:disabled) { border-color: var(--text-muted); color: var(--text); }
-  .bp-nav button:disabled { opacity: 0.3; cursor: default; }
-  .bp-btn-primary {
-    background: #1a6fba !important;
-    color: #fff !important;
-    border-color: #1a6fba !important;
-    padding: 8px 28px !important;
+  .bp-nav button:hover:not(:disabled) { border-color: var(--bp-muted); }
+  .bp-nav button:focus-visible { outline: 2px solid var(--bp-fwd); outline-offset: 2px; }
+  .bp-nav button:disabled { opacity: 0.35; cursor: default; }
+  .bp-nav .bp-btn-primary { background: var(--bp-fwd); border-color: var(--bp-fwd); color: #fff; padding: 7px 26px; }
+  :global([data-theme='dark']) .bp-nav .bp-btn-primary { color: #10151c; }
+  .bp-nav .bp-btn-primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--bp-fwd); }
+  .bp-nav .bp-btn-reset { border-color: transparent; color: var(--bp-muted); }
+  .bp-nav .bp-btn-reset:hover:not(:disabled) { color: var(--bp-ink); border-color: transparent; }
+
+  @media (max-width: 640px) {
+    /* Keep the circuit at a readable scale and let the panel scroll sideways. */
+    .bp-circuit-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    .bp-circuit-inner { min-width: 620px; }
+    #bp-ckt { max-width: none; }
+    .bp-circuit-wrap { margin-bottom: 4px; }
+    .bp-scroll-hint { display: block; margin: 0 0 12px; font-size: 12px; color: var(--bp-muted); text-align: right; }
+    .bp-body { grid-template-columns: 1fr; gap: 12px; }
+    .bp-right { border-left: 0; padding-left: 0; border-top: 1px solid var(--bp-line); padding-top: 8px; }
+    .bp-gc { margin-left: 0; }
   }
-  [data-theme='dark'] .bp-btn-primary {
-    background: #4a96c4 !important;
-    border-color: #4a96c4 !important;
+  @media (prefers-reduced-motion: reduce) {
+    .bp-widget * { transition: none !important; }
   }
-  .bp-btn-primary:hover:not(:disabled) { filter: brightness(1.12); }
-  .bp-btn-reset {
-    color: var(--text-muted) !important;
-    border-color: transparent !important;
-    background: transparent !important;
-    font-size: 11px !important;
-  }
-  .bp-btn-reset:hover:not(:disabled) { color: var(--text) !important; }
 </style>
 
 <script>
@@ -487,9 +435,9 @@
       body: () => [
         '<p>입력값: ', tex('x = -2,\\; y = 5,\\; z = -4'), '</p>',
         '<p style="margin-top:6px">계산식: ', tex('f(x,y,z) = (x + y) \\cdot z'), '</p>',
-        '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">NEXT 버튼으로 forward pass를 시작하세요.</p>',
+        '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">다음 버튼으로 forward pass를 시작하세요.</p>',
       ].join(''),
-      phase: 'init', phaseLabel: 'INIT', activeGate: null,
+      phase: 'init', phaseLabel: '준비', activeGate: null,
       fwdEdges: [], bwdEdges: [], flabels: [], blabels: [], badges: [],
       fVal: 'f = ?', fColor: 'off',
     },
@@ -502,7 +450,7 @@
           'ADD의 local gradient는 입력값과 무관하게 1이므로 backward에 입력값이 필요 없습니다.',
         '</p>',
       ].join(''),
-      phase: 'fwd', phaseLabel: 'FORWARD \u2192', activeGate: 'add',
+      phase: 'fwd', phaseLabel: 'Forward pass', activeGate: 'add',
       fwdEdges: ['e1', 'e2'], bwdEdges: [], flabels: ['e1', 'e2'], blabels: [], badges: [],
       fVal: 'f = ?', fColor: 'off',
     },
@@ -517,7 +465,7 @@
           '<br>backward에서 ', tex('\\partial/\\partial q = z'), ', ', tex('\\partial/\\partial z = q'), ' 를 그대로 씁니다.',
         '</p>',
       ].join(''),
-      phase: 'fwd', phaseLabel: 'FORWARD \u2192', activeGate: 'mul',
+      phase: 'fwd', phaseLabel: 'Forward pass', activeGate: 'mul',
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: [], flabels: ['e3', 'e4', 'e5'], blabels: [], badges: [],
       fVal: 'f = \u221212', fColor: 'fwd',
     },
@@ -529,7 +477,7 @@
         '<p style="margin-top:6px;color:var(--text-muted);font-size:12px">출력 자신에 대한 gradient는 항상 1입니다.</p>',
         '<p style="margin-top:8px;color:var(--text-muted);font-size:12px">점선 화살표 \u2192 gradient의 역방향 흐름</p>',
       ].join(''),
-      phase: 'bwd', phaseLabel: '\u2190 BACKWARD', activeGate: null,
+      phase: 'bwd', phaseLabel: 'Backward pass', activeGate: null,
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5'], flabels: [], blabels: ['e5'], badges: ['f'],
       fVal: 'f = \u221212', fColor: 'fwd',
     },
@@ -541,7 +489,7 @@
         '<p style="margin-top:6px">', tex('\\dfrac{\\partial f}{\\partial z} = q \\times 1 = 3 \\times 1 = 3'), '</p>',
         '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">각 입력의 gradient = 상대 입력값 × upstream gradient</p>',
       ].join(''),
-      phase: 'bwd', phaseLabel: '\u2190 BACKWARD', activeGate: 'mul',
+      phase: 'bwd', phaseLabel: 'Backward pass', activeGate: 'mul',
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4'], flabels: [], blabels: ['e3', 'e4'], badges: ['f', 'z'],
       fVal: 'f = \u221212', fColor: 'fwd',
     },
@@ -553,7 +501,7 @@
         '<p style="margin-top:6px">', tex('\\dfrac{\\partial f}{\\partial y} = (-4) \\times 1 = -4'), '</p>',
         '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">ADD의 local gradient는 1입니다.</p>',
       ].join(''),
-      phase: 'bwd', phaseLabel: '\u2190 BACKWARD', activeGate: 'add',
+      phase: 'bwd', phaseLabel: 'Backward pass', activeGate: 'add',
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'], flabels: [], blabels: ['e1', 'e2'], badges: ['f', 'z', 'x', 'y'],
       fVal: 'f = \u221212', fColor: 'fwd',
     },
@@ -570,7 +518,7 @@
                '<td style="font-size:11.5px;color:var(--text-muted)">z를 조금 늘리면 f는 그 3배만큼 증가</td></tr>',
         '</table>',
       ].join(''),
-      phase: 'done', phaseLabel: 'COMPLETE', activeGate: null,
+      phase: 'done', phaseLabel: '완료', activeGate: null,
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'],
       flabels: ['e1', 'e2', 'e3', 'e4', 'e5'], blabels: ['e5', 'e3', 'e4', 'e1', 'e2'],
       badges: ['f', 'z', 'x', 'y'],
@@ -578,23 +526,36 @@
     },
   ];
 
+  const widget = document.querySelector('.bp-widget') as HTMLElement;
   const N = STEPS.length;
+  // Horizontal center (viewBox units) of the part each step changes; used to
+  // keep it in view when the circuit panel scrolls on narrow screens.
+  const FOCUS_X = [85, 301, 520, 616, 461, 301, 360];
+  const VIEWBOX_W = 720;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function keepFocusInView(): void {
+    const wrap = widget.querySelector('.bp-circuit-wrap') as HTMLElement;
+    if (wrap.scrollWidth <= wrap.clientWidth) return;
+    const svg = document.getElementById('bp-ckt')!;
+    const x = (FOCUS_X[cur] / VIEWBOX_W) * svg.getBoundingClientRect().width;
+    wrap.scrollTo({
+      left: Math.max(0, x - wrap.clientWidth / 2),
+      behavior: reduceMotion.matches ? 'auto' : 'smooth',
+    });
+  }
   const EIDS = ['e1', 'e2', 'e3', 'e4', 'e5'];
   let cur = 0;
 
   const phaseClass: Record<string, string> = {
-    init: 'bp-pt-init', fwd: 'bp-pt-fwd', bwd: 'bp-pt-bwd', done: 'bp-pt-done',
+    init: 'bp-ph-init', fwd: 'bp-ph-fwd', bwd: 'bp-ph-bwd', done: 'bp-ph-done',
   };
 
-  function isDark(): boolean {
-    return document.documentElement.getAttribute('data-theme') === 'dark';
-  }
 
   function render(): void {
     const s = STEPS[cur];
-    const dark = isDark();
 
-    document.getElementById('bp-step-lbl')!.textContent = `STEP ${cur + 1} / ${N}`;
+    document.getElementById('bp-step-lbl')!.textContent = `${cur + 1} / ${N}`;
 
     const pg = document.getElementById('bp-prog')!;
     pg.innerHTML = '';
@@ -605,26 +566,20 @@
     }
 
     const pt = document.getElementById('bp-phase-tag')!;
-    pt.className = `bp-phase-tag ${phaseClass[s.phase]}`;
+    pt.className = `bp-phase ${phaseClass[s.phase]}`;
     pt.textContent = s.phaseLabel;
     document.getElementById('bp-desc-title')!.textContent = s.title;
     document.getElementById('bp-desc-body')!.innerHTML = s.body();
 
-    const edgeOff = dark ? '#252220' : '#d8d4cc';
-    const gateOff = dark ? '#343028' : '#c8c4bc';
-    const gateFillColor = dark ? '#252220' : '#fafaf8';
-    const fwdCol = dark ? '#4a96c4' : '#1a6fba';
+    const showBwd = s.phase === 'bwd' || s.phase === 'done';
+    widget.classList.toggle('is-bwd', showBwd);
 
     EIDS.forEach(id => {
       const p = document.getElementById(`bp-p${id}`);
       if (!p) return;
-      if (s.fwdEdges.includes(id)) {
-        p.setAttribute('stroke', fwdCol);
-        p.setAttribute('marker-end', 'url(#bp-ah-fwd)');
-      } else {
-        p.setAttribute('stroke', edgeOff);
-        p.setAttribute('marker-end', 'url(#bp-ah-off)');
-      }
+      const on = s.fwdEdges.includes(id);
+      p.classList.toggle('is-on', on);
+      p.setAttribute('marker-end', on ? 'url(#bp-ah-fwd)' : 'url(#bp-ah-off)');
       const pb = document.getElementById(`bp-p${id}b`);
       if (pb) pb.style.opacity = s.bwdEdges.includes(id) ? '1' : '0';
       const fl = document.getElementById(`bp-fl-${id}`);
@@ -640,29 +595,17 @@
 
     const fv = document.getElementById('bp-val-f')!;
     fv.textContent = s.fVal;
-    const fColorResolved = s.fColor === 'fwd' ? fwdCol
-                         : s.fColor === 'off' ? (dark ? '#524e48' : '#c8c4bc')
-                         : s.fColor;
-    fv.setAttribute('fill', fColorResolved);
+    fv.style.fill = s.fColor === 'fwd' ? 'var(--bp-fwd)' : 'var(--bp-muted)';
 
-    const gateCfg: Record<string, { stroke: string; fill: string }> = {
-      add: { stroke: fwdCol, fill: dark ? '#101c28' : '#f0f6fb' },
-      mul: { stroke: dark ? '#8c62bc' : '#6b3fa0', fill: dark ? '#1c1428' : '#f5f0fb' },
-    };
     ['add', 'mul'].forEach(g => {
-      const r = document.getElementById(`bp-r-${g}`);
-      if (!r) return;
       const on = s.activeGate === g;
-      r.setAttribute('stroke', on ? gateCfg[g].stroke : gateOff);
-      r.setAttribute('stroke-width', on ? '2' : '1.5');
-      r.setAttribute('fill', on ? gateCfg[g].fill : gateFillColor);
+      const mode = s.phase === 'bwd' ? 'is-grad' : 'is-fwd';
+      [document.getElementById(`bp-r-${g}`), document.getElementById(`bp-g-${g}`)].forEach(el => {
+        if (!el) return;
+        el.classList.remove('is-fwd', 'is-grad');
+        if (on) el.classList.add(mode);
+      });
     });
-
-    // Update marker colors
-    const ahFwd = document.getElementById('bp-ah-fwd');
-    if (ahFwd) ahFwd.querySelector('path')?.setAttribute('fill', fwdCol);
-    const ahOff = document.getElementById('bp-ah-off');
-    if (ahOff) ahOff.querySelector('path')?.setAttribute('fill', dark ? '#343028' : '#ccc9c0');
 
     // Gate cards
     ['add', 'mul'].forEach(g => {
@@ -670,7 +613,6 @@
       el.classList.toggle('bp-gc-lit', s.activeGate === g);
     });
 
-    const showBwd = s.phase === 'bwd' || s.phase === 'done';
     document.getElementById('bp-gr-add')!.innerHTML = showBwd ? gateBwd.ruleAdd : gateFwd.ruleAdd;
     document.getElementById('bp-gr-mul')!.innerHTML = showBwd ? gateBwd.ruleMul : gateFwd.ruleMul;
     ['add', 'mul'].forEach(g => {
@@ -682,17 +624,19 @@
     const nextBtn = document.getElementById('bp-btn-next') as HTMLButtonElement;
     prevBtn.disabled = cur === 0;
     nextBtn.disabled = cur === N - 1;
-    nextBtn.textContent = cur === N - 1 ? '완료' : 'NEXT \u2192';
+    nextBtn.textContent = cur === N - 1 ? '완료' : '다음';
   }
 
   function go(d: number): void {
     cur = Math.max(0, Math.min(N - 1, cur + d));
     render();
+    keepFocusInView();
   }
 
   function rst(): void {
     cur = 0;
     render();
+    keepFocusInView();
   }
 
   // Button handlers
@@ -701,7 +645,6 @@
   document.getElementById('bp-btn-reset')!.addEventListener('click', () => rst());
 
   // Keyboard navigation (scoped to widget focus)
-  const widget = document.querySelector('.bp-widget') as HTMLElement;
   widget.setAttribute('tabindex', '0');
   widget.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }

@@ -1,6 +1,6 @@
 # Simple English(ASD-STE100) 2차 리뷰 2026-10-03 (Opus 리뷰 → Opus 검수, 미반영)
 
-1차 리뷰(`../simple-english/`)는 강의당 40건 상한이 있어 빠진 문제가 있었다. 이 2차 리뷰는 1차가 다루지 않은 남은 문제를 찾는다. 1차 40개 항목이 다룬 문장, 1차 "용어 결정", 저자가 미반영·유지로 정한 항목은 다시 제기하지 않았다. 지침은 [PROMPT.md](PROMPT.md)이고, 규칙과 한국어 적용표(A~N)는 1차 [PROMPT.md](../simple-english/PROMPT.md)를 그대로 쓴다. **01~03강은 저자 결정대로 반영했다(아래 "반영 현황"). 04~07강은 findings만 있다.** 리뷰는 main 948262a에서 했다. 그 뒤 PR #59가 06강 bucketing 절에 그림 5개와 prefill·extend·decode 정의를 넣었으므로, 06.md는 PR #59 반영 후(674e327) 행 번호로 갱신하고 바뀐 항목(02·03·07·08·27)을 다시 확인했다. 그 뒤 PR #61(그림·위젯과 본문의 drift 수정)이 02·03·04강에 그림 설명 줄을 넣어 행이 밀렸으므로, 02·03·04.md의 행 번호를 PR #61 반영 후(deb1378) 기준으로 다시 맞췄다. PR #61은 06·07강에서는 같은 줄 안의 문구만 바꿨고, 2차 항목 중 원문이 바뀐 것은 06강 33번(112행 "왼쪽 그림처럼" → "아래 첫 번째 그림처럼") 하나다. 01·05·07.md는 행 번호 변화가 없다.
+1차 리뷰(`../simple-english/`)는 강의당 40건 상한이 있어 빠진 문제가 있었다. 이 2차 리뷰는 1차가 다루지 않은 남은 문제를 찾는다. 1차 40개 항목이 다룬 문장, 1차 "용어 결정", 저자가 미반영·유지로 정한 항목은 다시 제기하지 않았다. 지침은 [PROMPT.md](PROMPT.md)이고, 규칙과 한국어 적용표(A~N)는 1차 [PROMPT.md](../simple-english/PROMPT.md)를 그대로 쓴다. **01~04강은 저자 결정대로 반영했다(아래 "반영 현황"). 05~07강은 findings만 있다.** 리뷰는 main 948262a에서 했다. 그 뒤 PR #59가 06강 bucketing 절에 그림 5개와 prefill·extend·decode 정의를 넣었으므로, 06.md는 PR #59 반영 후(674e327) 행 번호로 갱신하고 바뀐 항목(02·03·07·08·27)을 다시 확인했다. 그 뒤 PR #61(그림·위젯과 본문의 drift 수정)이 02·03·04강에 그림 설명 줄을 넣어 행이 밀렸으므로, 02·03·04.md의 행 번호를 PR #61 반영 후(deb1378) 기준으로 다시 맞췄다. PR #61은 06·07강에서는 같은 줄 안의 문구만 바꿨고, 2차 항목 중 원문이 바뀐 것은 06강 33번(112행 "왼쪽 그림처럼" → "아래 첫 번째 그림처럼") 하나다. 01·05·07.md는 행 번호 변화가 없다.
 
 ## TL;DR
 
@@ -25,7 +25,8 @@
 | 01 | 8 / 2 / 3 | 6번은 backpropagation으로 통일, 10번은 BLAS full name 유지. 369·400행 "hardware backend" |
 | 02 | 27 / 3 / 1 | 21번은 dispatcher 대소문자 규칙(불릿·문장 첫머리 대문자), 28번은 446행 문장 유지. 사실 flag 4건 처리: 링크 v2.14.0 고정, 2.13 언급 제거, RegisterCUDA 표현, guard 연결 경로를 `VirtualGuardImpl`/`DeviceGuardImplInterface`로 |
 | 03 | 40 / 3 / 0 | 2번은 PEP 523 링크, 4번은 instruction window 정의 없이, 35번은 Mermaid 라벨까지. 207행 Trace cache miss. 43번은 "compiler backend"로 통일. 사실 flag 552행(cache entry 위치) 고침 |
-| 04~07 | 저자 결정 대기 | |
+| 04 | 32 / 0 / 1 | 33번(단계 표시)은 유지. 700행 computation graph. 사실 flag: AOTAutograd 코드 레벨 설명과 의사코드를 v2.14.0 stage 구조로 다시 씀, 표 셀 이름을 `images`/`outputs`로 |
+| 05~07 | 저자 결정 대기 | |
 
 ## 1차 작업에서 생긴 오류 (원문 확인)
 
@@ -46,7 +47,7 @@
 | 강의:행 | 판정 | 근거 |
 |---|---|---|
 | 03:546 | 고쳐야 함 → 고침(03강 반영) | cache entry 목록은 원래 함수의 code object에 붙는다(`torch/csrc/dynamo/extra_state.h`의 `ExtraState`). "하나의 compiled code object가 여러 cache entry"는 틀림 |
-| 04:715 | 고쳐야 함 (버전 규칙) | 의사코드의 `aot_dispatch_autograd`는 v2.14.0에 없고 `aot_stage1_graph_capture`, `aot_stage2_autograd`, `_aot_stage2a_partition` 등이 있다(`torch/_functorch/_aot_autograd/graph_compile.py`). 본문도 "강의가 참조한 버전 기준"이라고 적어 2.14 고정 원칙과 어긋남 |
+| 04:715 | 고쳐야 함 (버전 규칙) → 고침(04강 반영) | 의사코드의 `aot_dispatch_autograd`는 v2.14.0에 없고 `aot_stage1_graph_capture`, `aot_stage2_autograd`, `_aot_stage2a_partition` 등이 있다(`torch/_functorch/_aot_autograd/graph_compile.py`). 본문도 "강의가 참조한 버전 기준"이라고 적어 2.14 고정 원칙과 어긋남 |
 | 02:644 | 고쳐야 함 → 고침 | 링크가 `blob/main`을 가리킴. v2.14.0 태그로 고정(02강 반영) |
 | 02:955 | 저자 판단 → 2.14 기준으로 고침 | "2.13 codegen에는 없음"이라는 2.13 대비 문장. 2.13 언급을 빼는 원칙과 맞는지 |
 | 05:694 | 고쳐야 함 | "한 머신에서 처리하지 못할 만큼"은 TP를 node 안에서 쓴다는 949행과 어긋남. "한 GPU"가 맞음 |
