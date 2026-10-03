@@ -101,7 +101,7 @@ PyTorch + NPU 온라인 모임 #6 | 2025-02-05
     - 그래서 필요한 더 낮은 레벨: CUDA, CUTLASS, Triton, 그리고 최근의 CUDA Tile(cuTile)
     - FlashAttention v1 → v2 → v3 → v4의 GPU utilization 개선과 serving용 attention engine인 FlashInfer
 - Serving 최적화 framework: 이 최적화들을 하나로 묶는 layer
-    - vLLM: PagedAttention을 제안한 팀에서 시작해 널리 사용되는 오픈소스 서빙 엔진: V1 엔진의 `torch.compile` 통합과 하드웨어 플러그인 시스템
+    - vLLM: PagedAttention을 제안한 팀에서 시작해 널리 사용되는 오픈소스 서빙 엔진. 이 강의는 V1 엔진의 `torch.compile` 통합과 하드웨어 플러그인 시스템을 다룹니다.
     - 결론: LLM 추론 스택은 PyTorch 하나로 완성되지 않고, 커널 프로그래밍과 서빙 최적화라는 층이 함께 필요
 
 
@@ -109,23 +109,23 @@ PyTorch + NPU 온라인 모임 #6 | 2025-02-05
 
 ### Self Attention과 Scaled Dot-Product
 
-LLM에서 가장 중요한 연산을 하나 꼽으라면 단연 **Self-Attention**, 그중에서도 실제로 그것을 계산하는 연산인 **Scaled Dot-Product**입니다. 아래 첫 번째 그림처럼 한 문장이 주어졌을 때, 토큰들 사이의 관계를 통해 "이 문장 안에서 이 토큰이 어떤 의미를 갖는가"를 더 명확하게 뽑아내는 과정이 곧 self-attention이라고 생각할 수 있습니다.
+LLM에서 가장 중요한 연산을 하나 꼽으라면 단연 **Self-Attention**, 그중에서도 실제로 그것을 계산하는 연산인 **Scaled Dot-Product**입니다. 아래 첫 번째 그림처럼 한 문장이 주어졌을 때, self-attention은 token들 사이의 관계로 "이 문장 안에서 이 token이 어떤 의미를 갖는가"를 뽑아내는 과정입니다.
 
-이 과정은 잘 알려져 있듯이 **K(Key), Q(Query), V(Value)** 세 가지 값으로 이루어집니다. 각 토큰의 embedding에 세 개의 weight를 곱해 만드는 벡터로, query는 "내가 무엇을 찾는가", key는 "내가 무엇을 갖고 있는가", value는 "실제로 전달할 내용"에 해당합니다. Attention은 토큰들 사이의 연관성의 크기입니다. 이 크기는 query–key 내적으로 구합니다. 이 크기로 value를 가중해 누적하면(=scaled dot-product), 특정 토큰에 self-attention이 반영된 새로운 표현(embedding)이 만들어집니다.
+이 과정은 잘 알려져 있듯이 **K(Key), Q(Query), V(Value)** 세 가지 값으로 이루어집니다. 각 token의 embedding에 세 개의 weight를 곱해 만드는 벡터로, query는 "내가 무엇을 찾는가", key는 "내가 무엇을 갖고 있는가", value는 "실제로 전달할 내용"에 해당합니다. Attention은 token들 사이의 연관성의 크기입니다. 이 크기는 query–key 내적으로 구합니다. 이 크기로 value를 가중해 누적하면(=scaled dot-product), 특정 token에 self-attention이 반영된 새로운 표현(embedding)이 만들어집니다.
 
-아래 그림에서 계산 측면의 포인트 하나는, 입력 토큰 embedding으로부터 K·Q·V를 뽑아내는 부분은 토큰마다 독립이라 모두 병렬로 처리할 수 있다는 점입니다. 그 뒤의 단계는 그림 오른쪽 아래 카드 ①~④ 순서입니다.
+아래 그림에서 계산 측면의 포인트 하나는, 입력 token embedding으로부터 K·Q·V를 뽑아내는 부분은 token마다 독립이라 모두 병렬로 처리할 수 있다는 점입니다. 그 뒤의 단계는 그림 오른쪽 아래 카드 ①~④ 순서입니다.
 
 요약하자면 계산 특성은 다음과 같습니다.
 
-- **병렬 처리가 자연스러운 부분**: 입력 embedding으로부터의 K·Q·V 계산, 그리고 토큰별로 독립적인 하위(아래쪽) 연산
-- **병렬 처리가 까다로운 부분**: 전체 분포를 봐야 하는 softmax, 그리고 그 결과와 V를 곱한 뒤 모든 토큰에 대해 합산하는 summation
+- **병렬 처리가 자연스러운 부분**: 입력 embedding으로부터의 K·Q·V 계산, 그리고 token별로 독립적인 하위(아래쪽) 연산
+- **병렬 처리가 까다로운 부분**: 전체 분포를 봐야 하는 softmax, 그리고 그 결과와 V를 곱한 뒤 모든 token에 대해 합산하는 summation
 
 softmax와 summation을 병렬화하기 까다롭다는 점은 이후 FlashAttention 같은 IO-aware 알고리즘(GPU의 메모리 계층을 고려한 알고리즘)이 풀어야 하는 문제로 다시 등장합니다.
 
 <div class="flex flex-col gap-8 mt-6">
   <div class="text-center">
-    <img src="/images/06/slide06_1.png" alt="문장 속 'it' 토큰이 다른 토큰들과 갖는 self-attention 연관성 시각화" class="h-72 mx-auto" />
-    <div class="text-sm mt-2">모든 토큰의 kv값과, "it"의 query만 사용</div>
+    <img src="/images/06/slide06_1.png" alt="문장 속 'it' token이 다른 token들과 갖는 self-attention 연관성 시각화" class="h-72 mx-auto" />
+    <div class="text-sm mt-2">모든 token의 kv값과, "it"의 query만 사용</div>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
     <div class="text-center">
@@ -138,7 +138,7 @@ softmax와 summation을 병렬화하기 까다롭다는 점은 이후 FlashAtten
         <p class="text-xs text-white/80 mt-1">출력 $a_1$이 곧 "it"의 새 표현</p>
       </div>
       <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">③ 각 토큰의 $v$에 $\alpha$를 곱해 모두 더함</p>
+        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">③ 각 token의 $v$에 $\alpha$를 곱해 모두 더함</p>
         <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$\alpha_j v_j$를 $\sum$으로 합산</p>
       </div>
       <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
@@ -161,26 +161,26 @@ softmax와 summation을 병렬화하기 까다롭다는 점은 이후 FlashAtten
 
 ### Non-Causal vs. Causal Attention
 
-Self-Attention의 또 다른 중요한 특징은 Causal이냐, Non-Causal이냐입니다. 앞 슬라이드에서 본 "it" 예시는 사실 **Non-Causal**에 해당합니다. "it"의 attention을 구할 때 이 토큰 앞에 있는 토큰들과 뒤에 있는 토큰들을 모두 사용해 계산했죠. 반면 오른쪽 그림처럼 **Causal Attention**에서는 자기 자신과 자기보다 먼저 나온 토큰들로부터만 attention을 받도록 제한됩니다.
+Self-Attention의 또 다른 중요한 특징은 Causal이냐, Non-Causal이냐입니다. 앞 슬라이드에서 본 "it" 예시는 사실 **Non-Causal**에 해당합니다. "it"의 attention을 구할 때 이 token 앞에 있는 token들과 뒤에 있는 token들을 모두 사용해 계산했죠. 반면 오른쪽 그림처럼 **Causal Attention**에서는 자기 자신과 자기보다 먼저 나온 token들로부터만 attention을 받도록 제한됩니다.
 
-이 두 방식은 attention에서 참조할 수 있는 토큰 범위가 달라 계산 패턴에도 차이가 생깁니다. GPT 계열처럼 다음 token을 생성하는 decoder-only LLM은 일반적으로 Auto-regressive(Causal) Attention을 사용합니다. 반면 encoder 계열이나 multimodal model의 일부 attention block에서는 non-causal attention도 계속 사용됩니다.
+이 두 방식은 attention에서 참조할 수 있는 token 범위가 달라 계산 패턴에도 차이가 생깁니다. GPT 계열처럼 다음 token을 생성하는 decoder-only LLM은 일반적으로 Auto-regressive(Causal) Attention을 사용합니다. 반면 encoder 계열이나 multimodal model의 일부 attention block에서는 non-causal attention도 계속 사용됩니다.
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div class="text-center">
-  <ThemeImage lightSrc="/images/06/attention-noncausal-light.svg" darkSrc="/images/06/attention-noncausal-dark.svg" alt="Non-Causal Attention: 'them'의 새 표현이 앞뒤 모든 토큰을 참조하는 양방향 attention" class="h-56 mx-auto" />
+  <ThemeImage lightSrc="/images/06/attention-noncausal-light.svg" darkSrc="/images/06/attention-noncausal-dark.svg" alt="Non-Causal Attention: 'them'의 새 표현이 앞뒤 모든 token을 참조하는 양방향 attention" class="h-56 mx-auto" />
   <p class="mt-2 font-bold">Non-Causal Attention</p>
-  <p class="text-sm text-gray-500 dark:text-gray-400">앞/뒤 모든 토큰을 고려 (양방향)</p>
+  <p class="text-sm text-gray-500 dark:text-gray-400">앞/뒤 모든 token을 고려 (양방향)</p>
 </div>
 <div class="text-center">
-  <ThemeImage lightSrc="/images/06/attention-causal-light.svg" darkSrc="/images/06/attention-causal-dark.svg" alt="Causal Attention: 'them'의 새 표현이 자기 자신과 이전 토큰만 참조하는 단방향 attention" class="h-56 mx-auto" />
+  <ThemeImage lightSrc="/images/06/attention-causal-light.svg" darkSrc="/images/06/attention-causal-dark.svg" alt="Causal Attention: 'them'의 새 표현이 자기 자신과 이전 token만 참조하는 단방향 attention" class="h-56 mx-auto" />
   <p class="mt-2 font-bold">Causal Attention</p>
-  <p class="text-sm text-gray-500 dark:text-gray-400">현재 + 이전 토큰만 고려 (단방향)</p>
+  <p class="text-sm text-gray-500 dark:text-gray-400">현재 + 이전 token만 고려 (단방향)</p>
 </div>
 </div>
 
 ### Prefill과 Decode
 
-**Decoder-Only LLM**은 주어진 토큰들로부터 다음 토큰을 예측하는 일을 계속 반복합니다(Autoregressive). 이를 위해 먼저 Pretraining 단계에서 "$N$개의 토큰이 주어졌을 때 그다음 토큰이 무엇인가"를 엄청나게 많이 반복 학습해 Trained Weights를 만듭니다. 학습이 끝나면 같은 weight로 추론(inference)을 합니다. 추론은 프롬프트가 들어오면 그에 대한 답을 차례로 생성하는 과정입니다. 이 과정은 다시 **Prefill**(프롬프트를 처리하는 단계)과 **Decode**(문장이 끝날 때까지 토큰을 반복 생성하는 단계)로 나뉩니다.
+**Decoder-Only LLM**은 주어진 token들로부터 다음 token을 예측하는 일을 계속 반복합니다(Autoregressive). 이를 위해 먼저 Pretraining 단계에서 "$N$개의 token이 주어졌을 때 그다음 token이 무엇인가"를 엄청나게 많이 반복 학습해 Trained Weights를 만듭니다. 학습이 끝나면 같은 weight로 추론(inference)을 합니다. 추론은 프롬프트가 들어오면 그에 대한 답을 차례로 생성하는 과정입니다. 이 과정은 다시 **Prefill**(프롬프트를 처리하는 단계)과 **Decode**(문장이 끝날 때까지 token을 반복 생성하는 단계)로 나뉩니다.
 
 <Mermaid wide>
 {`graph LR
@@ -197,38 +197,38 @@ Prefill과 Decode는 같은 model과 weight를 사용하는 두 실행 단계입
 
 두 단계는 계산 특성이 다릅니다. 실제 추론 과정을 시간축에 펼쳐 보면 다음과 같습니다.
 
-<img src="/images/06/slide09_1.png" alt="LLM 추론 타임라인: 모델 로딩 후 첫 토큰까지의 Prefill과 토큰을 반복 생성하는 Decode 단계" class="h-56 mx-auto" />
+<img src="/images/06/slide09_1.png" alt="LLM 추론 타임라인: 모델 로딩 후 첫 token까지의 Prefill과 token을 반복 생성하는 Decode 단계" class="h-56 mx-auto" />
 
 > 출처: [https://intel.github.io/intel-npu-acceleration-library/llm_performance.html](https://intel.github.io/intel-npu-acceleration-library/llm_performance.html)
 
-가장 먼저 모델 로딩이 한 번 일어나고(이후로는 다시 로딩하지 않음), 거기서부터 첫 번째 토큰이 만들어질 때까지가 Prefill입니다. Prefill은 사실상 프롬프트를 이해하는 과정으로 볼 수 있습니다. 첫 토큰이 만들어진 뒤에는 한 토큰씩 차례로 만들어내며 문장이 끝날 때까지 반복하는데, 이 부분이 곧 실제 답을 만들어내는 Decode 과정입니다.
+가장 먼저 모델 로딩이 한 번 일어나고(이후로는 다시 로딩하지 않음), 거기서부터 첫 번째 token이 만들어질 때까지가 Prefill입니다. Prefill은 사실상 프롬프트를 이해하는 과정으로 볼 수 있습니다. 첫 token이 만들어진 뒤에는 문장이 끝날 때까지 한 token씩 차례로 만듭니다. 이 부분이 실제 답을 만드는 Decode 과정입니다.
 
 LLM 추론 성능은 Prefill과 Decode를 나누어 다음 지표로 측정합니다.
 
 - **TTFT**(Time to First Token): request가 들어온 뒤 첫 token이 반환될 때까지의 시간. Prefill이 큰 비중을 차지하지만 queueing과 scheduling 시간도 포함합니다.
-- **TPOT**(Time per Output Token): 첫 토큰 이후 output 토큰 하나를 생성하는 데 걸린 평균 시간. 보통 `(전체 latency - TTFT) / (output 토큰 수 - 1)`로 계산합니다.
-- **ITL**(Inter-Token Latency): 연속한 두 output 토큰 사이의 실제 시간 간격. TPOT가 request 전체의 평균이라면 ITL은 각 간격의 분포이므로 p50·p99 같은 tail latency를 확인할 수 있습니다.
-- **TPS**(Tokens Per Second): 일정 시간 동안 생성한 토큰 수. 단일 request의 평균 generation rate는 대략 `1 / TPOT`이고, server throughput은 동시에 처리한 모든 request의 token을 합산해 측정하므로 두 값을 구분해야 합니다.
+- **TPOT**(Time per Output Token): 첫 token 이후 output token 하나를 생성하는 데 걸린 평균 시간. 보통 `(전체 latency - TTFT) / (output token 수 - 1)`로 계산합니다.
+- **ITL**(Inter-Token Latency): 연속한 두 output token 사이의 실제 시간 간격. TPOT가 request 전체의 평균이라면 ITL은 각 간격의 분포이므로 p50·p99 같은 tail latency를 확인할 수 있습니다.
+- **TPS**(Tokens Per Second): 일정 시간 동안 생성한 token 수. 단일 request의 평균 generation rate는 대략 `1 / TPOT`입니다. server throughput은 동시에 처리한 모든 request의 token을 합산해 측정합니다. 따라서 두 값을 구분해야 합니다.
 
-Decode는 매 스텝 같은 모델을 돌리지만, Self-Attention이 참조할 이전 문맥(KV)은 토큰마다 길어집니다. 그래서 이론적으로는 뒤의 토큰일수록 생성 시간이 늘고 TPS가 떨어집니다.
+Decode는 매 스텝 같은 모델을 돌리지만, Self-Attention이 참조할 이전 문맥(KV)은 token마다 길어집니다. 그래서 이론적으로는 뒤의 token일수록 생성 시간이 늘고 TPS가 떨어집니다.
 
 ### Prefill vs. Decode: 병렬성의 차이
 
-Prefill과 Decode는 여러 토큰을 처리하는 방식, 곧 병렬성이 다릅니다. 둘 다 "주어진 토큰들로부터 다음 토큰을 예측"하지만, 한 스텝에서 처리할 토큰들 사이의 의존 관계가 달라 계산의 모양이 달라집니다.
+Prefill과 Decode는 여러 token을 처리하는 방식, 곧 병렬성이 다릅니다. 둘 다 "주어진 token들로부터 다음 token을 예측"하지만, 한 스텝에서 처리할 token들 사이의 의존 관계가 달라 계산의 모양이 달라집니다.
 
-Decode 쪽이 직관적으로 이해하기 쉽습니다. 이전 토큰들은 이미(생성이든 입력이든) 모두 처리가 끝나 있고, 방금 막 만들어낸 마지막 토큰 하나로 그 다음 토큰을 예측합니다. 마지막 토큰 위치에서 self-attention을 다시 계산하고, linear layer + classification을 거쳐 다음 토큰을 고르는 과정을 매 토큰마다 반복합니다. 그런데 그 다음 토큰을 만들려면 이전 토큰이 무엇이었는지가 입력으로 들어가야 하므로, 첫 번째 토큰이 끝나야 두 번째가 시작될 수 있고, 본질적으로 순차 처리(sequential)가 됩니다. 또한 누적된 토큰이 늘어날수록 self-attention에서 봐야 하는 KV도 함께 늘어납니다.
+Decode 쪽이 직관적으로 이해하기 쉽습니다. 이전 token들은 이미(생성이든 입력이든) 모두 처리가 끝나 있고, 방금 막 만들어낸 마지막 token 하나로 그 다음 token을 예측합니다. 마지막 token 위치에서 self-attention을 다시 계산하고, linear layer + classification을 거쳐 다음 token을 고르는 과정을 매 token마다 반복합니다. 그런데 그 다음 token을 만들려면 이전 token이 입력으로 들어가야 합니다. 그래서 첫 번째 token이 끝나야 두 번째가 시작되고, Decode는 순차 처리(sequential)가 됩니다. 또한 누적된 token이 늘어날수록 self-attention에서 봐야 하는 KV도 함께 늘어납니다.
 
-Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 줄 아는 일은 "토큰들이 주어졌을 때 다음 토큰을 예측하는 것" 하나뿐이니까요. 다만 Prefill에는 $N$개 토큰이 이미 주어져 있습니다. 예를 들어 프롬프트가 `You are a helpful chatbot`이라면, 두 번째 토큰 `are`를 처리할 때 "`You`의 다음 토큰이 무엇인지"는 이미 정해져 있고(=다음 입력 토큰 자체가 그것), 따라서 `You`의 처리 결과를 기다릴 필요가 없습니다. 그래서 다섯 토큰을 모두 동시에 첫 레이어부터 통과시킬 수 있습니다.
+Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 줄 아는 일은 "token들이 주어졌을 때 다음 token을 예측하는 것" 하나뿐이니까요. 다만 Prefill에는 $N$개 token이 이미 주어져 있습니다. 예를 들어 프롬프트가 `You are a helpful chatbot`이라면, 두 번째 token `are`를 처리할 때 "`You`의 다음 token이 무엇인지"는 이미 정해져 있고(=다음 입력 token 자체가 그것), 따라서 `You`의 처리 결과를 기다릴 필요가 없습니다. 그래서 다섯 token을 모두 동시에 첫 레이어부터 통과시킬 수 있습니다.
 
-여기서 헷갈리기 쉬운 부분이 있는데, "동시에 처리해도 된다"는 건 토큰 간에 영향이 없다는 뜻이 아닙니다. attention을 통해 왼쪽 토큰이 오른쪽 토큰에 영향을 주는 것은 그대로입니다. 다만 한 토큰의 최종 출력(다음 토큰 예측)은 옆 토큰을 처리하는 데 필요한 입력이 아닙니다. 그래서 모든 토큰을 첫 레이어부터 병렬로 진행할 수 있습니다.
+여기서 헷갈리기 쉬운 부분이 있는데, "동시에 처리해도 된다"는 건 token 간에 영향이 없다는 뜻이 아닙니다. attention을 통해 왼쪽 token이 오른쪽 token에 영향을 주는 것은 그대로입니다. 다만 한 token의 최종 출력(다음 token 예측)은 옆 token을 처리하는 데 필요한 입력이 아닙니다. 그래서 모든 token을 첫 레이어부터 병렬로 진행할 수 있습니다.
 
-<img src="/images/06/prefill-vs-decode.png" alt="Prefill은 프롬프트 토큰 5개의 query가 KV cache를 causal하게 참조해 attention 삼각형 전체를 채우고, Decode는 새 토큰 query 하나가 cache 전체를 참조해 삼각형의 마지막 행만 계산하는 그림" class="h-56 mx-auto" />
+<img src="/images/06/prefill-vs-decode.png" alt="Prefill은 프롬프트 token 5개의 query가 KV cache를 causal하게 참조해 attention 삼각형 전체를 채우고, Decode는 새 token query 하나가 cache 전체를 참조해 삼각형의 마지막 행만 계산하는 그림" class="h-56 mx-auto" />
 
 > 출처: [https://flashinfer.ai/2024/02/02/introduce-flashinfer.html](https://flashinfer.ai/2024/02/02/introduce-flashinfer.html)
 
 <PrefillDecodeDiagram />
 
-위 위젯에서 세로축은 layer이고, 가로선 위의 점은 attention(query 행 × key 열)을 뜻합니다. 주황색 호는 출력 토큰이 다음 입력으로 되돌아가는 경로입니다. 위젯의 프롬프트는 4 토큰(`I like my cat`)이고, 본문의 예시는 5 토큰입니다. Prefill에는 수직(레이어 간) 의존성과 우상향(KV 전달) 의존성이 있지만, 같은 레이어 안에서 한 토큰이 다른 토큰의 출력을 기다리는 가로 의존성은 없습니다. 그래서 같은 레이어 안의 모든 토큰을 가로로 병렬 처리할 수 있습니다. Decode는 새 토큰을 만들 때마다 직전 토큰의 결과가 입력으로 다시 들어가야 합니다. 그래서 토큰 단위로 순차 처리합니다.
+위 위젯에서 세로축은 layer이고, 가로선 위의 점은 attention(query 행 × key 열)을 뜻합니다. 주황색 호는 출력 token이 다음 입력으로 되돌아가는 경로입니다. 위젯의 프롬프트는 4 token(`I like my cat`)이고, 본문의 예시는 5 token입니다. Prefill에는 수직(레이어 간) 의존성과 우상향(KV 전달) 의존성이 있지만, 같은 레이어 안에서 한 token이 다른 token의 출력을 기다리는 가로 의존성은 없습니다. 그래서 같은 레이어 안의 모든 token을 가로로 병렬 처리할 수 있습니다. Decode는 새 token을 만들 때마다 직전 token의 결과가 입력으로 다시 들어가야 합니다. 그래서 token 단위로 순차 처리합니다.
 
 #### Q&A
 
@@ -245,22 +245,22 @@ Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 �
 
 ### KV Cache
 
-새 토큰 하나의 attention을 계산하려면 그 토큰의 query를 이전 모든 토큰의 key·value와 곱해야 합니다. 그런데 이전 토큰들의 K·V는 한 번 계산되고 나면 스텝이 지나도 변하지 않는 값입니다. 아무것도 저장해 두지 않으면 새 토큰을 만들 때마다 sequence 전체를 첫 레이어부터 다시 통과시켜 같은 K·V를 재계산해야 합니다. 이 낭비는 매 스텝 prefill 하나를 통째로 다시 하는 것과 맞먹습니다.
+새 token 하나의 attention을 계산하려면 그 token의 query를 이전 모든 token의 key·value와 곱해야 합니다. 그런데 이전 token들의 K·V는 한 번 계산되고 나면 스텝이 지나도 변하지 않는 값입니다. 아무것도 저장해 두지 않으면 새 token을 만들 때마다 sequence 전체를 첫 레이어부터 다시 통과시켜 같은 K·V를 재계산해야 합니다. 이 낭비는 매 스텝 prefill 하나를 통째로 다시 하는 것과 맞먹습니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/nvidia-kv-cache.gif" alt="KV cache가 없으면 매 스텝 모든 토큰의 Q·K·V 행렬을 다시 계산하지만, KV cache가 있으면 마지막 query 하나와 cache에서 가져온 K·V만으로 attention을 계산하는 비교 애니메이션" class="max-w-3xl w-full mx-auto" />
+  <img src="/images/06/nvidia-kv-cache.gif" alt="KV cache가 없으면 매 스텝 모든 token의 Q·K·V 행렬을 다시 계산하지만, KV cache가 있으면 마지막 query 하나와 cache에서 가져온 K·V만으로 attention을 계산하는 비교 애니메이션" class="max-w-3xl w-full mx-auto" />
 </div>
 
-**KV cache**는 한 번 계산한 K·V를 저장해 두고 재사용합니다. 위 그림처럼 cache가 있으면 새 토큰의 query 하나만 가지고, K·V는 cache에서 가져와 attention을 계산할 수 있습니다. Cache의 동작은 **append-only**입니다. 매 스텝 새 토큰의 K·V만 계산해 cache 끝에 append하고, 기존 항목은 수정 없이 읽기만 합니다(retrieve). Prefill은 첫 토큰을 만들면서 프롬프트 전체의 KV cache도 함께 만듭니다. 뒤에서 볼 PD Disaggregation에서 Prefill pool이 Decode pool로 넘기는 것이 이 KV cache입니다.
+**KV cache**는 한 번 계산한 K·V를 저장해 두고 재사용합니다. 위 그림처럼 cache가 있으면 새 token의 query 하나만 가지고, K·V는 cache에서 가져와 attention을 계산할 수 있습니다. Cache의 동작은 **append-only**입니다. 매 스텝 새 token의 K·V만 계산해 cache 끝에 append하고, 기존 항목은 수정 없이 읽기만 합니다(retrieve). Prefill은 첫 token을 만들면서 프롬프트 전체의 KV cache도 함께 만듭니다. 뒤에서 볼 PD Disaggregation에서 Prefill pool이 Decode pool로 넘기는 것이 이 KV cache입니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/nvidia-kv-cache-append.png" alt="Decode 한 스텝의 데이터 흐름: 새 토큰의 K·V를 계산해 KV cache에 append하고, attention은 cache에서 K·V를 retrieve해 계산하는 구조" class="max-w-3xl w-full mx-auto" />
+  <img src="/images/06/nvidia-kv-cache-append.png" alt="Decode 한 스텝의 데이터 흐름: 새 token의 K·V를 계산해 KV cache에 append하고, attention은 cache에서 K·V를 retrieve해 계산하는 구조" class="max-w-3xl w-full mx-auto" />
   </div>
-<div class="text-sm text-center mt-2">매 스텝 새 토큰의 K·V만 cache에 append하고, attention은 cache에서 retrieve</div>
+<div class="text-sm text-center mt-2">매 스텝 새 token의 K·V만 cache에 append하고, attention은 cache에서 retrieve</div>
 
 > 출처: [Optimizing Inference for Long-Context and Large Batch Sizes with NVFP4 KV Cache (NVIDIA)](https://developer.nvidia.com/blog/optimizing-inference-for-long-context-and-large-batch-sizes-with-nvfp4-kv-cache/)
 
-KV cache의 비용은 두 가지입니다. sequence 길이에 비례해 메모리를 차지하고(크기는 뒤의 PagedAttention 절에서 계산합니다), 매 decode 스텝마다 쌓인 cache 전체를 HBM[^hbm]에서 다시 읽어야 합니다. 그래서 Decode는 매 스텝 weight 전체와 KV cache 전체를 읽으면서 연산은 토큰 하나 분량만 합니다. 다음 절의 "Decode는 Memory Bound"라는 진단이 이 구조에서 나옵니다. KV cache를 FP8·NVFP4 같은 저정밀 포맷으로 양자화해 용량과 읽기 트래픽을 줄이는 것도 같은 이유입니다.
+KV cache의 비용은 두 가지입니다. sequence 길이에 비례해 메모리를 차지하고(크기는 뒤의 PagedAttention 절에서 계산합니다), 매 decode 스텝마다 쌓인 cache 전체를 HBM[^hbm]에서 다시 읽어야 합니다. 그래서 Decode는 매 스텝 weight 전체와 KV cache 전체를 읽으면서 연산은 token 하나 분량만 합니다. 다음 절의 "Decode는 Memory Bound"라는 진단이 이 구조에서 나옵니다. KV cache를 FP8·NVFP4 같은 저정밀 포맷으로 양자화해 용량과 읽기 트래픽을 줄이는 것도 같은 이유입니다.
 
 [^hbm]: High Bandwidth Memory. DRAM die를 수직으로 쌓아 프로세서와 같은 패키지 안에서 매우 넓은 버스로 연결한 메모리. AI 가속기 오프칩 메모리의 사실상 표준으로, 일반 DRAM보다 대역폭이 훨씬 높지만 on-chip 메모리(SRAM)보다는 여전히 느립니다.
 
@@ -278,17 +278,17 @@ Roofline 그래프는 컴퓨터의 비용을 두 가지로만 나눠 모델링�
 
 X축의 **Arithmetic Intensity**는 알고리즘의 고유 특성으로, "메모리에서 한 번 들고 온 데이터로 몇 번의 연산을 수행하는가"를 뜻합니다.
 
-- **왼쪽 영역 (Memory Bound)**: 연산기는 아직 여유가 있는데, 데이터를 들여오고 내보내는 속도가 따라오지 못해 칩이 자기 풀스펙 연산력을 다 못 쓰는 상황
-- **오른쪽 영역 (Compute Bound)**: 연산기 자체가 이미 꽉 차 있어, 아무리 Arithmetic Intensity가 더 높아져도 더는 빨라지지 않는 상황
+- **왼쪽 영역 (Memory Bound)**: 연산기는 아직 여유가 있습니다. 그러나 데이터를 들여오고 내보내는 속도가 따라오지 못해 칩이 자기 풀스펙 연산력을 다 쓰지 못합니다.
+- **오른쪽 영역 (Compute Bound)**: 연산기 자체가 이미 꽉 차 있습니다. 그래서 Arithmetic Intensity가 아무리 더 높아져도 더는 빨라지지 않습니다.
 
 이 그래프와 판별 기준을 수식으로 정리한 내용은 강의 끝의 **보충: Roofline을 수식으로 정리하기**에서 다룹니다.
 
-이걸 Prefill·Decode에 대입하면 차이가 명확합니다. Prefill에서 `I like my cat`처럼 4개 토큰을 횡적으로 동시에 처리할 때, 한 레이어의 weight는 한 번만 들고 와서 4번 재사용됩니다. 즉 메모리 접근당 연산량이 4배라 Arithmetic Intensity가 높습니다. 반면 Decode에서 `lot` 한 토큰을 만들 때는 같은 weight를 들고 오지만 연산은 1번뿐이라 Intensity가 1/4 수준이 됩니다.
+이걸 Prefill·Decode에 대입하면 차이가 명확합니다. Prefill에서 `I like my cat`처럼 4개 token을 횡적으로 동시에 처리할 때, 한 레이어의 weight는 한 번만 들고 와서 4번 재사용됩니다. 즉 메모리 접근당 연산량이 4배라 Arithmetic Intensity가 높습니다. 반면 Decode에서 `lot` 한 token을 만들 때는 같은 weight를 들고 오지만 연산은 1번뿐이라 Intensity가 1/4 수준이 됩니다.
 
 결과적으로:
 
-- **Decode**: Arithmetic Intensity가 낮아 Memory Bound, 원하는 만큼 계산을 다 못 함
-- **Prefill**: Arithmetic Intensity가 높아 Compute Bound, 연산기는 꽉 차 있어 더 끌어올릴 여지가 적음
+- **Decode**: Arithmetic Intensity가 낮아 Memory Bound입니다. 원하는 만큼 계산을 다 하지 못합니다.
+- **Prefill**: Arithmetic Intensity가 높아 Compute Bound입니다. 연산기가 꽉 차 있어 더 끌어올릴 여지가 적습니다.
 
 Prefill은 병목이 연산기 쪽에 있어 더 끌어올릴 여지가 적다는 뜻이지, peak 성능을 낸다는 뜻은 아닙니다(kernel 효율은 별개의 문제로, 뒤의 FlashAttention 절에서 다룹니다). 이 그래프를 보면 보통 "메모리 대역폭을 늘려야 하나?"보다 "Decode가 프로세서 성능을 다 못 쓰고 있다"는 결론을 내립니다. 그래서 LLM 추론 최적화는 주로 Decode 단계를 겨냥합니다.
 
@@ -297,7 +297,7 @@ Prefill은 병목이 연산기 쪽에 있어 더 끌어올릴 여지가 적다�
 
 ### Prefill–Decode Disaggregation
 
-Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자원이 다릅니다. 한 GPU에 둘을 같이 두면 서로를 방해합니다. 긴 프롬프트의 Prefill이 들어오는 순간 그 GPU에서 돌던 Decode들이 밀려 토큰 생성 간격이 튀고, 반대로 Decode만 돌 때는 연산기가 놉니다. TTFT와 TPOT라는 두 지표를 한 머신 위에서 동시에 최적화하기가 구조적으로 어렵다는 뜻입니다.
+Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자원이 다릅니다. 한 GPU에 둘을 같이 두면 서로를 방해합니다. 긴 프롬프트의 Prefill이 들어오는 순간 그 GPU에서 돌던 Decode들이 밀려 token 생성 간격이 튀고, 반대로 Decode만 돌 때는 연산기가 놉니다. TTFT와 TPOT라는 두 지표를 한 머신 위에서 동시에 최적화하기가 구조적으로 어렵다는 뜻입니다.
 
 일부 대규모 서빙 시스템은 **Prefill–Decode Disaggregation**(PD 분리)을 사용합니다. PD 분리는 Prefill 전용 instance와 Decode 전용 instance를 서로 다른 pool로 나눕니다. Prefill이 만든 KV cache는 NVLink·RDMA 같은 interconnect를 통해 Decode 쪽으로 전달합니다. 두 pool을 독립적으로 scale하고, Prefill의 TTFT와 Decode의 throughput·TPOT를 각각 조정할 수 있습니다. DistServe, Mooncake, NVIDIA Dynamo와 vLLM·SGLang의 disaggregated serving 지원이 이 구성의 사례입니다.
 
@@ -348,61 +348,61 @@ Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자�
 
 ### Continuous Batching
 
-지금까지는 request 하나를 기준으로 이야기했습니다. 서빙에서는 여러 사용자의 request가 서로 다른 시점에 도착하고, 프롬프트 길이도 응답 길이도 제각각입니다. 그리고 앞서 봤듯 단일 request의 Decode는 weight 전체를 읽고 토큰 하나 분량만 계산합니다. 연산기가 놀고 있으니, 같은 스텝에 다른 request의 decode 토큰을 함께 처리하면 됩니다. weight를 한 번 읽어 $B$개 request에 재사용하면 arithmetic intensity가 $B$배가 됩니다. Prefill에서 토큰들이 weight를 공유하던 것처럼 request들이 weight를 공유합니다. 한 request 안의 토큰들과 달리 request 사이에는 의존성이 없어서 묶는 데 제약도 없습니다. 어떻게 묶을지는 스케줄링의 문제입니다.
+지금까지는 request 하나를 기준으로 이야기했습니다. 서빙에서는 여러 사용자의 request가 서로 다른 시점에 도착하고, 프롬프트 길이도 응답 길이도 제각각입니다. 그리고 앞서 봤듯 단일 request의 Decode는 weight 전체를 읽고 token 하나 분량만 계산합니다. 연산기가 놀고 있으니, 같은 스텝에 다른 request의 decode token을 함께 처리하면 됩니다. weight를 한 번 읽어 $B$개 request에 재사용하면 arithmetic intensity가 $B$배가 됩니다. Prefill에서 token들이 weight를 공유하던 것처럼 request들이 weight를 공유합니다. 한 request 안의 token들과 달리 request 사이에는 의존성이 없어서 묶는 데 제약도 없습니다. 어떻게 묶을지는 스케줄링의 문제입니다.
 
-가장 단순한 형태가 **Static / Dynamic Batching**입니다. 여러 request를 묶어서 모든 layer를 lock-step으로 동시에 진행합니다. 메모리 효율은 individual request 처리보다 분명히 올라가지만, 각 request가 얼마나 빨리/느리게 끝날지 미리 알 수 없다는 게 문제입니다. 한 배치의 모든 request는 같은 lock-step으로 진행해야 합니다. 그래서 가장 느린 request가 끝날 때까지 모두 기다립니다. 먼저 끝난 request의 자리는 빈 채로 남아 원하는 만큼 성능이 나오지 않습니다.
+가장 단순한 형태가 **Static / Dynamic Batching**입니다. 여러 request를 묶어서 모든 layer를 lock-step으로 동시에 진행합니다. 메모리 효율은 individual request 처리보다 올라갑니다. 문제는 각 request가 얼마나 빨리 또는 느리게 끝날지 미리 알 수 없다는 것입니다. 한 배치의 모든 request는 같은 lock-step으로 진행해야 합니다. 그래서 가장 느린 request가 끝날 때까지 모두 기다립니다. 먼저 끝난 request의 자리는 빈 채로 남아 원하는 만큼 성능이 나오지 않습니다.
 
-**Continuous Batching**은 스케줄링 단위를 request에서 decode step(iteration) 하나로 낮춥니다. 매 step이 끝날 때마다 끝난 request는 빼고 대기 중인 request를 끼워 넣어, 다음 step에서 처리할 토큰들을 그때그때 다시 묶습니다. sequence 길이가 서로 달라도 빈 슬롯이 바로 채워지므로 lock-step 방식의 낭비가 거의 없어집니다.
+**Continuous Batching**은 스케줄링 단위를 request에서 decode 스텝(iteration) 하나로 낮춥니다. 매 스텝이 끝날 때마다 끝난 request는 빼고 대기 중인 request를 끼워 넣어, 다음 스텝에서 처리할 token들을 그때그때 다시 묶습니다. sequence 길이가 서로 달라도 빈 slot이 바로 채워지므로 lock-step 방식의 낭비가 거의 없어집니다.
 
 대표적인 출발점은 서울대 전병곤 교수님의 [Orca 논문](https://www.usenix.org/conference/osdi22/presentation/yu)이고, 이 기술을 기반으로 설립된 회사가 Friendli AI입니다. 현재 Continuous Batching은 LLM 서빙에서 사실상 필수 기술이 되었습니다.
 
-배치 크기에는 상한이 있습니다. 임계 intensity는 연산기를 모두 쓰는 데 필요한 최소 intensity입니다(Roofline 그래프의 ridge point. 보충 절에서 수식으로 다룹니다). 배치가 커져 임계 intensity를 넘으면 compute bound에 들어서고, 그 뒤로는 throughput 이득이 급격히 줄어듭니다. 반면 한 스텝에 처리할 일이 많아져 토큰당 지연시간은 계속 늘어납니다. 그래서 실제 서빙에서는 throughput과 latency SLO(Service Level Objective) 사이에서 배치 크기를 고릅니다.
+배치 크기에는 상한이 있습니다. Threshold intensity는 연산기를 모두 쓰는 데 필요한 최소 intensity입니다(Roofline 그래프의 ridge point. 보충 절에서 수식으로 다룹니다). 배치가 커져 threshold intensity를 넘으면 Compute Bound에 들어서고, 그 뒤로는 throughput 이득이 급격히 줄어듭니다. 반면 한 스텝에 처리할 일이 많아져 token당 지연시간은 계속 늘어납니다. 그래서 실제 서빙에서는 throughput과 latency SLO(Service Level Objective) 사이에서 배치 크기를 고릅니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide17_1.png" alt="Batching 방식 비교: individual request는 request마다 따로 실행, dynamic batching은 4개씩 묶지만 짧은 request 뒤에 빈 자리가 남고, continuous batching은 끝난 자리에 다음 request을 이어 붙여 빈 자리가 없음" class="h-60" />
+  <img src="/images/06/slide17_1.png" alt="Batching 방식 비교: individual request는 request마다 따로 실행, dynamic batching은 4개씩 묶지만 짧은 request 뒤에 빈 자리가 남고, continuous batching은 끝난 자리에 다음 request를 이어 붙여 빈 자리가 없음" class="h-60" />
 </div>
 
 > 출처: [Continuous vs dynamic batching for AI inference](https://www.baseten.co/blog/continuous-vs-dynamic-batching-for-ai-inference/#continuous-batching-for-llm-inference-in-production)
 
 ### Speculative Decoding
 
-앞서 Decode는 "한 토큰이 끝나야 다음 토큰을 시작할 수 있다 → 병렬화 불가"라고 했습니다. **Speculative Decoding**은 이 제약을 우회하기 위해 등장한 기법입니다.
+앞서 Decode는 "한 token이 끝나야 다음 token을 시작할 수 있다 → 병렬화 불가"라고 했습니다. **Speculative Decoding**은 이 제약을 우회하기 위해 등장한 기법입니다.
 
 검증을 맡는 target model과 초안을 만드는 작은 모델이 있다고 할 때(보통 큰 모델이 target model이 됩니다), 작은 모델이 target model만큼 정확하지는 않더라도 그렇게 크게 뒤떨어지지는 않는다고 가정해 봅시다. 그렇다면 다음과 같이 두 단계로 일을 나눌 수 있습니다.
 
-1. **작은 모델(draft model)**로 여러 토큰의 초안을 빠르게 생성한다.
+1. **작은 모델(draft model)**로 여러 token의 초안을 빠르게 생성한다.
 2. **Target model**로 그 초안이 맞는지 검증만 한다.
 
-검증 단계는 Prefill과 같은 구조입니다. Prefill을 병렬로 처리할 수 있었던 이유는 "어떤 토큰들을 처리할지 이미 정해져 있는 상태에서 동시에 통과시킬 수 있기" 때문이었죠. 검증해야 할 토큰들도 draft가 미리 만들어 둔, 이미 정해진 토큰 sequence이기 때문에 target model이 이를 한 번의 forward pass로 동시에 검증할 수 있습니다.
+검증 단계는 Prefill과 같은 구조입니다. Prefill을 병렬로 처리할 수 있었던 이유는 "어떤 token들을 처리할지 이미 정해져 있는 상태에서 동시에 통과시킬 수 있기" 때문이었죠. 검증해야 할 token들도 draft가 미리 만들어 둔, 이미 정해진 token sequence이기 때문에 target model이 이를 한 번의 forward pass로 동시에 검증할 수 있습니다.
 
 검증 결과는 두 갈래입니다.
 
-- 모든 토큰이 target model의 예측과 일치 → 전부 accept, 그만큼 한 번에 진척
-- 중간 어딘가에서 불일치 → 그 지점 이전까지만 accept하고, 불일치한 자리에는 target model이 같은 forward pass에서 이미 계산해 둔 자기 예측 토큰을 넣습니다(아래 그림의 "Glitters"). 그 뒤 토큰은 폐기하고 거기서부터 다시 draft → 검증을 반복합니다. 그래서 한 번의 검증마다 최소 1개 토큰은 반드시 진행됩니다. (위 설명은 greedy 기준이고, sampling에서는 rejection sampling으로 target model의 분포를 그대로 보존합니다.)
+- 모든 token이 target model의 예측과 일치하면 전부 accept합니다. 그만큼 한 번에 진척됩니다.
+- 중간 어딘가에서 불일치하면 그 지점 이전까지만 accept하고, 불일치한 자리에는 target model이 같은 forward pass에서 이미 계산해 둔 자기 예측 token을 넣습니다(아래 그림의 "Glitters"). 그 뒤 token은 폐기하고 거기서부터 다시 draft → 검증을 반복합니다. 그래서 한 번의 검증마다 최소 1개 token은 반드시 진행됩니다. (위 설명은 greedy 기준이고, sampling에서는 rejection sampling으로 target model의 분포를 그대로 보존합니다.)
 
-작은 모델이 통계적으로 충분히 의미 있게 동작하기 때문에 실제 효율도 높은 편입니다. Speculative Decoding은 batching과 달리 한 request 안에서 생성을 검증 문제로 바꿔, Prefill처럼 여러 토큰을 동시에 처리합니다.
+실제 속도 이득은 draft token이 accept되는 비율(acceptance rate)에 달려 있습니다. 작은 모델이 target model의 분포를 잘 근사할수록 이 비율이 높아지고, 검증 한 번에 더 많은 token이 진행됩니다. Speculative Decoding은 batching과 달리 한 request 안에서 생성을 검증 문제로 바꿔, Prefill처럼 여러 token을 동시에 처리합니다.
 
 <div class="grid grid-cols-2 gap-4 mt-4 items-start">
 <div class="text-center">
-  <img src="/images/06/slide18_2.png" alt="Autoregressive decoding: forward pass마다 토큰이 하나씩 늘어나는 기준선" class="h-48 mx-auto" />
-  <div class="text-sm mt-2">기준선: forward pass 한 번에 토큰 하나</div>
+  <img src="/images/06/slide18_2.png" alt="Autoregressive decoding: forward pass마다 token이 하나씩 늘어나는 기준선" class="h-48 mx-auto" />
+  <div class="text-sm mt-2">기준선: forward pass 한 번에 token 하나</div>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide18_1.png" alt="Speculative Decoding: Assistant Model이 토큰 5개(All That Shines Is Not)를 제안하고, Main Model이 한 번의 forward pass로 검증해 앞 2개(All, That)를 accept한다. 아래쪽 Main Model(Auto-regressive) 줄에서는 세 번째 자리가 Glitters로 바뀌고 Is, Not이 이어지는 모습으로 그려짐" class="h-48 mx-auto" />
-  <div class="text-sm mt-2">draft 5개 → 검증 → 2개 accept + 교정 토큰 1개</div>
+  <img src="/images/06/slide18_1.png" alt="Speculative Decoding: Assistant Model이 token 5개(All That Shines Is Not)를 제안하고, Main Model이 한 번의 forward pass로 검증해 앞 2개(All, That)를 accept한다. 아래쪽 Main Model(Auto-regressive) 줄에서는 세 번째 자리가 Glitters로 바뀌고 Is, Not이 이어지는 모습으로 그려짐" class="h-48 mx-auto" />
+  <div class="text-sm mt-2">draft 5개 → 검증 → 2개 accept + 교정 token 1개</div>
 </div>
 </div>
 
-별도의 작은 Draft Model을 두는 방식은 speculative decoding의 고전적인 형태이고, 초안을 만드는 방식은 계속 바뀌고 있습니다. 최근에는 두 가지 변형이 등장했습니다. **MTP**(Multi-Token Prediction, DeepSeek-V3 계열이 대표적)는 별도 모델 대신 target model 자체에 다음 여러 토큰을 미리 예측하는 head를 붙여 draft로 씁니다. DeepSeek의 [DSpark](https://arxiv.org/abs/2607.05147)는 semi-autoregressive draft에 confidence-scheduled verification을 결합합니다. confidence-scheduled verification은 서빙 부하에 따라 검증량을 조절하는 방식입니다. 형태는 달라도 "빠르게 초안 생성 → target model이 병렬 검증"이라는 골격은 같고, draft 품질(acceptance rate)과 검증 효율을 높이는 쪽으로 발전하고 있습니다.
+별도의 작은 Draft Model을 두는 방식은 speculative decoding의 고전적인 형태이고, 초안을 만드는 방식은 계속 바뀌고 있습니다. 최근에는 두 가지 변형이 등장했습니다. **MTP**(Multi-Token Prediction, DeepSeek-V3 계열이 대표적)는 별도 모델 대신 target model 자체에 다음 여러 token을 미리 예측하는 head를 붙여 draft로 씁니다. DeepSeek의 [DSpark](https://arxiv.org/abs/2607.05147)는 semi-autoregressive draft에 confidence-scheduled verification을 결합합니다. confidence-scheduled verification은 서빙 부하에 따라 검증량을 조절하는 방식입니다. 형태는 달라도 "빠르게 초안 생성 → target model이 병렬 검증"이라는 골격은 같고, draft 품질(acceptance rate)과 검증 효율을 높이는 쪽으로 발전하고 있습니다.
 
 ### Attention의 비용 문제
 
 Continuous Batching과 Speculative Decoding은 Decode를 Prefill처럼 병렬로 처리하는 기술입니다. 병렬화와 별개로 Attention 연산 자체가 비싸고, sequence가 길어질수록 그 비용이 빠르게 커집니다.
 
-마지막 토큰 하나를 처리하려면 그 전까지 생성된 모든 토큰으로부터 입력을 가져와 Attention을 다시 계산해야 합니다. 한 토큰당 비용이 $O(N)$이고, 그걸 $N$번 반복하니 sequence 전체의 누적 시간은 $O(N^2)$입니다. 즉 sequence 길이 $N$이 두 배가 되면 attention에 들어가는 누적 시간은 4배, 읽어야 하는 KV cache 메모리는 2배로 늘어나는 구조입니다. 컨텍스트가 길어지는 추세를 생각하면, 이 자승 항을 어떻게 다루느냐가 LLM 추론 효율의 또 다른 중요한 축이 됩니다.
+마지막 token 하나를 처리하려면 그 전까지 생성된 모든 token으로부터 입력을 가져와 Attention을 다시 계산해야 합니다. 한 token당 비용이 $O(N)$이고, 그걸 $N$번 반복하니 sequence 전체의 누적 시간은 $O(N^2)$입니다. 즉 sequence 길이 $N$이 두 배가 되면 attention에 들어가는 누적 시간은 4배, 읽어야 하는 KV cache 메모리는 2배로 늘어나는 구조입니다. Context가 길어지는 추세이므로, 이 자승 항을 어떻게 다루느냐가 LLM 추론 효율을 좌우합니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide19_1.png" alt="문서 경계 토큰(<eod>)이 들어 있는 packed sequence의 causal attention mask 행렬: 각 토큰이 자기 자신과 앞 토큰만 참조하는 하삼각 구조" class="h-64" />
+  <img src="/images/06/slide19_1.png" alt="문서 경계 token(<eod>)이 들어 있는 packed sequence의 causal attention mask 행렬: 각 token이 자기 자신과 앞 token만 참조하는 하삼각 구조" class="h-64" />
 </div>
 
 > 출처: [4D masks support in Transformers](https://huggingface.co/blog/poedator/4d-masks)
@@ -411,7 +411,7 @@ Continuous Batching과 Speculative Decoding은 Decode를 Prefill처럼 병렬로
 
 이 비용 문제를 다루는 대표적인 기법이 **FlashAttention**입니다. FlashAttention은 Attention의 $O(N^2)$ 복잡도를 줄이지 않습니다. 자승 항은 그대로 두고 더 효율적으로 처리합니다. 도구는 **Tiling**과 **Fusion** 두 가지입니다.
 
-기존 Attention 구현의 가장 큰 비효율은 계산 도중에 HBM에서 데이터를 반복해서 읽고 쓰는 과정에서 발생합니다. HBM은 GPU 칩 밖에 있지만 GPU 패키지에 붙어 있는 GPU 전용 메모리로, CPU의 메인 메모리와는 다릅니다. CUDA는 이 메모리를 global memory라고 부릅니다. Attention은 여러 단계의 연산(QK 곱, softmax, V 곱, 합산)으로 이뤄져 있는데, 단계마다 중간 결과를 HBM에 한 번 썼다가 다음 단계에서 다시 읽는 일이 반복되면 그 자체가 큰 오버헤드가 됩니다.
+기존 Attention 구현의 가장 큰 비효율은 계산 도중에 HBM에서 데이터를 반복해서 읽고 쓰는 과정에서 발생합니다. HBM은 GPU 칩 밖에 있지만 GPU 패키지에 붙어 있는 GPU 전용 메모리로, CPU의 메인 메모리와는 다릅니다. CUDA는 이 메모리를 global memory라고 부릅니다. Attention은 여러 단계의 연산(QK 곱, softmax, V 곱, 합산)으로 이뤄져 있습니다. 단계마다 중간 결과를 HBM에 썼다가 다음 단계에서 다시 읽으면, 이 왕복이 큰 오버헤드가 됩니다.
 
 FlashAttention은 계산을 block 단위로 쪼갭니다(tiling). 한 block을 처리하는 동안에는 데이터를 GPU 칩 안의 SRAM(CUDA의 shared memory)에 한 번만 올리고, 그 안에서 모든 단계를 끝냅니다(fusion). $N \times N$ attention score 행렬은 HBM에 쓰지 않고 출력 block만 내보냅니다(v1은 K/V block마다 출력과 통계량을 갱신하고, v2부터는 Q block당 한 번 씁니다). 중간 행렬의 HBM 왕복이 사라지기 때문에 같은 $O(N^2)$ 연산이라도 실행 속도와 메모리 사용량이 크게 좋아집니다.
 
@@ -434,18 +434,18 @@ FlashAttention은 계산을 block 단위로 쪼갭니다(tiling). 한 block을 �
 
 **PagedAttention**은 긴 sequence의 비효율을 KV cache 메모리 할당 쪽에서 다룹니다.
 
-KV cache가 실제로 얼마나 큰지 감을 잡아 보면, 토큰 하나당 저장량은 $2 \times \text{bytes} \times K \times H \times L$ 입니다($K$ = KV head 수, $H$ = head dimension, $L$ = layer 수, 앞의 2는 K와 V). 예를 들어 LLaMA-13B는 MHA(Multi-Head Attention)를 씁니다. 이 모델을 bf16으로 8K 컨텍스트까지 돌리면 sequence 하나의 KV cache가 약 6.7GB입니다. 배치가 4면 KV cache가 모델 weight(26GB)보다 커집니다. 이런 크기의 버퍼를 어떻게 잡아두느냐가 그대로 서빙 용량을 좌우합니다.
+KV cache가 실제로 얼마나 큰지 감을 잡아 보면, token 하나당 저장량은 $2 \times \text{bytes} \times K \times H \times L$ 입니다($K$ = KV head 수, $H$ = head dimension, $L$ = layer 수, 앞의 2는 K와 V). 예를 들어 LLaMA-13B는 MHA(Multi-Head Attention)를 씁니다. 이 모델을 bf16으로 8K context까지 돌리면 sequence 하나의 KV cache가 약 6.7GB입니다. 배치가 4면 KV cache가 모델 weight(26GB)보다 커집니다. 이런 크기의 buffer를 어떻게 잡아두느냐가 그대로 서빙 용량을 좌우합니다.
 
-KV cache를 그냥 잡아두려면 기본적으로 max sequence length 기준으로 한 번에 다 할당해 둬야 합니다. 그런데 실제 들어오는 request들은 sequence 길이가 제각각이어서, max에 한참 못 미치는 짧은 request들에서는 잡아만 놓고 안 쓰는 메모리 공간이 잔뜩 생깁니다. 이런 "낭비된 슬롯들"(internal fragmentation) 때문에 같은 GPU 메모리(HBM)에서 동시에 처리할 수 있는 request 수가 줄어들어 throughput이 묶입니다.
+KV cache를 그냥 잡아두려면 기본적으로 max sequence length 기준으로 한 번에 다 할당해 둬야 합니다. 그런데 실제 들어오는 request들은 sequence 길이가 제각각이어서, max에 한참 못 미치는 짧은 request들에서는 잡아만 놓고 안 쓰는 메모리 공간이 잔뜩 생깁니다. 이런 "낭비된 slot들"(internal fragmentation) 때문에 같은 GPU 메모리(HBM)에서 동시에 처리할 수 있는 request 수가 줄어들어 throughput이 묶입니다.
 
-여기에 **external fragmentation**이 더해집니다. Request마다 KV cache를 연속된(contiguous) buffer로 잡아야 하므로, 길이가 다른 request들이 들어오고 나가기를 반복하면 buffer들 사이에 새 request가 들어가기에는 작은 빈 구간들이 남습니다. 남은 메모리 총량이 충분해도 연속 공간이 없어 할당하지 못하는 것입니다. vLLM 논문의 측정으로는 기존 서빙 시스템에서 KV cache용 메모리 중 실제 토큰 저장에 쓰인 비율이 20.4~38.2%에 그쳤습니다.
+여기에 **external fragmentation**이 더해집니다. Request마다 KV cache를 연속된(contiguous) buffer로 잡아야 합니다. 그래서 길이가 다른 request들이 들어오고 나가기를 반복하면 buffer들 사이에 빈 구간들이 남습니다. 이 구간들은 새 request가 들어가기에는 작습니다. 남은 메모리 총량이 충분해도 연속 공간이 없어 할당하지 못하는 것입니다. vLLM 논문의 측정으로는 기존 서빙 시스템에서 KV cache용 메모리 중 실제 token 저장에 쓰인 비율이 20.4~38.2%에 그쳤습니다.
 
 PagedAttention은 OS의 virtual memory · paging과 거의 같은 발상으로 이 문제를 풉니다.
 
-- **Logical cache block**: request마다 자기 sequence를 고정 크기 block(예: 16토큰)으로 나눈 *논리적* 번호. request 입장에서는 연속된 것처럼 보임
-- **Physical cache block**: HBM 위의 실제 한정된 메모리를 같은 크기로 나눈 block
+- **Logical cache block**: request마다 자기 sequence를 고정 크기 block(예: 16 token)으로 나눈 *논리적* 번호입니다. request 입장에서는 연속된 것처럼 보입니다.
+- **Physical cache block**: HBM 위의 실제 한정된 메모리를 같은 크기로 나눈 block입니다.
 
-둘을 decouple해 두고, request마다 **block table**이 logical block 번호를 physical block 위치로 매핑합니다(OS의 page table에 해당). 실제로 채워진 만큼만 physical block을 할당(on-demand allocation)합니다. Max를 가정한 over-provisioning이 필요 없고, 고정 크기 block은 physical 메모리에서 연속일 필요가 없어 external fragmentation도 사라집니다. 낭비는 각 sequence의 마지막 block에 남는 빈 자리 정도로 한정되어, 동시에 처리할 수 있는 request 수가 늘어납니다. 즉 PagedAttention은 attention 연산을 빠르게 하는 기법이 아니라 KV cache 메모리 관리 기법입니다. block 단위로 흩어진 KV를 읽어야 해서 attention kernel 자체는 논문 측정에서 FasterTransformer 대비 20–26% 느리지만, 같은 메모리에 더 많은 request를 담아 throughput은 2–4배 올라갑니다.
+둘을 decouple해 두고, request마다 **block table**이 logical block 번호를 physical block 위치로 매핑합니다(OS의 page table에 해당). 실제로 채워진 만큼만 physical block을 할당(on-demand allocation)합니다. 그래서 max를 가정한 over-provisioning이 필요 없습니다. 고정 크기 block은 physical 메모리에서 연속일 필요가 없으므로 external fragmentation도 사라집니다. 낭비는 각 sequence의 마지막 block에 남는 빈 자리 정도로 한정되어, 동시에 처리할 수 있는 request 수가 늘어납니다. 즉 PagedAttention은 attention 연산을 빠르게 하는 기법이 아니라 KV cache 메모리 관리 기법입니다. block 단위로 흩어진 KV를 읽어야 하므로, 논문 측정에서 attention kernel 자체는 FasterTransformer보다 20–26% 느립니다. 대신 같은 메모리에 더 많은 request를 담으므로 throughput은 2–4배 올라갑니다.
 
 <div class="flex justify-center mt-4">
   <img src="/images/06/slide21_1.png" alt="PagedAttention: Logical KV cache blocks(block당 4 slot)가 block table을 거쳐 Physical KV cache blocks의 비연속 위치(Block 7, 1, 3)로 매핑되고, 마지막 block은 on demand로 할당되는 구조" class="h-56" />
@@ -474,10 +474,10 @@ FlashAttention 같은 알고리즘은 GPU의 memory hierarchy와 실행 방식�
 FlashAttention이 가정하는 GPU 모델은 세 가지 요소로 이루어져 있습니다.
 
 - **Grid**: 커널 하나를 실행할 때 띄우는 thread block들의 집합입니다. 각 block은 SM(Streaming Multiprocessor, GPU의 연산 코어 묶음) 하나에 배정되어 병렬로 실행됩니다.
-- **HBM**(CUDA의 global memory): GPU 칩 밖의 GPU 전용 메모리. 용량은 크지만 대역폭이 상대적으로 낮음
-- **SRAM**(CUDA의 shared memory): thread block별로 할당되는 GPU 칩 안의 메모리. 용량은 작지만 대역폭이 훨씬 높음
+- **HBM**(CUDA의 global memory): GPU 칩 밖의 GPU 전용 메모리입니다. 용량은 크지만 대역폭이 상대적으로 낮습니다.
+- **SRAM**(CUDA의 shared memory): thread block별로 할당되는 GPU 칩 안의 메모리입니다. 용량은 작지만 대역폭이 훨씬 높습니다.
 
-같은 데이터라도 HBM에서 계산하는 것보다 SRAM에 한 번 올려놓고 그 안에서 계산하는 편이 훨씬 빠릅니다. FlashAttention은 HBM에 있는 입력과 중간 데이터를 block 단위로 쪼개 SRAM에 올리고, 곱·합 연산은 SRAM의 높은 대역폭으로 수행합니다.
+같은 데이터라도 HBM에서 계산하는 것보다 SRAM에 한 번 올려놓고 그 안에서 계산하는 편이 훨씬 빠릅니다. FlashAttention은 HBM에 있는 입력과 중간 데이터를 block 단위로 쪼개 대역폭이 높은 SRAM에 올리고, 곱과 합은 SRAM 안에서 계산합니다.
 
 <div class="flex justify-center mt-4">
   <img src="/images/06/slide24_1.png" alt="FlashAttention이 가정하는 GPU 모델: thread block들로 이루어진 Grid, per-block shared memory, device global memory" class="h-44" />
@@ -499,8 +499,8 @@ FlashAttention이 가정하는 GPU 모델은 세 가지 요소로 이루어져 �
 
 FlashAttention은 앞 절에서 본 비효율을 풀기 위해 두 가지 기법을 적용합니다.
 
-- **Tiling**: 큰 계산을 작게 쪼개서, 그때그때 필요한 부분만 들고 와서 처리할 수 있게 만들어주는 방법
-- **Fusion**: 한 계산에 필요한 데이터를 SRAM에 올려놓은 뒤, 중간 결과를 HBM에 쓰지 않은 채 가능한 한 많은 연산을 이어서 끝내고 결과만 내보내는 방식
+- **Tiling**: 큰 계산을 작게 쪼개서, 그때그때 필요한 부분만 들고 와서 처리할 수 있게 만들어주는 방법입니다.
+- **Fusion**: 한 계산에 필요한 데이터를 SRAM에 올려놓은 뒤, 중간 결과를 HBM에 쓰지 않은 채 가능한 한 많은 연산을 이어서 끝내고 결과만 내보내는 방식입니다.
 
 이 둘을 함께 적용해 attention을 다시 짜면, 같은 $O(N^2)$ 연산이라도 메모리를 훨씬 효율적으로 사용할 수 있게 됩니다.
 
@@ -536,9 +536,9 @@ FlashAttention은 앞 절에서 본 비효율을 풀기 위해 두 가지 기법
 
 이제 이 두 도구를 attention에 그대로 얹어 봅시다. Attention 연산 $\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$ 안에서 각 연산이 tiling과 어울리는 정도는 다릅니다.
 
-- **곱셈** (QK, ...V): tiling 적용 가능
-- **Masking**: 마찬가지로 tiling 가능
-- **Softmax**: 전체 분포를 봐야 하므로 tiling이 까다로움
+- **곱셈** (QK, ...V): tiling을 적용할 수 있습니다.
+- **Masking**: 마찬가지로 tiling을 적용할 수 있습니다.
+- **Softmax**: 전체 분포를 봐야 하므로 tiling이 까다롭습니다.
 
 앞의 attention 그림에 표시하면 다음과 같습니다.
 
@@ -571,16 +571,16 @@ $$
 
 분모의 합을 먼저 구해야 하기 때문에 두 번의 pass가 필요합니다.
 
-1. **Pass 1** - 메모리에서 $x$를 한 번 읽어 $e^{x_i}$ 계산 + 누적합 $\sum_j e^{x_j}$를 구함
-2. **Pass 2** - $x$(또는 $e^{x_i}$)를 다시 읽어 합으로 나눠 최종 $y_i$ 계산
+1. **Pass 1**: 메모리에서 $x$를 한 번 읽어 $e^{x_i}$와 누적합 $\sum_j e^{x_j}$를 계산합니다.
+2. **Pass 2**: $x$(또는 $e^{x_i}$)를 다시 읽어 합으로 나누고 최종 $y_i$를 계산합니다.
 
 즉 같은 데이터를 메모리에서 두 번 읽어야 끝나는 알고리즘입니다.
 
 #### Safe softmax (3-pass, 수치 안정성 확보)
 
-여기서 또 하나의 문제가 있습니다. **수치 안정성(numerical stability)** 입니다. softmax는 $e^{x}$가 들어가기 때문에 $x$가 조금만 커져도 값이 폭발적으로 커집니다. float 표현에는 상한이 있어서, `exp` 결과가 그 상한을 넘으면 overflow로 `inf`가 되고 분모까지 `inf`가 되면 결과는 `NaN`이 됩니다.
+여기서 또 하나의 문제가 있습니다. **수치 안정성(numerical stability)** 입니다. softmax는 $e^{x}$가 들어가기 때문에 $x$가 조금만 커져도 값이 폭발적으로 커집니다. float 표현에는 상한이 있습니다. `exp` 결과가 그 상한을 넘으면 overflow로 `inf`가 됩니다. 분모까지 `inf`가 되면 결과는 `NaN`이 됩니다.
 
-회피하는 방법은 생각보다 간단합니다. 모든 입력에서 최댓값 $\max(x)$를 빼주는 것입니다. 분자와 분모에 공통 인자 $e^{-\max(x)}$가 곱해지므로 약분되어 결과는 변하지 않습니다. 또 지수의 입력이 항상 $\le 0$이므로 `exp` 결과는 $(0, 1]$ 범위에 머뭅니다.
+회피하는 방법은 다음과 같습니다. 모든 입력에서 최댓값 $\max(x)$를 빼주는 것입니다. 분자와 분모에 공통 인자 $e^{-\max(x)}$가 곱해지므로 약분되어 결과는 변하지 않습니다. 또 지수의 입력이 항상 $\le 0$이므로 `exp` 결과는 $(0, 1]$ 범위에 머뭅니다.
 
 <div class="text-center py-4" style="font-size:1.5rem">
 $$
@@ -590,11 +590,11 @@ $$
 
 이걸 **safe softmax**라고 부릅니다. 다만 이번에는 최댓값을 먼저 구하는 pass가 추가로 필요해서 총 3-pass가 됩니다.
 
-1. **Pass 1** - $x$를 읽어 $\max(x)$ 계산
-2. **Pass 2** - $x$를 다시 읽어 $e^{x_i - \max(x)}$의 합 계산
-3. **Pass 3** - $x$를 다시 읽어 $y_i$ 계산
+1. **Pass 1**: $x$를 읽어 $\max(x)$를 계산합니다.
+2. **Pass 2**: $x$를 다시 읽어 $e^{x_i - \max(x)}$의 합을 계산합니다.
+3. **Pass 3**: $x$를 다시 읽어 $y_i$를 계산합니다.
 
-수치 안정성은 보장되지만, 순서대로 따라가면 같은 데이터를 세 번 읽는 알고리즘입니다. 행 하나가 통째로 SRAM에 들어가면 pass 수는 문제가 되지 않습니다. 그러나 attention에서는 한 행의 score $N$개가 block 단위로 나뉘어 도착하므로 max와 합을 미리 알 수 없고, 이를 구하려고 다시 읽으면 앞서 본 HBM 왕복이 생깁니다.
+수치 안정성은 보장되지만, 순서대로 따라가면 같은 데이터를 세 번 읽는 알고리즘입니다. 행 하나가 통째로 SRAM에 들어가면 pass 수는 문제가 되지 않습니다. 그러나 attention에서는 한 행의 score $N$개가 block 단위로 나뉘어 도착합니다. 그래서 max와 합을 미리 알 수 없습니다. 이 값을 구하려고 데이터를 다시 읽으면 앞서 본 HBM 왕복이 생깁니다.
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
   <div class="text-center">
@@ -622,7 +622,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
 - 진짜 $\max(x)$를 미리 구하지 않는다. 대신 지금까지 본 값 중 최댓값 $m_i$만 유지한다.
 - 새 값이 들어와 $m_i$가 업데이트되면, 이전 max로 스케일해 두었던 누적 분모를 새 max에 맞게 다시 보정한다.
 
-이 보정 과정만 잘 정의해주면 single-pass로도 safe softmax와 동등한 결과를 얻을 수 있습니다. 이걸 safe softmax의 online 버전이라고 부르고, FlashAttention은 이 아이디어를 그대로 attention 전체로 확장합니다. block 하나가 들어올 때마다 max를 update하고 누적된 분모와 출력을 그에 맞춰 보정하면, 한 번의 pass로 attention을 끝냅니다. block 단위로 진행하므로 tiling·fusion도 함께 적용됩니다.
+이 보정 과정만 잘 정의해주면 single-pass로도 safe softmax와 동등한 결과를 얻을 수 있습니다. 이걸 safe softmax의 online 버전이라고 부르고, FlashAttention은 이 아이디어를 그대로 attention 전체로 확장합니다. block 하나가 들어올 때마다 max를 업데이트하고 누적된 분모와 출력을 그에 맞춰 보정하면, 한 번의 pass로 attention을 끝냅니다. block 단위로 진행하므로 tiling·fusion도 함께 적용됩니다.
 
 알고리즘을 의사코드로 적으면 다음과 같습니다. 아래 형태는 Zihao Ye의 노트 [From Online Softmax to FlashAttention](https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf)을 따랐습니다. 기호의 뜻은 다음과 같습니다.
 
@@ -630,7 +630,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
 - $d_i'$: 그 max 기준으로 누적한 분모. 초기값은 $d_0' = 0$입니다.
 - $o_i'$: 그 시점까지의 출력(정규화된 상태). 초기값은 $o_0' = 0$입니다.
 
-설명을 위해 한 번에 key 하나, 즉 column 하나씩 처리하는 형태로 적었습니다. 실제 FlashAttention은 같은 recurrence를 column 여러 개를 묶은 block 단위로 수행합니다. 또 매 step 나누지 않고 정규화 전 값을 누적했다가 마지막에 $d_N'$으로 한 번만 나눕니다.
+설명을 위해 한 번에 key 하나, 즉 column 하나씩 처리하는 형태로 적었습니다. 실제 FlashAttention은 같은 recurrence를 column 여러 개를 묶은 block 단위로 수행합니다. 또 매 스텝 나누지 않고 정규화 전 값을 누적했다가 마지막에 $d_N'$으로 한 번만 나눕니다.
 
 <div class="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 items-start mt-6">
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-5" style="font-size:1.05rem">
@@ -744,11 +744,11 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
 
 #### v1: CUDA 기반의 첫 구현
 
-FlashAttention v1은 NVIDIA Apex의 FMHA 커널(CUTLASS 2.x 기반)을 출발점으로 CUDA로 구현되었습니다. Standard Attention 대비 속도는 분명히 빨라졌지만, GPU utilization은 A100 기준 이론 최대 FLOPs/s의 25–40%에 그쳤습니다.
+FlashAttention v1은 NVIDIA Apex의 FMHA 커널(CUTLASS 2.x 기반)을 출발점으로 CUDA로 구현되었습니다. Standard Attention보다 빨라졌지만, GPU utilization은 A100 기준 이론 최대 FLOPs/s의 25–40%에 그쳤습니다.
 
 #### v2: CUTLASS로 warp 파티셔닝 개선
 
-FlashAttention v2는 **CUTLASS**를 사용합니다. CUTLASS는 CUDA 위에 올라간 C++ template 라이브러리로, NVIDIA GPU의 하드웨어 구조(warp[^warp], Tensor Core의 행렬곱 명령인 MMA(Matrix Multiply-Accumulate) 등)를 템플릿 형태로 모델링해 두어 코드 자체를 GPU 파이프라인에 맞춰 짤 수 있게 해줍니다. v2는 CUTLASS 3.x와 그 core 라이브러리 CuTe 위에서 warp 단위 분할(warp partitioning)을 훨씬 정교하게 설계하고 softmax 쪽의 non-matmul FLOPs를 줄였습니다. 그 결과 GPU utilization을 50–73%까지 끌어올렸습니다.
+FlashAttention v2는 **CUTLASS**를 사용합니다. CUTLASS는 CUDA 위에 올라간 C++ 템플릿 라이브러리로, NVIDIA GPU의 하드웨어 구조(warp[^warp], Tensor Core의 행렬곱 명령인 MMA(Matrix Multiply-Accumulate) 등)를 템플릿 형태로 모델링해 두어 코드 자체를 GPU 파이프라인에 맞춰 짤 수 있게 해줍니다. v2는 CUTLASS 3.x와 그 core 라이브러리 CuTe 위에서 warp 단위 분할(warp partitioning)을 훨씬 정교하게 설계하고 softmax 쪽의 non-matmul FLOPs를 줄였습니다. 그 결과 GPU utilization을 50–73%까지 끌어올렸습니다.
 
 [^warp]: GPU에서 같은 명령어를 함께 실행하는 스레드 묶음(NVIDIA 구현은 32개)으로, 하드웨어가 명령어를 발행하는 기본 단위입니다. [Week 7의 SIMT 실행 모델](/lectures/07-cpu-gpu-npu/#gpu의-simt-실행과-warp-scheduling)에서 자세히 다룹니다.
 
@@ -778,13 +778,13 @@ FlashAttention v2는 **CUTLASS**를 사용합니다. CUTLASS는 CUDA 위에 올�
 
 #### CUDA, CUTLASS와 Triton의 추상화 수준
 
-CUDA C++는 낮은 수준의 제어를 제공하지만, 그것만으로 고성능이 자동 보장되지는 않습니다. 최근 GPU의 Tensor Core, TMA와 software pipeline을 효과적으로 사용하려면 CUTLASS·CuTe 같은 hardware-aware abstraction이나 Triton compiler를 활용할 수 있습니다. 다음 절에서는 각 도구가 프로그래머와 컴파일러에 맡기는 역할을 비교합니다.
+CUDA C++는 낮은 수준의 제어를 제공하지만, 그것만으로 고성능이 자동 보장되지는 않습니다. 최근 GPU의 Tensor Core, TMA와 software pipeline을 효과적으로 사용하려면 CUTLASS·CuTe 같은 hardware-aware abstraction이나 Triton compiler를 씁니다. 다음 절에서는 각 도구가 프로그래머와 컴파일러에 맡기는 역할을 비교합니다.
 
 [^simt]: Single Instruction Multiple Threads. 수많은 스레드가 같은 명령어를 함께 실행하는 CUDA의 실행 모델로, [Week 7](/lectures/07-cpu-gpu-npu/#cuda와-simt)에서 GPU 설계 철학의 중심 개념으로 자세히 다룹니다.
 
 ### GPU 아키텍처의 진화와 CUTLASS
 
-GPU 아키텍처는 CUDA가 가정했던 깨끗한 SIMT[^simt] 아키텍처에서, 다양한 최적화 기능이 추가되면서 현저히 복잡해졌습니다.
+GPU 아키텍처는 CUDA가 가정했던 단순한 SIMT[^simt] 아키텍처에서 출발해, 세대마다 전용 기능이 추가되면서 복잡해졌습니다.
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div class="text-center">
@@ -797,7 +797,7 @@ GPU 아키텍처는 CUDA가 가정했던 깨끗한 SIMT[^simt] 아키텍처에�
 </div>
 </div>
 
-CUTLASS는 이렇게 복잡해진 GPU의 계층적 병렬 수행을 개발자가 직접 control할 수 있도록 C++ template을 제공하는 라이브러리입니다.
+CUTLASS는 C++ 템플릿 라이브러리입니다. 개발자는 이 템플릿으로 복잡해진 GPU의 계층적 병렬 실행을 직접 제어합니다.
 
 <div class="flex justify-center mt-4">
   <img src="/images/06/slide33_1.png" alt="CUTLASS의 계층적 GEMM 분할: Blocked GEMM(global memory) → Thread Block Tile(shared memory) → Warp Tile(register file) → Thread Tile(CUDA core)" class="h-52" />
@@ -826,7 +826,7 @@ GPU에서 peak 성능을 끌어내려면 이처럼 여러 단계의 최적화가
 
 **Triton**은 Philippe Tillet이 시작하고 OpenAI가 공개한 block 단위 GPU kernel language와 compiler입니다. PyTorch 2.0 이후 Inductor의 NVIDIA·AMD GPU code generation 경로에 사용되면서 활용 범위가 넓어졌습니다.
 
-Triton에서는 프로그래머가 block의 shape과 data flow를 기술하고, thread-level mapping과 일부 hardware-specific optimization을 compiler가 담당합니다. Triton은 CUDA C++보다 높은 수준의 추상화를 제공하면서도 tiling·fusion을 직접 표현할 수 있습니다.
+Triton에서는 프로그래머가 block의 shape과 data flow를 기술하고, thread-level mapping과 일부 hardware-specific optimization을 컴파일러가 담당합니다. Triton은 CUDA C++보다 높은 수준의 추상화를 제공하면서도 tiling·fusion을 직접 표현할 수 있습니다.
 
 이 강의에서는 Triton 문법보다 kernel programming이 필요한 이유와 tiling·fusion으로 줄일 수 있는 memory traffic에 초점을 맞춥니다.
 
@@ -848,9 +848,9 @@ Triton은 block 단위 프로그래밍 모델을 씁니다. 프로그래머는 �
 </div>
 <div class="flex flex-col justify-center text-sm">
 
-- CUDA: memory 계층(global/shared/local), thread/warp/block, Tensor Core, vectorization을 모두 프로그래머가 지정
-- Triton: 프로그래머는 block 단위의 계산만 기술하고 나머지는 컴파일러가 자동 처리
-- 대신 async SIMT 같은 세밀한 제어는 제한적
+- CUDA: memory 계층(global/shared/local), thread/warp/block, Tensor Core, vectorization을 모두 프로그래머가 지정합니다.
+- Triton: 프로그래머는 block 단위의 계산만 기술하고 나머지는 컴파일러가 자동으로 처리합니다.
+- 대신 async SIMT 같은 세밀한 제어는 제한적입니다.
 
 </div>
 </div>
@@ -930,7 +930,7 @@ vLLM V1은 scheduler와 execution path를 재설계하고 **`torch.compile`을 �
 
 [^fx-graph]: `torch.fx`가 제공하는 그래프 형태의 IR(intermediate representation). Dynamo가 캡처한 tensor 연산 trace가 이 형태로 저장되어 backend 컴파일러에 전달됩니다 ([Week 3](/lectures/03-graph-mode/#pytorch-20의-해법-torchdynamo) 참고).
 
-[Week 3](/lectures/03-graph-mode/#ir-lowering)에서 본 그래프 모드·Inductor가 서빙 프레임워크의 기본 경로에 들어와 있습니다. 하드웨어 벤더가 `torch.compile` backend를 제공하면 vLLM의 컴파일 경로를 그대로 쓸 수 있습니다. 다만 attention처럼 custom op으로 남는 kernel은 별도로 제공해야 합니다(뒤의 plugin system 참고).
+[Week 3](/lectures/03-graph-mode/#ir-lowering)에서 본 그래프 모드·Inductor가 서빙 프레임워크의 기본 경로에 들어와 있습니다. 하드웨어 vendor가 `torch.compile` backend를 제공하면 vLLM의 컴파일 경로를 그대로 쓸 수 있습니다. 다만 attention처럼 custom op으로 남는 kernel은 별도로 제공해야 합니다(뒤의 plugin system 참고).
 
 > 참고: [vLLM V1: A Major Upgrade to vLLM's Core Architecture](https://blog.vllm.ai/2025/01/27/v1-alpha-release.html)
 >
@@ -942,18 +942,18 @@ vLLM V1은 scheduler와 execution path를 재설계하고 **`torch.compile`을 �
 
 vLLM의 내부를 한 층만 들춰 보면, 이 강의에서 다룬 개념들이 그대로 구현 컴포넌트로 등장합니다. 엔진 코어는 단순한 루프입니다. Scheduler가 이번 스텝에 처리할 request들을 고르고 → 모델이 forward를 한 번 돌고 → 결과를 후처리해 각 request에 나눠 주는 세 단계를 무한히 반복합니다.
 
-- **Scheduler와 token budget**: V1 스케줄러는 Prefill과 Decode를 별개의 경로로 두지 않고, "이번 스텝에 처리할 토큰 예산" 하나로 통합했습니다. 매 스텝 running 큐에 있는 request들의 토큰(decode 1개, 또는 아직 prefill이 남았으면 그 다음 chunk)을 먼저 배정하고, 남은 예산에 waiting 큐의 새 request을 채워 넣습니다. 긴 프롬프트는 예산에 맞게 잘라 여러 스텝에 나눠 처리합니다(chunked prefill). vLLM은 이 방식으로 continuous batching을 구현합니다.
-- **패딩 없는 배칭**: 선택된 request들의 토큰은 padding 없이 하나의 긴 "super sequence"로 이어 붙여 단 한 번의 forward로 처리합니다. position 인덱스와 attention 커널의 가변 길이 지원이 sequence 간 경계를 지켜 줍니다.
-- **KV cache manager**: KV cache는 고정 크기 블록(기본 16토큰) 단위로 관리되고, free block pool에서 필요한 만큼만 그때그때 할당됩니다. PagedAttention의 구현입니다. 여기에 블록 단위 해시로 같은 prefix를 가진 request끼리 KV 블록을 재사용하는 prefix caching이 얹힙니다.
+- **Scheduler와 token budget**: V1 스케줄러는 Prefill과 Decode를 별개의 경로로 두지 않고, "이번 스텝에 처리할 token 예산" 하나로 통합했습니다. 매 스텝 running 큐에 있는 request들의 token(decode 1개, 또는 아직 prefill이 남았으면 그 다음 chunk)을 먼저 배정하고, 남은 예산에 waiting 큐의 새 request를 채워 넣습니다. 긴 프롬프트는 예산에 맞게 잘라 여러 스텝에 나눠 처리합니다(chunked prefill). vLLM은 이 방식으로 continuous batching을 구현합니다.
+- **padding 없는 배칭**: 선택된 request들의 token은 padding 없이 하나의 긴 "super sequence"로 이어 붙여 단 한 번의 forward로 처리합니다. position 인덱스와 attention 커널의 가변 길이 지원이 sequence 간 경계를 지켜 줍니다.
+- **KV cache manager**: KV cache manager는 KV cache를 고정 크기 block(기본 16 token) 단위로 관리하고, free block pool에서 필요한 만큼만 그때그때 할당합니다. PagedAttention의 구현입니다. 여기에 block 단위 해시로 같은 prefix를 가진 request끼리 KV block을 재사용하는 prefix caching이 얹힙니다.
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 items-start">
   <div class="text-center">
-    <img src="/images/06/vllm-anatomy-engine_loop.png" alt="vLLM 엔진 코어 루프: scheduler가 request을 고르고 forward를 돌린 뒤 결과를 후처리하는 반복 구조" class="w-full max-w-lg mx-auto" />
+    <img src="/images/06/vllm-anatomy-engine_loop.png" alt="vLLM 엔진 코어 루프: scheduler가 request를 고르고 forward를 돌린 뒤 결과를 후처리하는 반복 구조" class="w-full max-w-lg mx-auto" />
     <div class="text-sm mt-2">엔진 코어 루프: schedule → forward → postprocess</div>
   </div>
   <div class="text-center">
-    <img src="/images/06/vllm-anatomy-kv_cache_blocks.png" alt="vLLM KV cache manager: 10개 토큰의 prompt를 block_size=4로 나눠 free block queue에서 block 3개를 꺼내 할당하는 예. block id, ref count, hash 같은 metadata는 CPU에서 관리" class="w-full max-w-lg mx-auto" />
-    <div class="text-sm mt-2">블록 단위로 관리되는 KV cache (PagedAttention의 구현). 그림은 block_size=4 예제이고 기본값은 16. block metadata(id, ref count, hash)는 CPU에서 관리</div>
+    <img src="/images/06/vllm-anatomy-kv_cache_blocks.png" alt="vLLM KV cache manager: 10개 token의 prompt를 block_size=4로 나눠 free block queue에서 block 3개를 꺼내 할당하는 예. block id, ref count, hash 같은 metadata는 CPU에서 관리" class="w-full max-w-lg mx-auto" />
+    <div class="text-sm mt-2">block 단위로 관리되는 KV cache (PagedAttention의 구현). 그림은 block_size=4 예제이고 기본값은 16. block metadata(id, ref count, hash)는 CPU에서 관리</div>
   </div>
 </div>
 
@@ -969,38 +969,38 @@ vLLM에는 Triton으로 작성된 attention backend도 있습니다. 공개된 �
 
 ### 정적 shape backend와 Bucketing
 
-앞의 "패딩 없는 배칭"은 GPU의 attention 커널이 가변 길이 입력을 그대로 처리하기 때문에 가능합니다. 연산의 shape을 컴파일 타임에 고정하는 backend는 사정이 다릅니다. [Week 7](/lectures/07-cpu-gpu-npu/#npu의-정적-실행-계획과-명시적-데이터-이동)에서 다룰 NPU처럼 컴파일러가 실행 계획을 미리 만드는 하드웨어가 여기에 해당합니다. 이런 backend는 모델이 실행할 shape을 모두 미리 컴파일해 둡니다. 가능한 shape을 전부 컴파일할 수는 없으므로 몇 개의 크기만 골라 컴파일합니다. 이 크기 하나하나를 **bucket**이라고 하고, 매 스텝의 batch를 가장 가까운 bucket에 맞추는 방식을 **bucketing**이라고 합니다.
+앞의 "padding 없는 배칭"은 GPU의 attention 커널이 가변 길이 입력을 그대로 처리하기 때문에 가능합니다. 연산의 shape을 컴파일 타임에 고정하는 backend는 사정이 다릅니다. [Week 7](/lectures/07-cpu-gpu-npu/#npu의-정적-실행-계획과-명시적-데이터-이동)에서 다룰 NPU처럼 컴파일러가 실행 계획을 미리 만드는 하드웨어가 여기에 해당합니다. 이런 backend는 모델이 실행할 shape을 미리 컴파일해 둡니다. 가능한 shape을 전부 컴파일할 수는 없으므로 몇 개의 크기만 골라 컴파일합니다. 이 크기 하나하나를 **bucket**이라고 합니다. 매 스텝의 배치를, 그 크기 이상인 bucket 중 가장 작은 bucket에 맞추는 방식을 **bucketing**이라고 합니다.
 
 Decode 스텝의 shape은 세 값으로 정해집니다:
 
-- **batch size**: 한 스텝에 함께 처리하는 sequence 수
-- **attention 길이**: attention 행렬을 만들 때 기준이 되는, padding까지 포함한 context 길이
-- **KV cache 크기**: 커널이 읽을 수 있는 KV block 수(padding 포함). attention 길이를 따라 정해집니다.
+- **배치 크기**: 한 스텝에 함께 처리하는 sequence 수입니다.
+- **attention 길이**: attention 행렬을 만들 때 기준이 되는, padding까지 포함한 context 길이입니다.
+- **KV cache 크기**: 커널이 읽을 수 있는 KV block 수(padding 포함)입니다. attention 길이를 따라 정해집니다.
 
-이 세 값의 조합은 빌드 타임에 고정됩니다.
+이 세 값의 조합은 컴파일 타임에 고정됩니다.
 
 #### 한 스텝에 여러 종류의 request 섞기
 
-스케줄러는 한 스텝에 decode, extend, prefill 토큰을 함께 담습니다. 세 가지는 KV cache가 이미 있는지와 이번 스텝에 넣는 토큰이 몇 개인지로 구분합니다.
+스케줄러는 한 스텝에 decode, extend, prefill token을 함께 담습니다. 세 가지는 KV cache가 이미 있는지와 이번 스텝에 넣는 token이 몇 개인지로 구분합니다.
 
-- **prefill**: KV cache가 없는 prompt를 처음부터 처리합니다. 새 토큰은 여러 개입니다.
-- **extend**: prompt 앞부분의 KV cache가 이미 있고, 그 뒤 토큰을 이어서 처리합니다. 새 토큰은 여러 개입니다.
-- **decode**: KV cache가 있고, 새 토큰은 직전에 생성한 1개입니다.
+- **prefill**: KV cache가 없는 프롬프트를 처음부터 처리합니다. 새 token은 여러 개입니다.
+- **extend**: 프롬프트 앞부분의 KV cache가 이미 있고, 그 뒤 token을 이어서 처리합니다. 새 token은 여러 개입니다.
+- **decode**: KV cache가 있고, 새 token은 직전에 생성한 1개입니다.
 
-Extend는 chunked prefill에서 생깁니다. 긴 prompt를 chunk로 나누면 첫 chunk는 prefill입니다. 둘째 chunk부터는 앞 chunk가 만든 KV cache가 있으므로 extend입니다. Prefix caching으로 prompt 앞부분의 KV를 재사용할 때도 나머지 토큰은 extend로 처리합니다. Extend 토큰의 query는 기존 KV cache와 이번 chunk 안의 앞쪽 토큰을 함께 attend합니다. Decode는 새 토큰이 1개인 extend로 볼 수 있습니다.
+Extend는 chunked prefill에서 생깁니다. 긴 프롬프트를 chunk로 나누면 첫 chunk는 prefill입니다. 둘째 chunk부터는 앞 chunk가 만든 KV cache가 있으므로 extend입니다. Prefix caching으로 프롬프트 앞부분의 KV를 재사용할 때도 나머지 token은 extend로 처리합니다. Extend token의 query는 기존 KV cache와 이번 chunk 안의 앞쪽 token을 함께 attend합니다. Decode는 새 token이 1개인 extend로 볼 수 있습니다.
 
 <div class="text-center my-4">
-  <ThemeImage lightSrc="/images/06/bucketing-kv-light.svg" darkSrc="/images/06/bucketing-kv-dark.svg" alt="decode, extend, prefill 비교. A(decode)는 기존 KV cache 뒤에 새 토큰 1개, C(extend)는 기존 KV cache 뒤에 새 토큰 8개, D(prefill)는 기존 KV 없이 새 토큰 4개" class="w-full max-w-3xl mx-auto" />
-  <div class="text-sm mt-2">회색은 이전 스텝까지 만든 KV cache이고, 색 칸만 이번 스텝의 입력 토큰입니다.</div>
+  <ThemeImage lightSrc="/images/06/bucketing-kv-light.svg" darkSrc="/images/06/bucketing-kv-dark.svg" alt="decode, extend, prefill 비교. A(decode)는 기존 KV cache 뒤에 새 token 1개, C(extend)는 기존 KV cache 뒤에 새 token 8개, D(prefill)는 기존 KV 없이 새 token 4개" class="w-full max-w-3xl mx-auto" />
+  <div class="text-sm mt-2">회색은 이전 스텝까지 만든 KV cache이고, 색 칸만 이번 스텝의 입력 token입니다.</div>
 </div>
 
 예를 들어 다음 네 request가 준비되어 있다고 합시다.
 
-- A, B: decode. request마다 입력 토큰 1개
-- C: extend. 이번 chunk는 토큰 8개이고, 앞 chunk의 KV cache는 이미 있음
-- D: prefill. 짧은 prompt라 토큰 4개로 prefill이 끝남
+- A, B: decode. request마다 입력 token이 1개입니다.
+- C: extend. 이번 chunk는 token 8개이고, 앞 chunk의 KV cache는 이미 있습니다.
+- D: prefill. 짧은 프롬프트라 token 4개로 prefill이 끝납니다.
 
-입력 토큰은 모두 14개입니다. 컴파일해 둔 bucket이 16이면 스케줄러는 빈 slot 2개를 padding으로 채워 16 shape으로 실행합니다.
+입력 token은 모두 14개입니다. 컴파일해 둔 bucket이 16이면 스케줄러는 빈 slot 2개를 padding으로 채워 16 shape으로 실행합니다.
 
 <div class="text-center my-4">
   <ThemeImage lightSrc="/images/06/bucketing-step-light.svg" darkSrc="/images/06/bucketing-step-dark.svg" alt="bucket 16 한 스텝의 입력. decode A, B 2개, padding 2개, extend C 8개, prefill D 4개" class="w-full max-w-3xl mx-auto" />
@@ -1008,14 +1008,14 @@ Extend는 chunked prefill에서 생깁니다. 긴 prompt를 chunk로 나누면 �
 
 #### Batching의 비용은 bucket 크기로 정해진다
 
-Batch는 가장 가까운 bucket까지 padding되므로, 비용은 실제 토큰 수가 아니라 bucket 크기만큼 듭니다. 위 예에서 토큰 4개짜리 request를 하나 더 넣으면 입력은 18개가 됩니다. 18은 bucket 16에 들어가지 않으므로 bucket 32로 실행하고, 빈 slot 14개를 padding으로 채웁니다. 토큰은 4개 늘었지만 스텝 비용은 bucket 16에서 bucket 32로 올라갑니다. 정적 shape backend의 스케줄러는 매 스텝 "batching할 수 있는가"보다 "batching해도 bucket에 맞는가"를 따집니다.
+배치는 그 크기 이상인 bucket 중 가장 작은 bucket까지 padding됩니다. 그래서 비용은 실제 token 수가 아니라 bucket 크기만큼 듭니다. 위 예에서 token 4개짜리 request를 하나 더 넣으면 입력은 18개가 됩니다. 18은 bucket 16에 들어가지 않으므로 bucket 32로 실행하고, 빈 slot 14개를 padding으로 채웁니다. token은 4개 늘었지만 스텝 비용은 bucket 16에서 bucket 32로 올라갑니다. 정적 shape backend의 스케줄러는 매 스텝 "batching할 수 있는가"보다 "batching해도 bucket에 맞는가"를 따집니다.
 
 <div class="text-center my-4">
-  <ThemeImage lightSrc="/images/06/bucketing-cost-light.svg" darkSrc="/images/06/bucketing-cost-dark.svg" alt="실제 입력 토큰 수에 따른 스텝 비용 계단. 비용은 bucket 8, 16, 32 단위로 오르고, 토큰 14개는 bucket 16, 토큰 4개 request를 더한 18개는 bucket 32로 넘어간다. 계단과 대각선 사이의 빗금은 padding" class="w-full max-w-2xl mx-auto" />
+  <ThemeImage lightSrc="/images/06/bucketing-cost-light.svg" darkSrc="/images/06/bucketing-cost-dark.svg" alt="실제 입력 token 수에 따른 스텝 비용 계단. 비용은 bucket 8, 16, 32 단위로 오르고, token 14개는 bucket 16, token 4개 request를 더한 18개는 bucket 32로 넘어간다. 계단과 대각선 사이의 빗금은 padding" class="w-full max-w-2xl mx-auto" />
   <div class="text-sm mt-2">개념도입니다. 빗금 영역은 padding에 쓰는 비용입니다.</div>
 </div>
 
-Batch size와 context 길이도 서로 독립이 아닙니다. Decode 스텝에서 커널이 읽는 KV cache 양은 batch size × context 길이에 비례합니다. Context가 KV block 3개만큼 늘면 batch 2는 block 6개를 더 읽고, batch 8은 block 24개를 더 읽습니다. 그래서 batch가 작을 때는 context가 길어져도 스텝 시간이 거의 늘지 않고, batch가 크면 같은 context 증가가 스텝 시간을 크게 늘립니다. Request를 늘리는 효과도 일정하지 않습니다. 어떤 구간에서는 request를 두 배로 늘려도 토큰당 시간이 거의 그대로이지만, 다른 구간에서는 throughput 이득보다 토큰당 시간 증가가 더 큽니다.
+배치 크기와 context 길이도 서로 독립이 아닙니다. Decode 스텝에서 커널이 읽는 KV cache 양은 배치 크기 × context 길이에 비례합니다. Context가 KV block 3개만큼 늘면 배치 2는 block 6개를 더 읽고, 배치 8은 block 24개를 더 읽습니다. 그래서 배치가 작을 때는 context가 길어져도 스텝 시간이 거의 늘지 않습니다. 배치가 크면 같은 context 증가가 스텝 시간을 크게 늘립니다. Request를 늘리는 효과도 일정하지 않습니다. 어떤 구간에서는 request를 두 배로 늘려도 token당 시간이 거의 그대로이지만, 다른 구간에서는 throughput 이득보다 token당 시간 증가가 더 큽니다.
 
 <div class="text-center my-4">
   <ThemeImage lightSrc="/images/06/bucketing-batch-context-light.svg" darkSrc="/images/06/bucketing-batch-context-dark.svg" alt="context가 KV block 3개만큼 늘 때 batch 2는 KV block 6개, batch 8은 24개를 더 읽는다" class="w-full max-w-3xl mx-auto" />
@@ -1023,7 +1023,7 @@ Batch size와 context 길이도 서로 독립이 아닙니다. Decode 스텝에�
 
 #### 측정한 비용으로 merge 여부를 정하기
 
-Decode group 두 개를 하나로 합치면(merge) 두 축이 함께 움직입니다. 스텝의 sequence 수가 늘고, 짧은 쪽 group은 긴 쪽 shape에 맞춰 padding됩니다. 그런데 attention 커널은 block table을 따라 KV block을 모아 읽으므로, padding 중 일부는 실제로 읽지 않습니다. 읽지 않는 양은 batch가 얼마나 찼는지, sequence 길이가 얼마나 고르지 않은지에 따라 달라집니다. 그래서 선언된 shape만 보고는 실제 비용을 알 수 없습니다.
+Decode group은 같은 shape으로 함께 실행하는 decode request의 묶음입니다. Decode group 두 개를 하나로 합치면(merge) 앞 문단의 두 값, 즉 배치 크기와 context 길이가 함께 바뀝니다. 스텝의 sequence 수가 늘고, 짧은 쪽 group은 긴 쪽 shape에 맞춰 padding됩니다. 그런데 attention 커널은 block table을 따라 KV block을 모아 읽으므로, padding 중 일부는 실제로 읽지 않습니다. 읽지 않는 양은 배치가 얼마나 찼는지, sequence 길이가 얼마나 고르지 않은지에 따라 달라집니다. 그래서 선언된 shape만 보고는 실제 비용을 알 수 없습니다.
 
 한 가지 해법은 엔진이 로드 시점에 device에서 shape마다 비용을 여러 조건으로 측정해 표로 만들어 두는 것입니다. 스케줄러는 merge한 shape의 측정 비용이 두 group을 따로 실행하는 비용보다 낮을 때만 merge합니다.
 
@@ -1034,7 +1034,7 @@ Decode group 두 개를 하나로 합치면(merge) 두 축이 함께 움직입�
 
 ### vLLM의 PyTorch 중심 전략
 
-vLLM은 PyTorch 기반일 뿐 아니라, 다양한 하드웨어를 직접 붙이지 않겠다고 명시했습니다. vLLM 측의 입장은 *"하드웨어는 일단 PyTorch에 잘 붙여 오기만 하면, 그 위에서 vLLM이 동작하도록 우리가 만들겠다"* 에 가깝습니다.
+vLLM은 PyTorch 위에서 동작합니다. vLLM 팀은 새 하드웨어 지원을 vLLM 본체가 아니라 vendor가 유지하는 out-of-tree hardware plugin으로 분리했습니다([vLLM blog: Introducing vLLM Hardware Plugin](https://vllm.ai/blog/2025-05-12-hardware-plugin)). vLLM 측의 입장은 *"하드웨어는 일단 PyTorch에 잘 붙여 오기만 하면, 그 위에서 vLLM이 동작하도록 우리가 만들겠다"* 에 가깝습니다.
 
 아래에 하드웨어가 있고, 그 위에 PyTorch가 추상화 레이어로 놓입니다. 그림은 Models와 Utilities가 PyTorch를 거쳐 여러 하드웨어에 닿는 구조("narrow waist")를 보여 주며, vLLM은 그 위쪽에서 동작합니다. vLLM은 하드웨어 다양성 대응을 PyTorch 레이어에 맡깁니다.
 
@@ -1050,9 +1050,9 @@ vLLM은 **hardware plugin system**을 제공하며, vendor는 platform plugin을
 
 하드웨어 반대편, 모델 정의 쪽에도 같은 질문을 던질 수 있습니다. vLLM에서 Llama나 Qwen을 서빙할 때 그 모델 코드는 어디서 올까요? 기본적으로 vLLM은 주요 아키텍처마다 **자체 구현**(native vLLM implementation)을 유지합니다. 이 구현은 Hugging Face의 모델 코드를 그대로 쓰지 않습니다. tensor parallel용 병렬 linear 레이어와 vLLM의 attention 인터페이스에 맞춰 다시 작성한 구현입니다(`vllm/model_executor/models/`). checkpoint(weight)만 Hugging Face Hub에서 받아 이 구현에 얹습니다.
 
-그럼 이 지원 목록에 없는 모델이 들어오면 어떻게 될까요? Transformers 쪽 구현이 vLLM의 요구 조건(attention 인터페이스 등)을 만족하는 모델이면 vLLM은 **Transformers backend**로 자동으로 넘어갑니다(fallback). 이 backend는 Hugging Face `transformers`의 모델 코드를 그대로 가져옵니다. 그다음 attention은 vLLM의 PagedAttention 커널로 바꾸고, linear 레이어는 병렬 레이어로 바꿉니다. 그 결과 transformers의 모델 정의 위에 vLLM의 서빙 최적화가 얹힙니다. Transformers backend를 직접 고르려면 `vllm serve` 명령에 `--model-impl transformers` 플래그를 줍니다.
+그럼 vLLM에 자체 구현이 없는 모델이 들어오면 어떻게 될까요? Transformers 쪽 구현이 vLLM의 요구 조건(attention 인터페이스 등)을 만족하는 모델이면 vLLM은 **Transformers backend**로 자동으로 넘어갑니다(fallback). 이 backend는 Hugging Face `transformers`의 모델 코드를 그대로 가져옵니다. 그다음 attention은 vLLM의 PagedAttention 커널로 바꾸고, linear 레이어는 병렬 레이어로 바꿉니다. 그 결과 transformers의 모델 정의 위에 vLLM의 서빙 최적화가 얹힙니다. Transformers backend를 직접 고르려면 `vllm serve` 명령에 `--model-impl transformers` 플래그를 줍니다.
 
-Transformers backend는 처음에는 자체 구현이 없는 model을 위한 fallback이었지만, `torch.compile`·CUDA graph 호환과 fused kernel 치환이 추가되면서 지원 범위와 성능이 개선되었습니다. 2026년 기준 일부 architecture는 Transformers backend로만 지원됩니다. 이런 구성에서는 model 정의를 Transformers에서 재사용하고, vLLM은 scheduling, KV cache 관리와 kernel integration을 맡습니다. 이 구성은 늘어나는 추세입니다. 성능은 model과 backend에 따라 다르므로 자체 구현보다 항상 빠르다는 뜻은 아닙니다.
+Transformers backend는 처음에는 자체 구현이 없는 모델을 위한 fallback이었습니다. 이후 `torch.compile`·CUDA graph 호환과 fused kernel 치환이 추가되면서 지원 범위와 성능이 개선되었습니다. 2026년 기준 일부 architecture는 Transformers backend로만 지원됩니다. 이런 구성에서는 모델 정의를 Transformers에서 재사용하고, vLLM은 scheduling, KV cache 관리와 kernel integration을 맡습니다. 이 구성은 늘어나는 추세입니다. 성능은 모델과 backend에 따라 다릅니다. Transformers backend가 자체 구현보다 항상 빠른 것은 아닙니다.
 
 > 참고: [Transformers modeling backend integration in vLLM](https://blog.vllm.ai/2025/04/11/transformers-backend.html)
 >
@@ -1096,22 +1096,22 @@ T_{\text{math}} = \frac{\text{Computation FLOPs}}{\text{Peak FLOPs/s}}, \qquad
 T_{\text{mem}} = \frac{\text{Memory Bytes}}{\text{Peak Bandwidth}}
 $$
 
-하드웨어가 계산과 메모리 접근을 잘 겹쳐서(overlap) 실행한다고 가정하면 전체 실행 시간은 대략 $\max(T_{\text{math}}, T_{\text{mem}})$이 되고(이 값은 이상적인 하한이고 실제 시간은 kernel 효율에 따라 더 깁니다), $T_{\text{math}} > T_{\text{mem}}$이면 Compute Bound, 반대면 Memory Bound입니다. 이 경계를 하드웨어 수치로 옮기면, 칩마다 연산기를 모두 쓰려면 넘어야 하는 intensity 임계값이 정해집니다. Roofline 그래프에서 사선과 가로선이 만나는 ridge point가 이 값입니다.
+하드웨어가 계산과 메모리 접근을 잘 겹쳐서(overlap) 실행한다고 가정하면, 전체 실행 시간은 대략 $\max(T_{\text{math}}, T_{\text{mem}})$입니다. 이 값은 이상적인 하한이고, 실제 시간은 kernel 효율에 따라 더 깁니다. $T_{\text{math}} > T_{\text{mem}}$이면 Compute Bound, 반대면 Memory Bound입니다. 이 경계를 하드웨어 수치로 옮기면 칩마다 threshold intensity(Critical Intensity)가 정해집니다. Threshold intensity는 연산기를 모두 쓰려면 넘어야 하는 intensity입니다. Roofline 그래프에서 사선과 가로선이 만나는 ridge point가 이 값입니다.
 
 $$
 \text{Critical Intensity} = \frac{\text{Peak FLOPs/s}}{\text{Peak Bandwidth}}
 $$
 
-예를 들어 H100의 bf16 기준 임계값은 약 300 FLOPs/byte 수준입니다. 메모리에서 1 byte를 들고 올 때마다 300번 가까이 연산을 해야 연산기가 놀지 않는다는 뜻입니다.
+예를 들어 H100의 bf16 기준 threshold intensity는 약 300 FLOPs/byte 수준입니다. 메모리에서 1 byte를 들고 올 때마다 300번 가까이 연산을 해야 연산기가 놀지 않는다는 뜻입니다.
 
 ### 행렬곱의 FLOPs 세는 법: 내적 개수 × 2
 
 $2BDF$의 2는 내적(dot product)에서 옵니다.
 
 - 길이 $D$ 벡터의 내적 = 곱셈 $D$번 + 덧셈 $D$번 = $2D$ FLOPs
-- $X[B, D] \times W[D, F]$ = 내적 $B \times F$개 = $2BDF$ FLOPs ($B$ = 배치, 즉 한 step에 함께 처리하는 sequence 수. 아래 그림 기호와 같고, prefill처럼 sequence당 토큰이 $T$개면 행 수는 $BT$)
+- $X[B, D] \times W[D, F]$ = 내적 $B \times F$개 = $2BDF$ FLOPs ($B$ = 배치, 즉 한 스텝에 함께 처리하는 sequence 수. 아래 그림 기호와 같고, prefill처럼 sequence당 token이 $T$개면 행 수는 $BT$)
 
-즉 행렬곱의 FLOPs는 "관여하는 차원의 곱 × 2"이고, FLOPs 계산은 내적의 개수를 세는 문제입니다. Transformer는 행렬곱의 연쇄이므로, 아래 그림처럼 각 행렬곱의 shape만 적으면 전체 FLOPs와 파라미터 수를 기계적으로 셀 수 있습니다. "파라미터 $P$개 모델의 forward pass ≈ 토큰당 $2P$ FLOPs (학습은 backward까지 $6P$)"라는 근사도 여기서 나옵니다.
+즉 행렬곱의 FLOPs는 "관여하는 차원의 곱 × 2"이고, FLOPs 계산은 내적의 개수를 세는 문제입니다. Transformer는 행렬곱의 연쇄이므로, 아래 그림처럼 각 행렬곱의 shape만 적으면 전체 FLOPs와 파라미터 수를 기계적으로 셀 수 있습니다. "파라미터 $P$개 모델의 forward pass ≈ token당 $2P$ FLOPs (학습은 backward까지 $6P$)"라는 근사도 여기서 나옵니다.
 
 <div class="flex justify-center mt-4">
   <img src="/images/06/transformer-diagram.png" alt="Transformer 한 layer(Attention과 MLP)의 각 행렬곱 shape을 B, T, S, D, N, K, G, H, F 기호로 표시한 다이어그램과, 기호별 차원 의미를 정리한 symbol-dimension 표" class="max-w-3xl w-full mx-auto" />
@@ -1121,31 +1121,31 @@ $2BDF$의 2는 내적(dot product)에서 옵니다.
 
 ### 행렬곱의 intensity는 배치 크기에 비례한다
 
-이걸 LLM의 지배적 연산인 행렬곱에 대입해 보면 왜 Decode가 문제인지 숫자로 드러납니다. 배치 $B$개 sequence의 decode step에서는 sequence당 토큰이 하나이므로 행렬곱은 $X[B, D] \times W[D, F]$이고, 연산량은 $2BDF$ FLOPs입니다. 메모리 쪽은 입력 $X$($BD$개 원소)와 weight $W$($DF$개)를 읽고 결과 $Z[B, F]$($BF$개)를 써야 하는데, bf16은 원소당 2 bytes이므로 접근량은 $2BD + 2DF + 2BF$ bytes입니다(FLOPs의 2는 곱셈+덧셈, bytes의 2는 원소 크기로, 서로 다른 2입니다). 따라서,
+이걸 LLM의 지배적 연산인 행렬곱에 대입해 보면 왜 Decode가 문제인지 숫자로 드러납니다. 배치 $B$개 sequence의 decode 스텝에서는 sequence당 token이 하나이므로 행렬곱은 $X[B, D] \times W[D, F]$이고, 연산량은 $2BDF$ FLOPs입니다. 메모리 쪽은 입력 $X$($BD$개 원소)와 weight $W$($DF$개)를 읽고 결과 $Z[B, F]$($BF$개)를 써야 합니다. bf16은 원소당 2 bytes이므로 접근량은 $2BD + 2DF + 2BF$ bytes입니다(FLOPs의 2는 곱셈+덧셈, bytes의 2는 원소 크기로, 서로 다른 2입니다). 따라서,
 
 $$
 \text{Intensity} = \frac{2BDF}{2BD + 2DF + 2BF} \approx B \quad (B \ll D, F)
 $$
 
-즉 행렬곱의 intensity는 행 수, 곧 한 번에 처리하는 토큰 수에 거의 비례합니다. decode에서는 그것이 배치 $B$이므로 임계값을 넘기려면 배치가 수백은 되어야 하고, prefill에서는 sequence 하나만으로도 행 수가 $T$개라 쉽게 넘습니다. Prefill이 Compute Bound이고 Decode가 Memory Bound인 이유입니다.
+즉 행렬곱의 intensity는 행 수, 곧 한 번에 처리하는 token 수에 거의 비례합니다. decode에서는 행 수가 배치 $B$입니다. 그래서 threshold intensity를 넘기려면 배치가 수백은 되어야 합니다. prefill에서는 sequence 하나만으로도 행 수가 $T$개라 쉽게 넘습니다. Prefill이 Compute Bound이고 Decode가 Memory Bound인 이유입니다.
 
 ### 예외: attention은 배치로도 구제되지 않는다
 
-다만 이 "배치를 키우면 compute bound로 넘어간다"는 계산에는 중요한 예외가 하나 있습니다. weight는 배치 안의 모든 sequence가 공유하므로 배치가 커질수록 재사용이 늘어나지만, attention이 읽어야 하는 KV cache는 sequence마다 고유해서 배치를 아무리 키워도 재사용이 생기지 않습니다. 즉 Decode의 행렬곱(MLP·projection)은 배치로 compute bound까지 끌어올릴 수 있어도, attention 부분은 구조적으로 Memory Bound에 남습니다. GQA/MQA(여러 query head가 KV head를 공유)나 DeepSeek 계열의 MLA(latent 압축)처럼 KV cache 자체를 줄이는 아키텍처 레벨의 기법이 별도의 축으로 발전해 온 이유가 여기에 있습니다.
+다만 이 "배치를 키우면 Compute Bound로 넘어간다"는 계산에는 예외가 하나 있습니다. weight는 배치 안의 모든 sequence가 공유하므로 배치가 커질수록 재사용이 늘어납니다. 반면 attention이 읽어야 하는 KV cache는 sequence마다 고유합니다. 그래서 배치를 키워도 KV cache는 재사용되지 않습니다. 즉 Decode의 행렬곱(MLP·projection)은 배치로 Compute Bound까지 끌어올릴 수 있어도, attention 부분은 구조적으로 Memory Bound에 남습니다. GQA/MQA(여러 query head가 KV head를 공유)나 DeepSeek 계열의 MLA(latent 압축)처럼 KV cache 자체를 줄이는 아키텍처 레벨의 기법이 별도의 축으로 발전해 온 이유가 여기에 있습니다.
 
-이 관점에서 Decode 한 스텝이 넘을 수 없는 하한선도 바로 나옵니다. dense 모델·full attention·스텝당 토큰 하나를 가정하면 매 스텝 모델 weight 전체와 배치에 담긴 KV cache 전체를 HBM에서 읽어야 하므로(MoE는 활성 expert의 weight만, sliding window나 MLA는 KV 읽기가 줄어듭니다),
+이 관점에서 Decode 한 스텝이 넘을 수 없는 하한선도 바로 나옵니다. dense 모델·full attention·스텝당 token 하나를 가정하면 매 스텝 모델 weight 전체와 배치에 담긴 KV cache 전체를 HBM에서 읽어야 하므로(MoE는 활성 expert의 weight만, sliding window나 MLA는 KV 읽기가 줄어듭니다),
 
 $$
 T_{\text{step}} \ge \frac{\text{Param Bytes} + B \times \text{KV Cache Bytes}}{\text{Peak Bandwidth}}
 $$
 
-작은 배치에서 decode의 토큰당 지연시간은 사실상 "모델 weight를 HBM에서 한 번 스트리밍하는 시간"이 하한이라는 뜻입니다.
+작은 배치에서 decode의 token당 지연시간은 사실상 "모델 weight를 HBM에서 한 번 스트리밍하는 시간"이 하한이라는 뜻입니다.
 
 참고: [Rooflines (How to Scale Your Model, JAX Scaling Book)](https://jax-ml.github.io/scaling-book/roofline/)
 
 참고: [All About Transformer Inference (How to Scale Your Model, JAX Scaling Book)](https://jax-ml.github.io/scaling-book/inference/)
 
-여기서는 맛만 본 transformer 수식 계산의 전체 그림 - layer별 FLOPs·파라미터·KV cache 세기, 토큰 하나가 forward pass를 통과하는 여정 - 은 아래 두 자료가 잘 정리하고 있습니다.
+아래 두 자료는 transformer 수식 계산의 전체 그림을 정리합니다. layer별 FLOPs·파라미터·KV cache를 세는 방법과, token 하나가 forward pass를 통과하는 과정을 다룹니다.
 
 참고: [All the Transformer Math You Need to Know (How to Scale Your Model, JAX Scaling Book)](https://jax-ml.github.io/scaling-book/transformers/)
 
