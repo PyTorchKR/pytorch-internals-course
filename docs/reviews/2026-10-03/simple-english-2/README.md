@@ -22,7 +22,7 @@
 
 | 강의 | 반영 / 수정 반영 / 미반영 | 비고 |
 |---|---|---|
-| 01 | 8 / 2 / 3 | 6번은 backpropagation으로 통일, 10번은 BLAS full name 유지. 400행 "hardware backend" |
+| 01 | 8 / 2 / 3 | 6번은 backpropagation으로 통일, 10번은 BLAS full name 유지. 369·400행 "hardware backend" |
 | 02~07 | 저자 결정 대기 | |
 
 ## 1차 작업에서 생긴 오류 (원문 확인)
