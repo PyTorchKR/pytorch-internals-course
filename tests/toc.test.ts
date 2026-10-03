@@ -48,7 +48,7 @@ describe("Table of Contents", () => {
   });
 
   it("ToC links point to heading IDs with # prefix", () => {
-    const tocLinkPattern = /class="toc-item toc-h\d"><a href="#[^"]+"/g;
+    const tocLinkPattern = /class="toc-item toc-h\d">\s*<a href="#[^"]+"/g;
     const matches = lectureHtml.match(tocLinkPattern);
     expect(matches).not.toBeNull();
     expect(matches!.length).toBeGreaterThan(0);

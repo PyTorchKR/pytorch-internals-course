@@ -5,6 +5,8 @@ import Footer from '../components/Footer.astro';
 import ScrollProgress from '../components/ScrollProgress.astro';
 import BackToTop from '../components/BackToTop.astro';
 import SearchModal from '../components/SearchModal.astro';
+// KaTeX CSS comes from the installed package so it matches the renderer version.
+import 'katex/dist/katex.min.css';
 import '../styles/global.css';
 
 interface Props {
@@ -29,6 +31,9 @@ const pageTitle = title ? `${title} | ${siteConfig.title}` : siteConfig.title;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <title>{pageTitle}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Fonts: Roboto Mono (code) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -36,12 +41,6 @@ const pageTitle = title ? `${title} | ${siteConfig.title}` : siteConfig.title;
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap"
       rel="stylesheet"
-    />
-
-    <!-- KaTeX -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
     />
 
     <!-- Theme init (prevent FOUC) -->
