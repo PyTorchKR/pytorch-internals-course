@@ -25,7 +25,7 @@ PyTorch + NPU 온라인 모임 #2 | 2024-12-11
 `x = torch.matmul(y, z)` 한 줄을 실행하면 내부에서 정확히 무슨 일이 일어날까요? 이 질문에서 출발해, 55단계에 달하는 call stack을 끝까지 따라가고 그 과정에서 등장한 PyTorch internal 개념을 정리합니다.
 
 - `torch.matmul`의 call stack 추적: CUDA GEMM 진입점에 breakpoint를 걸어 얻은 55단계 call stack 분석
-    - Python → C++ 바인딩 → matmul dispatch → mm의 autograd kernel → CUDA kernel redispatch → cuBLAS 진입 순으로 전체 경로를 따라가기
+    - Python → C++ binding → matmul dispatch → mm의 autograd kernel → CUDA kernel redispatch → cuBLAS 진입 순으로 전체 경로를 따라가기
     - dispatcher가 dispatch key set을 계산해 kernel을 고르고 redispatch를 반복하는 구조
     - call stack의 상당 부분은 반복되는 dispatch logic이거나 `native_functions.yaml`, `derivatives.yaml`에서 자동 생성된 코드 → 55단계 깊이만큼 사람이 관리하는 코드가 많은 것은 아님
 - Eager mode의 구성 요소: 예제에서 등장한 개념들을 세 축으로 나눠 정리
@@ -42,7 +42,7 @@ PyTorch에서 `x = torch.matmul(y, z)`를 실행하면 내부적으로 어떤 �
 
 ### Call Stack 분석
 
-아래는 입력 tensor를 CUDA device에 두고 CUDA GEMM[^gemm] 진입점에 breakpoint를 건 뒤 `torch.matmul`을 실행했을 때의 call stack snapshot입니다. 실제 수행 지점까지 많은 중간 단계를 거칩니다.
+아래는 입력 tensor를 CUDA device에 두고 CUDA GEMM[^gemm] 진입점에 breakpoint를 건 뒤 `torch.matmul`을 실행했을 때의 call stack snapshot입니다. 호출은 cuBLAS GEMM에 닿기까지 많은 중간 단계를 거칩니다.
 
 [^gemm]: General Matrix Multiply. BLAS(Basic Linear Algebra Subprograms)에서 정의하는 행렬 곱셈 연산으로, NVIDIA GPU용 구현이 call stack 끝에서 만나게 될 cuBLAS입니다. [Week 1의 supercomputing 배경](/lectures/01-technical-background/#supercomputing)(BLAS/cuBLAS)에서 소개했습니다.
 
@@ -114,7 +114,7 @@ Eager mode에서는 breakpoint를 잡은 시점에서 이전 상태를 파악하
 
 Call stack이 55단계나 되는 이유는 크게 세 가지로 나눌 수 있습니다.
 
-**1. `torch.matmul` 자체의 복잡성**
+##### 1. `torch.matmul` 자체의 복잡성
 
 `torch.matmul`은 input tensor의 shape에 따라 서로 다른 op으로 분기합니다:
 
@@ -127,13 +127,13 @@ Call stack이 55단계나 되는 이유는 크게 세 가지로 나눌 수 있�
 | N-D × 2-D 또는 N-D × 1-D | 보통 batch 차원을 fold[^fold]하여 `torch.mm` / `torch.mv` |
 | 양쪽 다 batch 차원 | batch 차원 broadcast 후 `torch.bmm` |
 
-[^fold]: 큰 tensor의 batch 차원을 앞쪽 행 차원에 접어 GEMM 한 번으로 처리하는 것. copy 없이 view로 접을 수 없으면 `should_fold`가 `bmm` 경로를 택합니다. 단, 작은 쪽(2D 이하) tensor가 gradient를 요구하면 copy를 감수하고 fold합니다(backward에서 큰 gradient tensor를 만들지 않기 위해). 양쪽이 3D이고 batch 크기가 서로 다를 때, batch 크기가 1인 쪽 tensor가 gradient를 요구하면 그 tensor의 batch 차원을 squeeze해 같은 fold 경로로 보냅니다.
+[^fold]: 큰 tensor의 batch 차원을 앞쪽 행 차원에 접어 GEMM 한 번으로 처리하는 것. copy 없이 view로 접을 수 없으면 `should_fold`(`LinearAlgebra.cpp`에서 fold 여부를 정하는 함수)가 `bmm` 경로를 택합니다. 단, 작은 쪽(2D 이하) tensor가 gradient를 요구하면 copy를 감수하고 fold합니다(backward에서 큰 gradient tensor를 만들지 않기 위해). 양쪽이 3D이고 batch 크기가 서로 다를 때, batch 크기가 1인 쪽 tensor가 gradient를 요구하면 그 tensor의 batch 차원을 squeeze해 같은 fold 경로로 보냅니다.
 
-**2. Language boundary 전환**
+##### 2. Language boundary 전환
 
 PyTorch는 Python → C++ → CUDA(또는 다른 kernel language)로 이어지는 다층 구조입니다. 언어 경계를 넘을 때마다 binding과 wrapper 코드가 필요하므로 call stack이 길어집니다.
 
-**3. 다양한 실행 시나리오의 동적 결정**
+##### 3. 다양한 실행 시나리오의 동적 결정
 
 같은 `matmul` 호출이라도 런타임 상황에 따라 실행 경로가 달라집니다:
 
@@ -143,7 +143,7 @@ PyTorch는 Python → C++ → CUDA(또는 다른 kernel language)로 이어지�
 | **Autograd** | backward graph 생성 필요 vs 불필요 |
 | **Tracing** | `torch.jit.trace` / `torch.compile` 중 vs 아님 |
 
-이처럼 "지금 이 호출에서 어떤 구현(kernel)을 실행해야 하는가"를 런타임에 결정하여 해당 kernel을 호출하는 과정을 PyTorch에서는 **dispatch**라고 부릅니다. 여기서 **kernel**은 dispatch key 하나에 등록된 함수입니다. dispatcher(kernel을 골라 호출하는 컴포넌트) 입장에서는 실제 연산을 수행하는 CUDA 코드도, autograd 기록만 하고 연산은 넘기는 wrapper도 모두 kernel입니다. 그리고 위 표의 각 경우 하나하나를 나타내는 태그가 **dispatch key**입니다. 예를 들어 `CPU`, `CUDA` 같은 device도, `Autograd` 같은 기능도 각각 하나의 dispatch key로 표현됩니다.
+이처럼 "지금 이 호출에서 어떤 구현(kernel)을 실행해야 하는가"를 런타임에 결정하여 해당 kernel을 호출하는 과정을 PyTorch에서는 **dispatch**라고 부릅니다. 여기서 **kernel**은 dispatch key 하나에 등록된 함수입니다. Dispatcher(kernel을 골라 호출하는 컴포넌트) 입장에서는 실제 연산을 수행하는 CUDA 코드도, autograd 기록만 하고 연산은 넘기는 wrapper도 모두 kernel입니다. 그리고 위 표의 각 경우 하나하나를 나타내는 태그가 **dispatch key**입니다. 예를 들어 `CPU`, `CUDA` 같은 device도, `Autograd` 같은 기능도 각각 하나의 dispatch key로 표현됩니다.
 
 한 번의 op(operator, `matmul`·`mm` 같은 연산 단위) 호출에는 여러 관심사가 동시에 걸려 있을 수 있습니다. "CUDA tensor이면서 gradient 추적이 필요한" 호출이라면 `CUDA` key와 `Autograd` key가 둘 다 유효합니다. 이때 dispatcher는 다음 순서로 움직입니다.
 
@@ -172,7 +172,7 @@ redispatch는 kernel 실행이 끝난 뒤가 아니라 실행 도중에 일어�
 | **Codegen을 적극적으로 활용** | **O** - call stack의 상당 부분이 자동 생성 코드 |
 | Various backend integration points | **O** - dispatch target으로서의 backend 등록 |
 
-Codegen 활용은 [Week 1](/lectures/01-technical-background/#pytorch-20)에서 빠져 있던 항목으로, 이번 주에 새로 추가됩니다. PyTorch 코드베이스에는 도구가 자동 생성하는 코드가 많습니다. op마다 같은 기능의 코드가 반복되므로 사람이 직접 쓰지 않고 code generator가 만듭니다. autograd(automatic differentiation)도 이 코드 생성으로 구현됩니다.
+Codegen 활용은 [Week 1](/lectures/01-technical-background/#pytorch-20)에서 빠져 있던 항목으로, 이번 주에 새로 추가됩니다. PyTorch 코드베이스에는 code generator가 자동 생성하는 코드가 많습니다. op마다 같은 기능의 코드가 반복되므로 사람이 직접 쓰지 않고 code generator가 만듭니다. autograd(automatic differentiation)도 이 코드 생성으로 구현됩니다.
 
 
 ### Python vs. PyTorch Internal (C++)
@@ -199,7 +199,7 @@ Call stack은 밑에서 위로 진입합니다. 크게 두 영역으로 나뉘�
 | #20 | `c10::Dispatcher::callWithDispatchKeySlowPath` at `Dispatcher.h:661` | profiler 경로 - `RecordFunction` callback이 등록되어 있고 op이 observed일 때만 타며, kernel 호출을 `RecordFunction` guard로 감쌈. kernel 선택은 이미 `Dispatcher::call`에서 끝남 |
 | **#21** | `c10::Dispatcher::call` at `Dispatcher.h:680` | **dispatch 진입** - mm op에 대한 첫 번째 dispatch (Autograd key 선택) |
 | #22 | `c10::TypedOperatorHandle` at `Dispatcher.h:531` | dispatch의 typed handle wrapper |
-| **#23** | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | **mm C++ 진입점** - op별 생성된 dispatch 진입점, Dispatcher 호출 (자동생성) |
+| **#23** | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | **mm C++ 진입점** - op별 생성된 dispatch 진입점, dispatcher 호출 (자동생성) |
 | #24 | `at::Tensor::mm` at `build/.../TensorBody.h:2999` | `at::Tensor`의 mm 메서드 - `mm::call`로 위임 |
 | #25 | `at::native::_matmul_impl` at `LinearAlgebra.cpp:2031` | **matmul 구현체** - input shape 분석 후 적절한 op(mm, bmm 등) 선택 |
 | #26 | `at::native::matmul` at `LinearAlgebra.cpp:2181` | matmul 진입 - `_matmul_impl`로 위임 |
@@ -237,25 +237,25 @@ op 호출 하나가 거치는 Eager mode 구성 요소는 다음과 같습니다
 
 <DispatchFlowDiagram />
 
-다이어그램의 **Front-End**는 사용자가 호출하는 API 표면에서 Dispatcher 직전까지의 구간을 가리킵니다.
+다이어그램의 **Front-End**는 사용자가 호출하는 API 표면에서 dispatcher 직전까지의 구간을 가리킵니다.
 `torch.matmul(y, z)`를 호출하면 Python API에서 시작해, 자동 생성된 Python binding(`THPVariable_matmul`, call stack #38)을 거쳐
 op별 C++ 진입점(`at::_ops::matmul::call`, call stack 표의 #35 "C++ 진입점")에 도달합니다. PyTorch 문서의 "C++ Frontend"는 libtorch의 `torch::nn` API를 가리키는 별개 용어이므로 여기서는 쓰지 않습니다.
-Front-End는 Python 인자를 C++ 타입으로 변환해 op과 함께 **Dispatcher**에게 전달하는 데서 끝납니다.
+Front-End는 Python 인자를 C++ 타입으로 변환해 op과 함께 **dispatcher**에게 전달하는 데서 끝납니다.
 어떤 kernel을 실행할지는 Front-End가 아니라 Dispatcher가 결정합니다. Dispatcher는 인자에서 dispatch key set을 계산하고, 그중 우선순위가 가장 높은 key의 kernel을 호출합니다.
 
 앞 절에서 본 대로 kernel은 실행 도중에 다시 Dispatcher를 호출하여 redispatch합니다.
-예를 들어 Autograd kernel이 backward graph 노드를 준비한 뒤 자신의 key를 제외하고 redispatch하면,
-Dispatcher가 남은 key 중 우선순위가 가장 높은 key(예: CUDA)의 device backend kernel을 선택합니다. 
+예를 들어 Autograd kernel은 backward graph 노드를 준비한 뒤 자신의 key를 제외하고 redispatch합니다. 그러면 Dispatcher가 남은 key 중 우선순위가 가장 높은 key(예: CUDA)의 device backend kernel을 선택합니다.
 이렇게 Dispatcher와 kernel을 오가며 autograd, backend 등 여러 kernel이 한 op 호출에 차례로 개입합니다.
 device backend kernel은 Device Runtime을 사용해 실제 연산을 수행합니다.
-중간 kernel은 Autograd 하나가 아니라 tracing, `matmul` → `mm` 분해(`CompositeImplicitAutograd`) 등 여러 층일 수 있습니다. Autograd 층과 tracing 층은 자기 key를 뺀 key set으로 redispatch합니다. `CompositeImplicitAutograd` 층은 redispatch하지 않고, 분해한 op(`mm`)을 일반 API로 다시 호출해 dispatch를 처음부터 시작합니다(call stack의 #24 → #23 → #21). 중간 층이 하나도 없으면 Dispatcher가 바로 backend kernel을 호출합니다.
+
+중간 kernel은 Autograd 하나가 아니라 tracing, `matmul` → `mm` 분해(`CompositeImplicitAutograd`) 등 여러 개일 수 있습니다. Autograd kernel과 tracing kernel은 자기 key를 뺀 key set으로 redispatch합니다. `CompositeImplicitAutograd` kernel은 redispatch하지 않고, 분해한 op(`mm`)을 `at::Tensor::mm`으로 다시 호출해 dispatch를 처음부터 시작합니다(call stack의 #24 → #23 → #21). 중간 kernel이 하나도 없으면 Dispatcher가 바로 backend kernel을 호출합니다.
 
 
 ### Call Stack의 주요 특성
 
 #### 자동 생성된 코드
 
-Call stack의 상당 부분이 자동 생성된 코드입니다. 코드 생성은 빌드 타임에 일어나고, 생성된 코드는 사람이 작성한 코드와 함께 빌드되어 바이너리와 Python 패키지가 됩니다.
+Call stack의 상당 부분이 자동 생성된 코드입니다. 코드 생성은 빌드 타임에 일어납니다. 생성된 코드는 사람이 작성한 코드와 함께 빌드되어 바이너리와 Python 패키지가 됩니다.
 
 <details>
 <summary><strong>자동 생성된 코드 목록 (10개 항목)</strong></summary>
@@ -265,7 +265,7 @@ Call stack의 상당 부분이 자동 생성된 코드입니다. 코드 생성�
 | #5 | `at::` at `build/.../RegisterCUDA.cpp:12173` | CUDA backend dispatch 등록 - `gen.py`가 `native_functions.yaml`의 dispatch 항목으로부터 생성 |
 | #12-13 | `at::_ops::mm::redispatch` at `build/.../Operators_3.cpp:4010` | mm op의 redispatch 진입점 - Autograd → CUDA 전환 시 사용 |
 | #14-15 | `torch::autograd::VariableType::mm` at `generated/VariableType_3.cpp:13456` | mm의 Autograd kernel - `gen_variable_type.py`가 `derivatives.yaml`로부터 생성 |
-| #23 | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | mm op의 C++ dispatch 진입점 - Dispatcher 호출 |
+| #23 | `at::_ops::mm::call` at `build/.../Operators_3.cpp:4003` | mm op의 C++ dispatch 진입점 - dispatcher 호출 |
 | #27 | `at::` at `build/.../RegisterCompositeImplicitAutograd.cpp:2774` | matmul kernel 등록 - device 무관 composite kernel |
 | #35 | `at::_ops::matmul::call` at `build/.../Operators_4.cpp:3192` | matmul op의 C++ dispatch 진입점 |
 | #37-38 | `torch::autograd::THPVariable_matmul` at `generated/python_torch_functions_0.cpp:4911` | Python → C++ binding - `gen_python_functions.py`가 `native_functions.yaml`로부터 생성 |
@@ -277,12 +277,12 @@ Call stack의 상당 부분이 자동 생성된 코드입니다. 코드 생성�
 code generator(`gen.py`, `gen_variable_type.py`, `gen_python_functions.py` 등)는 `native_functions.yaml`과 `derivatives.yaml`을 입력으로 받아 다음 파일을 생성합니다.
 
 **`build/aten/src/ATen`** ← `gen.py` (input: `native_functions.yaml`)
-- `ops/{operator}.h`: op별 public C++ API 함수(`at::matmul` 등) 선언. dispatcher 진입점 구조체(`at::_ops::*`)는 `ops/{operator}_ops.h`에 선언
+- `ops/{operator}.h`: op별 public C++ API 함수(`at::matmul` 등) 선언. Dispatcher 진입점 구조체(`at::_ops::*`)는 `ops/{operator}_ops.h`에 선언
 - `core/TensorBody.h`: `at::Tensor` 클래스의 메서드 선언
 - `Operators.cpp`: op별 `call`/`redispatch` 함수 구현
-- `Register{backend}.cpp`: backend별 kernel 등록 코드. PyTorch가 초기화될 때 이 파일들이 각 backend의 kernel을 Dispatcher에 등록합니다. `{backend}`에는 `CUDA`, `CPU`, `XPU` 등 다양한 종류가 들어갈 수 있습니다.
+- `Register{backend}.cpp`: backend별 kernel 등록 코드. PyTorch가 초기화될 때 이 파일들이 각 backend의 kernel을 Dispatcher에 등록합니다. `{backend}` 자리에는 `CUDA`, `CPU`, `XPU` 같은 backend 이름이 들어갑니다.
 
-**`torch/include/torch/csrc/autograd/generated`** ← `tools/autograd`의 생성 스크립트들 (`gen_autograd.py`가 orchestration; input: `derivatives.yaml`, `native_functions.yaml`)
+**`torch/include/torch/csrc/autograd/generated`** ← `tools/autograd`의 생성 스크립트들 (`gen_autograd.py`가 전체를 조율함. input: `derivatives.yaml`, `native_functions.yaml`)
 - `Functions.h`, `python_functions.h`, `python_return_types.h`
 - `variable_factories.h`, `VariableType.h`, `ViewFuncs.h`
 
@@ -293,10 +293,10 @@ code generator(`gen.py`, `gen_variable_type.py`, `gen_python_functions.py` 등)�
 - `python_torch_functions.cpp` ← `gen_python_functions.py` (input: `native_functions.yaml`)
 
 ##### 핵심 입력 파일
-- **`native_functions.yaml`**: PyTorch가 기본으로 제공하는 op들의 스펙을 기술한 파일입니다. 각 op의 이름, 인자, 반환 타입, 지원하는 backend별 구현 함수 등이 정의되어 있고, ATen op의 정의와 등록이 이 파일에서 출발합니다. ATen을 위한 기술(description)입니다.
+- **`native_functions.yaml`**: PyTorch가 기본으로 제공하는 ATen op들의 스펙을 기술한(description) 파일입니다. 각 op의 이름, 인자, 반환 타입, 지원하는 backend별 구현 함수 등이 이 파일에 정의되어 있습니다. ATen op의 정의와 등록은 이 파일에서 출발합니다.
 - **`derivatives.yaml`**: 각 op의 autograd 미분 규칙을 정의한 파일입니다.
 
-생성된 코드는 빌드 타임에 사람이 작성한 코드와 함께 컴파일됩니다. PyTorch 프로세스가 시작되면 초기화 과정에서 생성된 등록 코드가 각 backend의 kernel을 Dispatcher에 등록(**registration**)합니다. 이 등록이 끝나야 Dispatcher가 런타임에 올바른 kernel을 찾아 호출합니다.
+PyTorch 프로세스가 시작되면 초기화 과정에서 생성된 등록 코드가 각 backend의 kernel을 Dispatcher에 등록(**registration**)합니다. 이 등록이 끝나야 Dispatcher가 런타임에 올바른 kernel을 찾아 호출합니다.
 
 #### Dispatch Logic
 
@@ -322,9 +322,9 @@ Dispatch logic은 call stack에서 반복적으로 등장하는 template 기반 
 
 <img src="/images/02/slide13_1.png" alt="Dispatcher는 입력 tensor 등을 보고 dispatch table(Autograd, Tracing, XLA, CUDA, CPU)에서 function pointer 하나를 고른다. vtable과 달리 runtime 확장, multiple dispatch, TLS, boxing/unboxing을 지원한다" class="h-80 mx-auto" />
 
-Dispatcher는 C++의 virtual function table(vtable)과 비슷한 개념이지만(아래 설명은 Edward Z. Yang의 2020년 블로그 글을 따릅니다), 훨씬 더 복잡한 요구사항을 다룹니다. 같은 `matmul`이라도 CPU에서 실행될 때, CUDA에서 실행될 때, autograd가 켜져 있을 때 서로 다르게 동작해야 합니다. PyTorch는 이 모든 경우를 처리하려고 dispatcher를 별도의 데이터 구조와 알고리즘으로 설계했습니다.
+Dispatcher는 C++의 virtual function table(vtable)과 비슷한 개념이지만 더 많은 요구사항을 다룹니다(아래 설명은 Edward Z. Yang의 2020년 블로그 글을 따릅니다). 같은 `matmul`이라도 CPU에서 실행될 때, CUDA에서 실행될 때, autograd가 켜져 있을 때 서로 다르게 동작해야 합니다. PyTorch는 이 모든 경우를 처리하려고 dispatcher를 별도의 데이터 구조와 알고리즘으로 설계했습니다.
 
-Dispatch table에는 각 key에 해당하는 function pointer가 들어 있습니다. 한 호출에서 여러 key가 동시에 유효할 수 있고, 이 key들의 집합이 dispatch key set입니다. Dispatcher는 key set에서 우선순위가 가장 높은 key의 kernel을 호출하고, 호출된 kernel은 실행 도중 자기 key를 제외한 set으로 redispatch합니다(앞 절 참조).
+Dispatch table에는 각 key에 해당하는 function pointer가 들어 있습니다. 한 호출에서 여러 key가 동시에 유효할 수 있습니다. 이 key들의 집합이 dispatch key set입니다. Dispatcher는 key set에서 우선순위가 가장 높은 key의 kernel을 호출하고, 호출된 kernel은 실행 도중 자기 key를 제외한 set으로 redispatch합니다(앞 절 참조).
 
 상세 설명: http://blog.ezyang.com/2020/09/lets-talk-about-the-pytorch-dispatcher/
 
@@ -394,7 +394,7 @@ Dispatch table에는 각 key에 해당하는 function pointer가 들어 있습�
     at .../Objects/call.c:242
 ```
 
-PyTorch는 성능과 확장성을 위해 Python binding을 자체 코드 생성으로 만들고, dispatcher로 CPU, CUDA, XPU 같은 여러 backend를 지원합니다.
+PyTorch는 성능과 확장성을 위해 Python binding을 자체 code generator로 만듭니다. CPU, CUDA, XPU 같은 여러 backend는 dispatcher로 지원합니다.
 
 `generate_code.py`가 `native_functions.yaml`을 읽고 Python/C++ 간 인터페이스 코드를 생성합니다:
 
@@ -405,7 +405,7 @@ PyTorch는 성능과 확장성을 위해 Python binding을 자체 코드 생성�
 
 #### native_functions.yaml
 
-`native_functions.yaml`은 사람이 직접 작성하는 파일로, ATen library의 op을 정의하고 등록하는 전체 딕셔너리 역할을 합니다. 이 파일은 소스 트리의 `aten/src/ATen/native/native_functions.yaml`에 있으며, 빌드하지 않아도 GitHub 저장소에서 볼 수 있습니다. 이 파일은 dispatcher와 밀접하게 연관되어 backend별 kernel과 autograd 관련 기능들을 설정할 수 있으며, Python 인터페이스와 C++ 구현도 이 파일을 기준으로 연결됩니다. `generate_code.py` 같은 code generator들이 이 파일의 정보를 바탕으로 실제 코드를 생성합니다.
+`native_functions.yaml`은 사람이 직접 작성하는 파일로, ATen library의 op을 정의하고 등록하는 전체 딕셔너리 역할을 합니다. 이 파일은 소스 트리의 `aten/src/ATen/native/native_functions.yaml`에 있으며, 빌드하지 않아도 GitHub 저장소에서 볼 수 있습니다. 이 파일은 op마다 backend별 kernel과 autograd 관련 기능을 설정하므로 dispatcher와 직접 연결됩니다. Python 인터페이스와 C++ 구현도 이 파일을 기준으로 연결됩니다. `generate_code.py` 같은 code generator들이 이 파일의 정보를 바탕으로 실제 코드를 생성합니다.
 
 ```yaml
 - func: add.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor
@@ -421,11 +421,11 @@ PyTorch는 성능과 확장성을 위해 Python binding을 자체 코드 생성�
   tags: [core, pointwise]
 ```
 
-- **`func`**: add 함수의 signature 정의: 이름, 인자, 반환 타입을 지정
-- **`device_check: NoCheck`**: device 검증을 비활성화: 전달받은 모든 tensor가 동일한 device에 있는지 검증하지 않도록 함
+- **`func`**: add 함수의 signature 정의. 이름, 인자, 반환 타입을 지정
+- **`device_check: NoCheck`**: device 검증을 비활성화. 전달받은 모든 tensor가 동일한 device에 있는지 검증하지 않도록 함
 - **`structured_delegate: add.out`**: `add.out`의 정의를 상속받음
 - **`variants`**: `function` (namespace 안에서 호출, 예: `torch.add()`) / `method` (Tensor의 메서드로 호출, 예: `a.add()`)
-- **`dispatch`**: dispatch key 또는 backend별 impl 함수 지정: Sparse, MKL-DNN, NestedTensor 등 각 backend에 맞는 구현 함수를 매핑
+- **`dispatch`**: dispatch key 또는 backend별 impl 함수 지정. Sparse, MKL-DNN, NestedTensor 등 각 backend에 맞는 구현 함수를 매핑
 
 
 ### matmul kernel을 dispatch하는 과정
@@ -443,7 +443,7 @@ PyTorch는 성능과 확장성을 위해 Python binding을 자체 코드 생성�
 #26 at::native::matmul
 ```
 
-먼저 Op의 C++ 진입점(`at::_ops::matmul::call`, #35)이 Dispatcher를 호출합니다. Dispatcher가 인자에서 dispatch key set을 계산해 dispatch table에서 해당 kernel을 찾아 호출합니다. 이 과정을 거쳐 실제 matmul kernel이 실행됩니다.
+먼저 op의 C++ 진입점(`at::_ops::matmul::call`, #35)이 Dispatcher를 호출합니다. Dispatcher가 인자에서 dispatch key set을 계산해 dispatch table에서 해당 kernel을 찾아 호출합니다. 이 과정을 거쳐 실제 matmul kernel이 실행됩니다.
 
 #27에서 호출되는 matmul kernel은 `RegisterCompositeImplicitAutograd.cpp`에 등록된 kernel입니다.
 
@@ -451,7 +451,7 @@ PyTorch는 성능과 확장성을 위해 Python binding을 자체 코드 생성�
 
 `matmul`은 input tensor의 shape에 따라 `dot`, `mv`, `mm`, `bmm` 등 미분 가능한 함수들의 시퀀스로 표현될 수 있습니다. 이 경우 `matmul` 자체에 대한 미분 규칙을 별도로 정의할 필요가 없습니다. 내부에서 호출되는 각 함수들이 이미 autograd kernel을 갖고 있으므로, 전체 미분은 이들의 합성으로 자동 처리됩니다.
 
-이러한 방식을 **CompositeImplicitAutograd**라고 합니다. `CompositeImplicitAutograd`는 alias key라서 runtime에 key set에서 직접 선택되지 않습니다. 등록 시 dispatcher가 이 kernel을 `CPU`, `CUDA`, `AutogradCPU`, `AutogradCUDA` 같은 여러 runtime key slot에 채워 넣습니다. 등록 코드는 code generator가 만든 `RegisterCompositeImplicitAutograd.cpp`에 있습니다. 그래서 실제 dispatch는 예를 들어 `AutogradCUDA` key로 일어나고, 실행되는 함수는 같은 composite kernel입니다.
+이러한 방식을 **CompositeImplicitAutograd**라고 합니다. `CompositeImplicitAutograd`는 alias key라서 runtime에 key set에서 직접 선택되지 않습니다. 등록 시 dispatcher가 이 kernel을 `CPU`, `CUDA`, `AutogradCPU`, `AutogradCUDA` 같은 여러 runtime key slot에 채워 넣습니다. 그래서 실제 dispatch는 예를 들어 `AutogradCUDA` key로 일어나고, 실행되는 함수는 같은 composite kernel입니다. 등록 코드는 code generator가 만든 `RegisterCompositeImplicitAutograd.cpp`에 있습니다.
 
 이 kernel은 forward 계산을 그대로 수행하며, autograd 전용 kernel은 따로 없습니다. Forward 실행 중 내부에서 호출되는 개별 op들이 각자의 autograd kernel로 backward graph를 구성하므로, 별도의 미분 정의 없이 backward가 계산됩니다.
 
@@ -503,7 +503,7 @@ Autograd kernel은 실제 backward 계산을 수행하지 않습니다. 대신 f
 
 이는 PyTorch의 **define-by-run** 방식과 관련이 있습니다. 그래프를 미리 정의하고 실행하는 define-and-run 방식과 달리, PyTorch는 eager mode에서 연산을 하나하나 즉시 실행합니다. 이 과정에서 각 연산이 수행될 때마다 autograd kernel이 동적 계산 그래프를 자동으로 생성하고, 후속 backward 계산을 위한 history를 기록합니다.
 
-Autograd kernel의 실제 생성 코드는 아래 "Operator > Kernel" 절에서 v2.14.0 codegen 산출물로 살펴봅니다. gradient가 필요한 경우 backward graph 노드를 준비한 뒤 forward 연산을 redispatch하고, 반환된 결과에 backward history를 기록하는 구조입니다.
+Autograd kernel의 실제 생성 코드는 아래 "Operator > Kernel" 절에서 v2.14.0 codegen 산출물로 살펴봅니다. gradient가 필요하면 이 kernel은 backward graph 노드를 준비한 뒤 forward 연산을 redispatch합니다. 그리고 반환된 결과에 backward history를 기록합니다.
 
 
 ### mm의 CUDA kernel을 dispatch
@@ -526,7 +526,7 @@ Autograd kernel의 실제 생성 코드는 아래 "Operator > Kernel" 절에서 
 
 #### RegisterCUDA.cpp와 관련된 native_functions.yaml
 
-`RegisterCUDA.cpp`에 등록되는 CUDA kernel이 `native_functions.yaml`에서 어떻게 정의되어 있는지를 보면, mm op의 구조를 이해할 수 있습니다. `mm`은 `mm.out`으로 delegate합니다. `mm.out`은 `structured: True`로 정의되어 있어 structured kernel(입력 검증과 실제 구현을 나눠 작성하는 kernel 형식, 아래 "cuBLAS로 진입하는 과정" 참조) 방식으로 구현됩니다. code generator는 `dispatch` 항목의 `CUDA: mm_out_cuda`를 읽어 `RegisterCUDA.cpp`에 이 CUDA backend kernel의 등록 코드를 생성합니다.
+`RegisterCUDA.cpp`의 등록 코드가 등록하는 CUDA kernel이 `native_functions.yaml`에서 어떻게 정의되어 있는지를 보면, mm op의 구조를 이해할 수 있습니다. `mm`은 `mm.out`으로 delegate합니다. `mm.out`은 `structured: True`로 정의되어 있어 structured kernel(입력 검증과 실제 구현을 나눠 작성하는 kernel 형식, 아래 "cuBLAS로 진입하는 과정" 참조) 방식으로 구현됩니다. code generator는 `dispatch` 항목의 `CUDA: mm_out_cuda`를 읽어 `RegisterCUDA.cpp`에 이 CUDA backend kernel의 등록 코드를 생성합니다.
 
 ```yaml
 - func: mm(Tensor self, Tensor mat2) -> Tensor
@@ -541,7 +541,7 @@ Autograd kernel의 실제 생성 코드는 아래 "Operator > Kernel" 절에서 
   structured: True                # ← structured kernel 방식으로 구현
   dispatch:
     CPU: mm_out_cpu
-    CUDA: mm_out_cuda             # ← 이것이 RegisterCUDA.cpp에 등록됨
+    CUDA: mm_out_cuda             # ← code generator가 이 항목으로 RegisterCUDA.cpp에 등록 코드를 생성
     MTIA: mm_out_mtia
     MPS: mm_out_mps
     XPU: mm_out_xpu
@@ -552,7 +552,7 @@ Autograd kernel의 실제 생성 코드는 아래 "Operator > Kernel" 절에서 
 
 ### cuBLAS로 진입하는 과정
 
-Call stack의 가장 위(#0)에서 cuBLAS를 호출합니다. 여기서 `structured`는 `native_functions.yaml`의 `structured: True` 태그를 의미합니다. Structured kernel은 입력 검증, output tensor 준비, 실제 kernel 구현의 역할을 일정한 형태로 분리합니다. 입력 검증과 output shape 결정은 사람이 `LinearAlgebra.cpp`의 `TORCH_META_FUNC(mm)`에 작성합니다. 이 meta 함수를 output 할당·kernel 호출과 엮는 wrapper class(`structured_mm_out_cuda`)는 code generator가 생성합니다. 사람은 meta 함수와 정규화된 tensor를 받는 `TORCH_IMPL_FUNC` 구현만 작성합니다.
+Call stack의 가장 위(#0)에서 cuBLAS를 호출합니다. `structured_mm_out_cuda`의 `structured`는 `native_functions.yaml`의 `structured: True` 태그를 의미합니다. Structured kernel은 입력 검증, output tensor 준비, 실제 kernel 구현의 역할을 일정한 형태로 분리합니다. 입력 검증과 output shape 결정은 사람이 `LinearAlgebra.cpp`의 `TORCH_META_FUNC(mm)`에 작성합니다. 이 meta 함수를 output 할당·kernel 호출과 엮는 wrapper class(`structured_mm_out_cuda`)는 code generator가 생성합니다. 사람은 meta 함수와 정규화된 tensor를 받는 `TORCH_IMPL_FUNC` 구현만 작성합니다.
 
 ```cpp
 #0 at::cuda::blas::gemm<float>
@@ -564,7 +564,7 @@ Call stack의 가장 위(#0)에서 cuBLAS를 호출합니다. 여기서 `structu
 
 `#4`의 `structured_mm_out_cuda::impl`이 CUDA mm의 structured kernel 구현체입니다. 이 함수에서 cuBLAS 호출까지 내려가는 과정을 코드로 따라가면 다음과 같습니다:
 
-**1단계: TORCH_IMPL_FUNC 매크로**. structured kernel의 진입점. `mm`은 bias가 없는 `addmm`의 특수한 경우이므로, `beta=0`으로 `addmm_out_cuda_impl`에 위임합니다.
+**1단계: TORCH_IMPL_FUNC 매크로**. structured kernel의 진입점입니다. `mm`은 bias가 없는 `addmm`의 특수한 경우이므로, `beta=0`으로 `addmm_out_cuda_impl`에 위임합니다.
 
 ```cpp
 // aten/src/ATen/native/cuda/Blas.cpp
@@ -575,7 +575,7 @@ TORCH_IMPL_FUNC(mm_out_cuda)(const Tensor& self, const Tensor& mat2,
 }
 ```
 
-**2단계: addmm_out_cuda_impl**. 입력 검증 후 cuBLAS 호출 준비
+**2단계: addmm_out_cuda_impl**. 입력을 검증하고 cuBLAS 호출을 준비합니다.
 
 ```cpp
 Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self,
@@ -641,7 +641,7 @@ bool launchGemmAndBiasCublasLt(
 
 cuBLAS 경로는 `cublasSgemm`/`cublasGemmEx`를, cuBLASLt 경로는 `cublasLtMatmul`을 호출합니다.
 
-참고: https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/cuda/Blas.cpp
+참고: https://github.com/pytorch/pytorch/blob/v2.14.0/aten/src/ATen/native/cuda/Blas.cpp
 
 
 ## Eager Mode에 대한 Detail
@@ -666,28 +666,27 @@ Tensor는 Python과 C++ 양쪽에서 같은 객체로 다뤄져야 하고, GPU �
 
 참고: [PyTorch internals (Edward Z. Yang)](http://blog.ezyang.com/2019/05/pytorch-internals/)
 
-PyTorch 내부에서 대부분의 구현은 C++로 되어 있습니다. Python의 `torch.Tensor`는 내부적으로 `at::Tensor`라는 C++ 객체에 대응되며, 이 객체는 `c10::TensorImpl`이라는 구현체(`impl`)를 통해 대부분의 정보를 관리합니다.
+PyTorch 내부에서 대부분의 구현은 C++로 되어 있습니다. Python의 `torch.Tensor`는 내부적으로 `at::Tensor`라는 C++ 객체에 대응됩니다. 이 객체는 `c10::TensorImpl`이라는 구현체(`impl`)를 통해 대부분의 정보를 관리합니다.
 
 - **`at::Tensor`**: `c10::TensorImpl`을 `intrusive_ptr`[^intrusive-ptr]로 가리키는 얇은 wrapper
 - **`c10::TensorImpl`**: 실제 구현체로, 핵심 정보를 가짐:
   - **`c10::Storage`**: 실제 data가 저장되는 공간. 
-    - 예를 들어 GPU에 메모리가 할당되면, 그 메모리 덩어리가 이 `StorageImpl`과 1:1로 매핑됨.
-    - `intrusive_ptr`로 관리되므로 여러 tensor가 같은 storage를 공유할 수 있음. view는 이 공유를 이용함
-    - view를 생성하면 새 storage가 아닌 기존 storage를 공유하면서 metadata만 다른 tensor가 만들어짐
+    - 예를 들어 GPU에 메모리가 할당되면, 그 메모리 덩어리가 `c10::Storage`가 가리키는 `StorageImpl`과 1:1로 매핑됨.
+    - `intrusive_ptr`로 관리되므로 여러 tensor가 같은 storage를 공유할 수 있음. view는 기존 storage를 공유하고 metadata만 다른 tensor임
   - **`metadata`**: sizes, strides, storage offset, dtype, device. Stride를 이용해 `tensor[i][j]`를 `data_ptr[i * stride[0] + j * stride[1]]`로 접근
-  - **`AutogradMeta`**: gradient, `grad_fn` 등 autograd 관련 bookkeeping 정보를 tensor 단위로 저장. grad가 필요 없는 tensor는 null로 두는 최적화가 있으나, `requires_grad`가 True였다가 False로 돌아온 경우처럼 default 상태의 AutogradMeta가 남아 있을 수도 있어 "항상 null"은 아님(`TensorImpl.h` 주석)
+  - **`AutogradMeta`**: gradient, `grad_fn` 등 autograd 관련 bookkeeping 정보를 tensor 단위로 저장. grad가 필요 없는 tensor는 AutogradMeta를 null로 두는 최적화가 있음. 다만 `requires_grad`가 True였다가 False로 돌아온 tensor에는 default 상태의 AutogradMeta가 남아 있을 수 있으므로 "항상 null"은 아님(`TensorImpl.h` 주석)
 
-[^intrusive-ptr]: `c10::intrusive_ptr`은 reference count를 별도 control block이 아니라 가리키는 객체 안에 두는(intrusive) smart pointer입니다. `std::shared_ptr`보다 포인터 하나 크기로 가볍고, raw pointer에서 다시 감쌀 수 있어 Python 바인딩과 C++ 사이를 오가기 쉽습니다. `TensorImpl`, `StorageImpl`이 이 방식으로 관리되며, view가 storage를 공유한다는 것은 같은 `StorageImpl`의 count를 하나 올린다는 뜻입니다.
+[^intrusive-ptr]: `c10::intrusive_ptr`은 reference count를 별도 control block이 아니라 가리키는 객체 안에 두는(intrusive) smart pointer입니다. `std::shared_ptr`보다 포인터 하나 크기로 가볍고, raw pointer에서 다시 감쌀 수 있어 Python binding과 C++ 사이를 오가기 쉽습니다. `TensorImpl`, `StorageImpl`이 이 방식으로 관리되며, view가 storage를 공유한다는 것은 같은 `StorageImpl`의 count를 하나 올린다는 뜻입니다.
 
 #### Tensor의 Lifecycle
 
-Tensor의 lifecycle은 생성, 소멸, 복사의 세 가지 과정으로 나눌 수 있습니다.
+Tensor의 lifecycle은 생성과 소멸로 나눌 수 있습니다. 복사(`clone()`)는 아래 "기존 tensor로부터 파생되는 경우"에서 다룹니다.
 
-**생성 - scratch로 새로 만드는 경우:**
+**생성: scratch로 새로 만드는 경우**
 - `aten/src/ATen/native/TensorFactories.cpp`에 구현된 함수들을 통해 생성
   - `empty()`, `zeros()`, `ones()` 등
 
-**생성 - 기존 tensor로부터 파생되는 경우:**
+**생성: 기존 tensor로부터 파생되는 경우**
 
 기존 tensor로부터 파생될 때는 별도의 storage를 갖는 경우와 기존 tensor의 storage를 공유하는 경우로 나뉩니다. Storage를 공유하는 쪽이 view입니다. 새 storage를 만들지 않고 `intrusive_ptr`로 reference만 공유하므로 reference count가 증가합니다.
 
@@ -696,7 +695,7 @@ Tensor의 lifecycle은 생성, 소멸, 복사의 세 가지 과정으로 나눌 
 
 **Storage를 새로 만드는 경우**
 - `at::native::clone()`(`TensorFactories.cpp`): `empty_strided`(또는 `empty_like`)로 새 storage를 잡은 뒤 `copy_()`로 data 복제
-- 별도의 `c10::Storage`를 가진 `at::Tensor`
+- 결과는 별도의 `c10::Storage`를 가진 `at::Tensor`임
 - 산술 연산(`add`, `matmul` 등)의 결과 tensor도 같은 방식으로 새 storage를 가짐
 
 </div>
@@ -720,11 +719,11 @@ Tensor가 소멸된다고 해서 storage까지 바로 소멸되지는 않습니�
   - 명시적으로 객체를 제거 (`del` keyword 사용)
   - 또는 garbage collection으로 소멸
 - Python 측 객체가 소멸되면 C++ `at::Tensor`와 내부 포인터들도 함께 해제
-- `THPVariable_dealloc`이 entry point (구버전에서는 `THPVariable_subclass_dealloc`)
+- `THPVariable_dealloc`이 진입점 (구버전에서는 `THPVariable_subclass_dealloc`)
 
 **`c10::Storage`의 소멸:**
 - `intrusive_ptr`의 reference count가 감소하지만, 다른 tensor(view 등)가 공유 중이면 바로 소멸되지 않음
-- Reference count가 0이 되는 시점에 `StorageImpl`이 소멸하고 memory는 allocator에 반환됨. CUDA의 caching allocator는 이때 `cudaFree`를 부르지 않고 block을 pool에 보관해 재사용하므로, driver로의 실제 반환은 `torch.cuda.empty_cache()` 시점
+- Reference count가 0이 되는 시점에 `StorageImpl`이 소멸하고 memory는 allocator에 반환됨. CUDA의 caching allocator는 이때 `cudaFree`를 부르지 않고 block을 pool에 보관해 재사용함. driver로의 실제 반환은 `torch.cuda.empty_cache()`를 호출할 때 일어남
 
 #### Tensor를 가지고 할 수 있는 일들
 
@@ -737,7 +736,7 @@ Tensor로 할 수 있는 일들은 모두 op에 해당하며, op의 동작 방�
 | | 기존 data의 재배치만 일어나는 경우 - view만 생기는 경우 | `view()`, `transpose()` |
 | | 기존 data의 재배치만 일어나는 경우 - 새로운 storage가 생기는 경우 | `clone()`, non-contiguous tensor의 `contiguous()` |
 
-단, 경계에 있는 op들도 있습니다. `reshape()`은 가능하면 view를 반환하지만 view로 표현할 수 없는 경우(예: non-contiguous tensor) copy를 만들고, `contiguous()`는 이미 contiguous한 tensor에 대해서는 복사 없이 자기 자신을 그대로 반환합니다.
+단, 경계에 있는 op들도 있습니다. `reshape()`은 가능하면 view를 반환합니다. view로 표현할 수 없으면(예: non-contiguous tensor) copy를 만듭니다. `contiguous()`는 이미 contiguous한 tensor에 대해서는 copy 없이 자기 자신을 그대로 반환합니다.
 
 <div class="grid grid-cols-2 gap-4 mt-2">
 <div>
@@ -800,7 +799,7 @@ View는 같은 data를 해석만 달리해 변환 시간과 memory를 아낍니�
 - 같은 data를 다른 shape으로 해석 (reshape)
 - 특정 차원을 반복해 접근 (broadcast)
 
-**TensorIterator**는 elementwise op용 helper로, broadcast와 stride 처리를 대신해 주므로 kernel은 원소 단위 lambda만 쓰면 됩니다:
+TensorIterator는 elementwise op용 helper로, broadcast와 stride 처리를 대신해 주므로 kernel은 원소 단위 lambda만 쓰면 됩니다:
 
 ```cpp
 at::Tensor my_add_cuda(const at::Tensor& ta, const at::Tensor& tb) {
@@ -834,9 +833,9 @@ view 계열 op은 metadata(size, stride, offset)만 바꾸고 storage를 공유�
 
 Operator 절에서 다루는 개념은 다음과 같습니다:
 
-- **Kernel**: 실제 연산을 수행하는 구현체
+- **Kernel**: dispatch key 하나에 등록된 함수. 실제 연산을 수행하는 구현체와 autograd 같은 wrapper를 모두 포함
 - **Dispatcher**: op과 컨텍스트에 맞는 kernel을 찾아 호출하는 메커니즘
-- **Dispatch key**: 어떤 kernel을 선택할지 결정하는 키
+- **Dispatch key**: 어떤 kernel을 선택할지 결정하는 key
 - **Dispatch key set**: 여러 dispatch key의 집합
 - **Registration**: kernel을 dispatcher에 등록하는 과정
 
@@ -850,7 +849,7 @@ Generated Autograd Kernel for `add` (PyTorch v2.14.0 codegen 실행 결과)
 
 </div>
 
-아래 코드는 v2.14.0 소스에서 autograd codegen(`python -m tools.autograd.gen_autograd`)을 직접 실행해 얻은 실제 생성 코드입니다. 생성 파일은 `VariableTypeEverything.cpp`가 아니라 10개 파일로 나눈 `VariableType_0.cpp` ~ `VariableType_9.cpp` 중 `VariableType_2.cpp`이며, 같은 파일의 등록부에서 `m.impl("add.Tensor", TORCH_FN(VariableType::add_Tensor));`로 dispatcher에 연결됩니다.
+아래 코드는 v2.14.0 소스에서 autograd codegen(`python -m tools.autograd.gen_autograd`)을 직접 실행해 얻은 실제 생성 코드입니다. 생성 파일은 `VariableTypeEverything.cpp`가 아니라 10개 파일로 나눈 `VariableType_0.cpp` ~ `VariableType_9.cpp` 중 `VariableType_2.cpp`입니다. 같은 파일의 등록부는 `m.impl("add.Tensor", TORCH_FN(VariableType::add_Tensor));`로 이 함수를 dispatcher에 연결합니다.
 
 ```cpp
 // In VariableType_2.cpp (v2.14.0 codegen 산출물, 일부 블록 생략)
@@ -952,7 +951,7 @@ Tensor add_Tensor(const Tensor & self, const Tensor & other, Scalar alpha) {
 - Forward 호출: `at::add(...)` → `at::redispatch::add(ks & c10::after_autograd_keyset, ...)`. dispatch key set을 명시적으로 전달하고, 자신(autograd)의 key를 제외한 set으로 redispatch함
 - `grad_fn`이 `std::shared_ptr` → `c10::intrusive_ptr`, 검증이 `AT_ASSERT` → `TORCH_INTERNAL_ASSERT`, `c10::optional` → `::std::optional`
 - **Forward-mode AD** 지원 코드가 추가됨
-- 2.14: `set_history` 뒤에 `fire_node_creation_hooks(grad_fn)` 호출이 추가됨. 새 autograd 노드가 만들어질 때 등록된 hook을 부르는 경로로, 2.13 codegen에는 없음
+- 2.14 codegen에는 `set_history` 뒤에 `fire_node_creation_hooks(grad_fn)` 호출이 있음. 새 autograd 노드가 만들어질 때 등록된 hook을 부르는 경로임
 
 #### Registration API
 
@@ -960,7 +959,7 @@ Tensor add_Tensor(const Tensor & self, const Tensor & other, Scalar alpha) {
 
 그림의 `Tracer`는 코드에서 쓰는 tracing key의 이름이며, 표의 Tracing과 같은 key입니다.
 
-**operator registration API**는 kernel을 Dispatcher에 등록하는 API입니다. 등록이란 dispatch table의 function pointer를 채우는 일입니다. 이 API를 사용하는 방법은 세 가지입니다:
+operator registration API는 kernel을 Dispatcher에 등록하는 API입니다. 등록이란 dispatch table의 function pointer를 채우는 일입니다. 이 API를 사용하는 방법은 세 가지입니다:
 
 1. **`def`**: op의 schema를 정의합니다.
 2. **`impl`**: 특정 dispatch key에 대한 구현(kernel)을 등록합니다.
@@ -974,7 +973,7 @@ backend별 `impl` 등록 코드가 들어 있는 `Register{Backend}.cpp`는 `gen
 
 <img src="/images/02/slide38_1.png" alt="dispatch key(Autograd, Tracing, XLA, CUDA, CPU)별 function pointer 칸을 가진 dispatch table" class="h-96 mx-auto" />
 
-Dispatcher는 모든 op마다 function pointer table(dispatch table)을 유지합니다. 각 dispatch key는 PyTorch의 cross-cutting concern(backend, autograd, tracing 등) 하나에 대응합니다. 위 다이어그램에는 CPU, CUDA, XLA 같은 backend의 dispatch entry와 autograd, tracing 같은 상위 개념의 dispatch entry가 함께 있습니다. Dispatcher는 입력 tensor와 기타 정보를 기반으로 dispatch key를 계산한 뒤, 해당 table의 function pointer로 indirect jump합니다.
+Dispatcher는 모든 op마다 function pointer table(dispatch table)을 유지합니다. 각 dispatch key는 PyTorch의 cross-cutting concern(backend, autograd, tracing 등) 하나에 대응합니다. 위 다이어그램에는 CPU, CUDA, XLA 같은 backend의 dispatch entry와 autograd, tracing 같은 상위 개념의 dispatch entry가 함께 있습니다. Dispatcher는 입력 tensor와 thread-local state 등에서 dispatch key set을 계산한 뒤, 우선순위가 가장 높은 key에 해당하는 table의 function pointer로 indirect jump합니다.
 
 ##### C++ vtable과의 비교
 
@@ -986,7 +985,7 @@ Dispatch table은 C++의 vtable과 비슷하지만 다음 세 가지가 다릅�
 | **dispatch 기준** | 첫 번째 인자(`this`)만 고려 | **모든 Tensor 인자**(multiple dispatch) + **thread-local state(TLS)** 고려 |
 | **boxing/unboxing** | 없음 | calling convention의 일부로 **boxing/unboxing 지원** |
 
-PyTorch는 새 subclass보다 새 op을 추가하는 방식으로 확장되므로, class 단위 vtable보다 op 단위 dispatch table이 맞습니다. 대신 dispatch key는 자유롭게 늘릴 수 없고, 새 dispatch key를 추가하려면 PyTorch core에 패치를 제출해야 합니다. out-of-tree backend용으로는 `PrivateUse1`~`PrivateUse3` key가 예약되어 있어, NPU 같은 새 device는 core 패치 없이 이 key에 kernel을 등록해 붙일 수 있습니다(`torch.utils.rename_privateuse1_backend`).
+PyTorch는 새 subclass보다 새 op을 추가하는 방식으로 확장되므로, class 단위 vtable보다 op 단위 dispatch table이 맞습니다. 대신 dispatch key는 자유롭게 늘릴 수 없고, 새 dispatch key를 추가하려면 PyTorch core에 패치를 제출해야 합니다. out-of-tree backend(PyTorch 저장소 밖에서 따로 개발하는 backend)용으로는 `PrivateUse1`~`PrivateUse3` key가 예약되어 있습니다. 그래서 NPU 같은 새 device는 core 패치 없이 이 key에 kernel을 등록해 붙일 수 있습니다(`torch.utils.rename_privateuse1_backend`).
 
 > 역사적으로 PyTorch는 원래 virtual method를 사용하여 dynamic dispatch를 구현했으나, vtable이 제공하는 것 이상의 유연성이 필요해지면서 현재의 dispatcher로 재구현했습니다.
 
@@ -996,7 +995,7 @@ PyTorch는 새 subclass보다 새 op을 추가하는 방식으로 확장되므�
 
 > 위 그림은 원 슬라이드(2020년) 기준이라 Autograd가 Global set 쪽에 그려져 있습니다. 현재 PyTorch에서는 Autograd key가 tensor의 dispatch key set에 포함됩니다.
 
-Dispatch table에서 어떤 dispatch key로 index할지를 결정하는 핵심 추상화가 dispatch key set입니다. Dispatch key set은 dispatch key들의 bitset입니다. Dispatcher는 여러 소스에서 가져온 dispatch key set을 합치고(union) 일부 key를 뺍니다(mask out). 그림의 Global set에 있는 `BackendSelect`는 factory 함수처럼 tensor 입력이 없는 op에서 backend를 고르는 key입니다. 그리고 최종 dispatch key set에서 우선순위가 가장 높은 key를 골라 dispatch합니다.
+Dispatch table에서 어떤 dispatch key로 index할지는 dispatch key set으로 결정합니다. Dispatch key set은 dispatch key들의 bitset입니다. Dispatcher는 여러 소스에서 가져온 dispatch key set을 합치고(union) 일부 key를 뺍니다(mask out). 그림의 Global set에 있는 `BackendSelect`는 factory 함수처럼 tensor 입력이 없는 op에서 backend를 고르는 key입니다. 그리고 최종 dispatch key set에서 우선순위가 가장 높은 key를 골라 dispatch합니다.
 
 ##### Dispatch key set의 소스
 
@@ -1048,7 +1047,7 @@ Runtime은 실제 device에서 연산을 수행하기 위한 저수준 인프라
 
 #### Device
 
-Tensor가 저장되어 있는 device를 표현합니다.
+`c10::Device`는 tensor가 저장되어 있는 device를 표현합니다.
 
 - Device는 device type과 index로 unique하게 구분
 - Python 수준에서는 string으로 표현 (예: `cuda:0`)
@@ -1070,13 +1069,13 @@ sycl::device& get_raw_device(DeviceIndex device) {
 }
 ```
 
-Unique한 `c10::Device`는 `gDevicePool`에 들어있는 `sycl::device`와 1:1 관계 (XPU 예시)
+XPU에서는 unique한 `c10::Device`가 `gDevicePool`에 들어 있는 `sycl::device`와 1:1로 대응합니다.
 
 #### Stream
 
 Heterogeneous computing에서의 실행 모델에서, host가 device로 command/data를 전달하면 device가 이를 처리합니다. Host는 device 완료를 기다리지 않고 asynchronous하게 동작합니다.
 
-**Stream**은 host가 device로 전달한 command가 담긴 queue입니다:
+Stream은 host가 device로 전달한 command가 담긴 queue입니다:
 
 - Host는 stream에 command를 삽입
 - Device는 stream에서 FIFO 순서로 command를 처리
@@ -1109,13 +1108,12 @@ Heterogeneous computing에서의 실행 모델에서, host가 device로 command/
 // Return whether all asynchronous work previously enqueued on this stream
 // has completed running on the device.
 bool Stream::query() const {
-  impl::VirtualGuardImpl impl{device_.type()};  // ← DeviceGuard를 통해 device specific 구현체와 연결
+  impl::VirtualGuardImpl impl{device_.type()};  // ← device type으로 등록된 DeviceGuardImplInterface 구현체와 연결
   return impl.queryStream(*this);
 }
 ```
 
-- `c10/core`의 구현체는 device agnostic
-- Device specific 구현체와의 연결은 DeviceGuard를 통해 이루어짐
+`c10/core`의 구현체는 device agnostic합니다. 이 구현체는 `VirtualGuardImpl`을 거쳐 device specific 구현체와 연결됩니다. `VirtualGuardImpl`은 device type으로 `DeviceGuardImplInterface` 구현체를 찾고, 각 backend는 이 구현체를 `C10_REGISTER_GUARD_IMPL`로 등록합니다. `DeviceGuard`도 내부에서 같은 `VirtualGuardImpl`을 씁니다.
 
 ##### Stream API
 
@@ -1132,7 +1130,7 @@ bool Stream::query() const {
 
 #### Event
 
-**Event**는 device progress를 확인하거나 stream 간의 dependence를 제어하기 위해 사용합니다.
+Event는 device progress를 확인하거나 stream 간의 dependence를 제어하기 위해 사용합니다.
 
 <Mermaid>
 {`sequenceDiagram
@@ -1168,7 +1166,7 @@ bool Stream::query() const {
 
 ##### Event 구현 방식
 
-`Event`는 `InlineEvent<VirtualGuardImpl>`을 멤버로 소유하며, 실제 동작은 이 멤버를 통해 위임됩니다:
+`Event`는 `InlineEvent<VirtualGuardImpl>`을 멤버로 소유하고, 실제 동작을 이 멤버에 위임합니다:
 
 ```cpp
 // c10/core/Event.h
@@ -1201,7 +1199,7 @@ Device specific한 부분은 `T backend_`(`VirtualGuardImpl`)를 거쳐 DeviceGu
 <details>
 <summary><strong>Event API 상세 (호출 체인과 XPU/CUDA 구현)</strong></summary>
 
-- **다양한 getter들**: `device()`, `device_type()`, `device_index()`, `flag()`, `was_marked_for_recording()`, `eventId()`
+- **getter**: `device()`, `device_type()`, `device_index()`, `flag()`, `was_marked_for_recording()`, `eventId()`
 - **`record(stream)`**: 주어진 stream에 record command를 삽입. record command가 처리되어야 이 event를 기다리는 stream이 재시작할 수 있음
   - stream과 event의 device type은 같아야 함 (event의 device index는 최초 record 시점에 stream의 index를 따라 설정됨)
   - `c10::Event::record` → `c10::impl::InlineEvent<c10::impl::VirtualGuardImpl>::record` → `c10::impl::VirtualGuardImpl::record` → `c10::impl::DeviceGuardImplInterface::record` (virtual)
@@ -1272,7 +1270,7 @@ bool query() const {
 
 ##### 구현 방식: DeviceGuard → InlineDeviceGuard → XPUGuardImpl (device-specific)
 
-**1단계: `DeviceGuard`**. RAII wrapper로 `guard_.reset_device()`를 호출:
+**1단계: `DeviceGuard`**. RAII wrapper로 `guard_.reset_device()`를 호출합니다:
 
 ```cpp
 void reset_device(at::Device device) {
@@ -1280,7 +1278,7 @@ void reset_device(at::Device device) {
 }
 ```
 
-**2단계: `InlineDeviceGuard`**. `VirtualGuardImpl`을 통해 device-specific 구현체로 위임:
+**2단계: `InlineDeviceGuard`**. `VirtualGuardImpl`을 통해 device-specific 구현체에 위임합니다:
 
 ```cpp
 template <typename U = T>
@@ -1295,7 +1293,7 @@ typename std::enable_if_t<std::is_same_v<U, VirtualGuardImpl>> reset_device(
     impl_.setDevice(device);
 ```
 
-**3단계: `XPUGuardImpl`** (device-specific). 실제 device 전환 수행:
+**3단계: `XPUGuardImpl`** (device-specific). 실제로 device를 전환합니다:
 
 ```cpp
 void setDevice(Device d) const override {
@@ -1335,9 +1333,9 @@ void setDevice(Device d) const override {
 - **Pseudo Random Number Generator (PRNG)** engine을 사용하는 interface
 - 사용자는 seed를 제공하거나 상태를 확인할 수 있음
 
-두 층으로 나뉩니다. 사용자가 다루는 `at::Generator`는 device agnostic한 wrapper이고, device별 구현은 `c10::GeneratorImpl`을 상속해 작성합니다.
+Generator는 두 층으로 나뉩니다. 사용자가 다루는 `at::Generator`는 device agnostic한 wrapper이고, device별 구현은 `c10::GeneratorImpl`을 상속해 작성합니다.
 
-**`at::Generator`** (`aten/src/ATen/core/Generator.h`) - `impl_`에 위임하는 wrapper
+**`at::Generator`** (`aten/src/ATen/core/Generator.h`): `impl_`에 위임하는 wrapper
 
 - `void set_current_seed(uint64_t seed)` / `uint64_t current_seed() const` / `uint64_t seed()`
 - `void set_offset(uint64_t offset)` / `uint64_t get_offset() const`
@@ -1346,7 +1344,7 @@ void setDevice(Device d) const override {
 - `Generator clone() const`: `impl_->clone()`을 감싸 반환
 - `philox_state(uint64_t increment)`: 2.14에서 추가됨. CUDA Graph capture(GPU 작업을 기록해 두고 재실행하는 기능) 중에도 Philox(counter 기반 난수 알고리즘)의 seed와 offset을 안전하게 예약하고 조회함
 
-**`c10::GeneratorImpl`** (`c10/core/GeneratorImpl.h`) - device별로 구현하는 pure virtual
+**`c10::GeneratorImpl`** (`c10/core/GeneratorImpl.h`): device별로 구현하는 pure virtual
 
 - `virtual void set_current_seed(uint64_t seed) = 0` / `virtual uint64_t current_seed() const = 0` / `virtual uint64_t seed() = 0`
 - `virtual void set_offset(uint64_t offset) = 0` / `virtual uint64_t get_offset() const = 0`
@@ -1358,7 +1356,7 @@ void setDevice(Device d) const override {
 
 ### Build System: PEP 517 + scikit-build-core
 
-PyTorch 2.14부터 빌드는 `pyproject.toml`에 선언된 PEP 517 backend **scikit-build-core**(`build-backend = "scikit_build_core.build"`)가 수행합니다. pip과 `python -m build`는 `setup.py`를 실행하지 않습니다. 오랫동안 쓰이던 `python setup.py develop` / `install`은 2.14에서 deprecation shim으로만 남았고, 단계적으로 제거됩니다.
+PyTorch 2.14부터 빌드는 `pyproject.toml`에 선언된 PEP 517 backend **scikit-build-core**(`build-backend = "scikit_build_core.build"`)가 수행합니다. pip과 `python -m build`는 `setup.py`를 실행하지 않습니다. 오랫동안 쓰이던 `python setup.py develop` / `install`은 2.14에서 deprecation shim(안내문을 출력하고 새 명령으로 넘기는 호환용 코드)으로만 남았습니다. 이 shim도 아래 일정에 따라 단계적으로 제거됩니다.
 
 `setup.py` 제거 일정 (v2.14.0 `setup.py` 머리 주석 기준):
 
@@ -1422,18 +1420,18 @@ spin develop
 ```
 
 - editable 설치라 Python code는 source 형태로 남아있음
-- https://github.com/pytorch/pytorch?tab=readme-ov-file#from-source
+- https://github.com/pytorch/pytorch/blob/v2.14.0/README.md#from-source
 
 ### Build Configuration
 
-빌드 옵션은 환경변수로 지정하고, [cmake/EnvVarForwarding.cmake](https://github.com/pytorch/pytorch/blob/v2.14.0/cmake/EnvVarForwarding.cmake)가 이를 CMake cache 변수로 넘깁니다. 예전에 `setup.py`가 `-D`로 넘기던 로직이 이 파일로 옮겨 왔고, 환경변수 목록 문서도 이 파일 머리 주석에 있습니다.
+빌드 옵션은 환경변수로 지정하고, [cmake/EnvVarForwarding.cmake](https://github.com/pytorch/pytorch/blob/v2.14.0/cmake/EnvVarForwarding.cmake)가 이를 CMake cache 변수로 넘깁니다. 예전에 `setup.py`가 `-D`로 넘기던 로직이 이 파일로 옮겨 왔습니다. 환경변수 목록 문서도 이 파일 머리 주석에 있습니다.
 
 Forwarding 규칙 (파일 머리 주석 기준):
 
 - `BUILD_`, `USE_`, `CMAKE_`로 시작하거나 `EXITCODE`로 끝나는 환경변수는 같은 이름의 CMake cache 변수로 전달됨
 - 그 외에는 `_ENV_ALIASES`(예: `CUDNN_LIB_DIR` → `CUDNN_LIBRARY`)와 `_ENV_PASSTHROUGH`(예: `BLAS`, `CUDNN_LIBRARY`, `TORCH_CUDA_ARCH_LIST`) 목록에 있는 것만 전달됨
-- 목록에 없는 값은 CMake 옵션으로 직접 지정합니다. v2.14.0은 `pip install`이 scikit-build-core를 거쳐 CMake를 실행하는 구조이므로(`pyproject.toml`의 `build-backend = "scikit_build_core.build"`), 위 설치 명령에 `-C cmake.define.<변수>=<값>`을 붙입니다. 환경변수 `CMAKE_ARGS="-D<변수>=<값>"`도 같은 일을 합니다.
-- 일부는 이 파일이 아니라 다른 곳에서 읽음. `DEBUG`/`REL_WITH_DEB_INFO`/`MAX_JOBS`는 `pyproject.toml`, `NCCL_*`는 `cmake/Modules/FindNCCL.cmake`, `CUDA_HOME`/`CUDA_PATH`는 CMake의 CUDAToolkit 탐지
+- 목록에 없는 값은 CMake 옵션으로 직접 지정합니다. v2.14.0에서는 `pip install`이 scikit-build-core를 거쳐 CMake를 실행합니다(`pyproject.toml`의 `build-backend = "scikit_build_core.build"`). 그래서 위 `python -m pip install --no-build-isolation -v -e .` 명령에 `-C cmake.define.<변수>=<값>`을 붙입니다. 환경변수 `CMAKE_ARGS="-D<변수>=<값>"`도 같은 일을 합니다.
+- 일부 환경변수는 이 파일이 아니라 다른 곳에서 읽음. `DEBUG`/`REL_WITH_DEB_INFO`/`MAX_JOBS`는 `pyproject.toml`, `NCCL_*`는 `cmake/Modules/FindNCCL.cmake`, `CUDA_HOME`/`CUDA_PATH`는 CMake의 CUDAToolkit 탐지
 
 cache 지속성은 변수 종류에 따라 다릅니다.
 
@@ -1461,7 +1459,7 @@ cache 지속성은 변수 종류에 따라 다릅니다.
 | `CMAKE_ONLY` | 대체 없음 (setup.py 전용 디버깅 기능이었음) |
 | `USE_NINJA` | `CMAKE_GENERATOR=Ninja`로 generator 지정 (ninja가 있으면 기본값) |
 
-`DEBUG_CUDA`는 이 표에 속하지 않습니다. 원래부터 환경변수가 아니라 CMake 옵션(`-DDEBUG_CUDA=1`)이었고, 예전 `setup.py` 주석이 환경변수처럼 잘못 적어 두었던 것을 2.14 문서가 바로잡았습니다.
+`DEBUG_CUDA`는 이 표에 속하지 않습니다. 원래부터 환경변수가 아니라 CMake 옵션(`-DDEBUG_CUDA=1`)이었습니다. 예전 `setup.py` 주석이 환경변수처럼 잘못 적어 두었던 것을 2.14 문서가 바로잡았습니다.
 
 #### 기능 토글 환경변수
 
@@ -1627,7 +1625,7 @@ libtorch_python.so  libtorch.so  libtorch_xxx.so  libc10_xxx.so  libc10.so
   - Device independent한 op 구현체는 바로 밑에 포함
   - Device dependent한 op 구현체는 하위 디렉토리 안에 포함
     - `cpu`, `cuda`, `cudnn`, `hip`
-- **`templates/`**: `native_functions.yaml`을 통해 gen source code들의 뼈대가 포함
+- **`templates/`**: code generator가 `native_functions.yaml`의 정보를 채워 넣는 생성 코드의 뼈대가 있음
 - **`test/`**: ATen test code
 
 #### Directory Structure: c10
@@ -1656,7 +1654,7 @@ libtorch_python.so  libtorch.so  libtorch_xxx.so  libc10_xxx.so  libc10.so
 - `Operators.cpp`
 - `Register{backend}.cpp`
 
-**`torch/include/torch/csrc/autograd/generated/`** : `tools/autograd`의 생성 스크립트들 (`gen_autograd.py`가 orchestration; input: `derivatives.yaml`, `native_functions.yaml`)
+**`torch/include/torch/csrc/autograd/generated/`** : `tools/autograd`의 생성 스크립트들 (`gen_autograd.py`가 전체를 조율함. input: `derivatives.yaml`, `native_functions.yaml`)
 - `Functions.h`
 - `python_functions.h`
 - `python_return_types.h`
