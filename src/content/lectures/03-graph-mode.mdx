@@ -473,7 +473,7 @@ Trace 생성의 입력과 결과물은 다음과 같습니다.
 - 반복문(loop) 내부에서 발생한 graph break
 - 대부분의 context manager 내부에서 발생한 graph break
 - `try` 블록 내부에서 발생한 graph break
-- 앞서 다룬 recompile limit(`recompile_limit`)에 도달한 경우
+- recompile limit(`recompile_limit`, 아래 "다시 실행될 때"에서 설명)에 도달한 경우
 - 일부 컴파일러 내부 에러
 
 이렇게 "skip"되는 범위는 기본적으로 해당 frame(함수) 하나로 한정됩니다. 즉 skip된 함수 안에서 다른 함수를 호출하면, Dynamo는 그 안쪽 함수를 따로 컴파일하려고 시도합니다. 단, recompile limit 초과는 예외입니다. 이 경우 Dynamo는 해당 frame과 그 안에서 호출되는 함수 모두에 대해 새 컴파일을 중단합니다(`FrameAction.RUN_ONLY`). 이미 만들어진 cache entry는 guard를 통과하면 계속 재사용됩니다. 맞는 entry가 없을 때만 eager로 실행됩니다.
@@ -543,7 +543,7 @@ Dynamo는 FX graph를 비교적 상위 레벨의 추상화인 **Torch IR**로 �
 
 Gradient 계산이 필요하면 AOTAutograd는 이 단계에서 forward와 backward를 한 graph에 담은 **joint graph**를 만듭니다. 그다음 joint graph를 forward/backward 두 graph로 나눕니다. 이 과정을 **partitioning**이라고 합니다. Inference처럼 gradient가 필요 없으면 joint graph 생성과 partitioning만 생략합니다.
 
-**functionalization**(in-place 연산을 out-of-place로 바꿔 부수효과 제거)과 **decomposition**(복합 op을 더 작은 ATen op으로 분해)은 두 경우 모두 거칩니다. 이 과정은 [Week 4](/lectures/04-automatic-differentiation/#graph-mode-backward의-도전-과제)에서 자세히 다룹니다. Inductor 경로에서 이 단계의 출력은 decomposition이 적용된 ATen IR입니다. 더 낮은 Prims IR로 내리는 것은 별도 경로입니다.
+**functionalization**(in-place 연산을 out-of-place로 바꿔 부수효과 제거)은 두 경우 모두 거칩니다. **decomposition**(복합 op을 더 작은 ATen op으로 분해)은 AOTAutograd에 decomposition table을 넘길 때 적용되고, Inductor 경로는 이 table을 넘깁니다. 이 과정은 [Week 4](/lectures/04-automatic-differentiation/#graph-mode-backward의-도전-과제)에서 자세히 다룹니다. Inductor 경로에서 이 단계의 출력은 decomposition이 적용된 ATen IR입니다. 더 낮은 Prims IR로 내리는 것은 별도 경로입니다.
 
 **3. Inductor** → Loop-Level IR → kernel 소스
 
