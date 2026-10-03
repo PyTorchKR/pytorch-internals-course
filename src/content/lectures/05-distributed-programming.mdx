@@ -388,7 +388,7 @@ torchrun을 실행하면 내부적으로 다음과 같은 단계를 거칩니다
 3. **프로세스 생성**: agent가 `--nproc-per-node`만큼의 worker process를 생성하며 `RANK`, `LOCAL_RANK`, `WORLD_SIZE`, `MASTER_ADDR`, `MASTER_PORT`를 환경 변수로 넣어 줍니다. 이 예제에서는 node당 8개, 총 16개의 프로세스가 만들어집니다.
 4. **Process별로 PyTorch 스크립트 실행**: 각 worker가 스크립트를 실행합니다. 스크립트는 프로세스 그룹을 만들면서 communication backend(nccl 또는 gloo)를 고릅니다. 이어서 데이터를 로딩해 sharding하고 계산합니다. 마지막으로 `torch.distributed.all_reduce`로 결과를 동기화하고 프로세스 그룹을 제거합니다.
 
-torchrun은 fault tolerance를 위해 checkpointing과 logging을 지원합니다. worker가 실패하면 torchrun은 `--max-restarts=N`으로 지정한 횟수(N)까지 worker group을 재시작합니다.
+torchrun은 fault tolerance를 위해 worker 재시작과 logging을 지원합니다. worker가 실패하면 torchrun은 `--max-restarts=N`으로 지정한 횟수(N)까지 worker group을 재시작합니다. 재시작한 worker는 처음부터 다시 실행되므로, 학습 상태를 이어 가려면 스크립트가 checkpoint를 직접 저장하고 읽어야 합니다.
 
 <TorchrunVisualizer />
 
@@ -693,7 +693,7 @@ FSDP에는 두 세대의 구현이 있습니다. **FSDP1**은 `FullyShardedDataP
 
 **Tensor Parallel**(TP)은 한 layer의 연산조차 한 머신에서 처리하지 못할 만큼 클 때 사용하는, FSDP보다 더 복잡한 병렬화입니다. weight뿐 아니라 연산 자체를 여러 GPU로 쪼갭니다. 쪼개는 방향은 분할 계획(plan)이 정합니다. Column parallel은 Linear weight를 출력 차원으로 나눠 각 GPU가 출력의 일부를 계산하고, row parallel은 입력 차원으로 나눠 각 GPU의 부분 결과를 all-reduce로 더합니다. 여기서 column·row는 $Y = XA$로 쓴 weight $A$의 열·행이며, PyTorch가 저장하는 `weight`($A^\top$)에서는 각각 dim-0·dim-1입니다.
 
-이 외에도 Model Parallel 기법이 두 가지 더 있습니다. **Sequence Parallel**(SP)은 layer의 연산을 sequence 차원으로 쪼갭니다. **Pipeline Parallel**(PP)은 모델을 layer 단위로 잘라 서로 다른 GPU에 이어 붙이고, microbatch(batch를 다시 나눈 작은 묶음)를 차례로 흘려보냅니다. 실제 대규모 모델 학습에서는 Data Parallel 축과 Model Parallel 축의 기법들을 조합해 씁니다(뒤의 "병렬화 조합" 참고).
+이 외에도 Model Parallel 기법이 두 가지 더 있습니다. **Sequence Parallel**(SP)은 TP가 나누지 못하는 LayerNorm·Dropout 구간의 입력을 sequence 차원으로 나눠 activation 메모리를 줄입니다. **Pipeline Parallel**(PP)은 모델을 layer 단위로 잘라 서로 다른 GPU에 이어 붙이고, microbatch(batch를 다시 나눈 작은 묶음)를 차례로 흘려보냅니다. 실제 대규모 모델 학습에서는 Data Parallel 축과 Model Parallel 축의 기법들을 조합해 씁니다(뒤의 "병렬화 조합" 참고).
 
 > FSDP나 TP는 모델을 재구성하지만 컴파일 과정은 없고, 입력도 출력도 `nn.Module`입니다. FSDP2의 `fully_shard`는 Python의 동적 클래스 생성으로 module의 클래스를 `FSDPModule`을 섞은 새 클래스로 바꿔치기합니다. TP의 `parallelize_module`은 클래스를 바꾸지 않습니다. 대신 parameter를 DTensor로 교체하고 hook을 달아 module을 제자리에서 수정합니다.
 

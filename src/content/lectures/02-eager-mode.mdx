@@ -127,7 +127,7 @@ Call stack이 55단계나 되는 이유는 크게 세 가지로 나눌 수 있�
 | N-D × 2-D 또는 N-D × 1-D | 보통 batch 차원을 fold[^fold]하여 `torch.mm` / `torch.mv` |
 | 양쪽 다 batch 차원 | batch 차원 broadcast 후 `torch.bmm` |
 
-[^fold]: 큰 tensor의 batch 차원을 앞쪽 행 차원에 접어 GEMM 한 번으로 처리하는 것. copy 없이 view로 접을 수 없으면 `should_fold`가 `bmm` 경로를 택합니다. 양쪽이 3D이고 한쪽 batch 크기가 1인 경우, 그 tensor가 gradient를 요구하면 batch 차원을 squeeze해 fold 경로로 보냅니다(backward 메모리 절약).
+[^fold]: 큰 tensor의 batch 차원을 앞쪽 행 차원에 접어 GEMM 한 번으로 처리하는 것. copy 없이 view로 접을 수 없으면 `should_fold`가 `bmm` 경로를 택합니다. 단, 작은 쪽(2D 이하) tensor가 gradient를 요구하면 copy를 감수하고 fold합니다(backward에서 큰 gradient tensor를 만들지 않기 위해). 양쪽이 3D이고 batch 크기가 서로 다를 때, batch 크기가 1인 쪽 tensor가 gradient를 요구하면 그 tensor의 batch 차원을 squeeze해 같은 fold 경로로 보냅니다.
 
 **2. Language boundary 전환**
 
@@ -248,7 +248,7 @@ Front-End는 Python 인자를 C++ 타입으로 변환해 op과 함께 **Dispatch
 Dispatcher가 남은 key 중 우선순위가 가장 높은 key(예: CUDA)의 device backend kernel을 선택합니다. 
 이렇게 Dispatcher와 kernel을 오가며 autograd, backend 등 여러 kernel이 한 op 호출에 차례로 개입합니다.
 device backend kernel은 Device Runtime을 사용해 실제 연산을 수행합니다.
-중간 kernel은 Autograd 하나가 아니라 tracing, `matmul` → `mm` 분해(`CompositeImplicitAutograd`) 등 여러 층일 수 있으며, 각 층이 같은 방식으로 redispatch합니다. 중간 층이 하나도 없으면 Dispatcher가 바로 backend kernel을 호출합니다.
+중간 kernel은 Autograd 하나가 아니라 tracing, `matmul` → `mm` 분해(`CompositeImplicitAutograd`) 등 여러 층일 수 있습니다. Autograd 층과 tracing 층은 자기 key를 뺀 key set으로 redispatch합니다. `CompositeImplicitAutograd` 층은 redispatch하지 않고, 분해한 op(`mm`)을 일반 API로 다시 호출해 dispatch를 처음부터 시작합니다(call stack의 #24 → #23 → #21). 중간 층이 하나도 없으면 Dispatcher가 바로 backend kernel을 호출합니다.
 
 
 ### Call Stack의 주요 특성
