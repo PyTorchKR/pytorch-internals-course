@@ -1,6 +1,11 @@
 import { execSync } from 'node:child_process';
+import { siteConfig } from '../config';
 
-const REPO_URL = 'https://github.com/appleparan/pytorch-internal-lecture';
+// In CI, GitHub provides the current repository; locally, fall back to the site config.
+const REPO_URL =
+  process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY
+    ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`
+    : siteConfig.social.github;
 const SHORT_SHA_LENGTH = 7;
 
 /** Runs a git command at build time; returns '' when git or the repo is unavailable. */
