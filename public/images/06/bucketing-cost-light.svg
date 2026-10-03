@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 390" role="img" aria-label="실제 토큰 수에 따른 스텝 비용 계단. 14 토큰은 bucket 16, 4 토큰 request를 더하면 bucket 32로 넘어간다">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#bbb" stroke-width="2"/></pattern></defs>
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#3a7bd5"/></marker></defs>
+<style>text{font-family:Pretendard,'Noto Sans KR',Inter,Helvetica,Arial,sans-serif;fill:#222} .sub{fill:#666}</style>
+<line x1="90" y1="320" x2="618" y2="320" stroke="#555" stroke-width="1.5"/>
+<line x1="90" y1="320" x2="90" y2="48" stroke="#555" stroke-width="1.5"/>
+<text class="sub" x="618" y="364" font-size="14" text-anchor="end">실제 입력 토큰 수</text>
+<text class="sub" x="80" y="38" font-size="14" text-anchor="start">스텝 비용</text>
+<text class="sub" x="218" y="338" font-size="13" text-anchor="middle">8</text>
+<text class="sub" x="82" y="260" font-size="13" text-anchor="end">bucket 8</text>
+<line x1="90" y1="256" x2="618" y2="256" stroke="#aaa" stroke-width="1" stroke-dasharray="2 4"/>
+<text class="sub" x="346" y="338" font-size="13" text-anchor="middle">16</text>
+<text class="sub" x="82" y="196" font-size="13" text-anchor="end">bucket 16</text>
+<line x1="90" y1="192" x2="618" y2="192" stroke="#aaa" stroke-width="1" stroke-dasharray="2 4"/>
+<text class="sub" x="602" y="338" font-size="13" text-anchor="middle">32</text>
+<text class="sub" x="82" y="68" font-size="13" text-anchor="end">bucket 32</text>
+<line x1="90" y1="64" x2="618" y2="64" stroke="#aaa" stroke-width="1" stroke-dasharray="2 4"/>
+<polygon points="90,320 90,256 218,256 218,192 346,192 346,64 602,64 602,64" fill="url(#hatch)" opacity="0.8"/>
+<line x1="90" y1="320" x2="602" y2="64" stroke="#666" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text class="sub" x="466.0" y="180.0" font-size="13" text-anchor="start">padding이 없다면</text>
+<polyline points="90,256 90,256 218,256 218,192 346,192 346,64 602,64" fill="none" stroke="#e07b39" stroke-width="3"/>
+<text x="608" y="68" font-size="13" text-anchor="start" font-weight="bold" style="fill:#e07b39">실제 비용</text>
+<circle cx="314" cy="192" r="6" fill="#3a7bd5"/>
+<circle cx="378" cy="64" r="6" fill="#3a7bd5"/>
+<text x="304" y="180" font-size="13" text-anchor="end">토큰 14 → bucket 16</text>
+<path d="M322,186 Q370.0,128 374,74" fill="none" stroke="#3a7bd5" stroke-width="2" marker-end="url(#arr)"/>
+<text x="368" y="52" font-size="13" text-anchor="end" font-weight="bold">토큰 4개 request 추가: 18 → bucket 32</text>
+</svg>
