@@ -70,13 +70,13 @@ PyTorch + NPU 온라인 모임 #6 | 2025-02-05
       <div class="flex flex-col items-center gap-3 flex-1 justify-center">
         <div class="flex flex-col items-center gap-2">
           <div class="flex gap-2">
-            <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:var(--fig-blue-ink)">Triton</div>
-            <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:var(--fig-blue-ink)">CUDA</div>
+            <div class="px-3 py-1.5 rounded text-sm font-semibold" style="background-color:var(--fig-blue-tint);color:var(--fig-blue-ink);border:1px solid var(--fig-blue)">Triton</div>
+            <div class="px-3 py-1.5 rounded text-sm font-semibold" style="background-color:var(--fig-blue-tint);color:var(--fig-blue-ink);border:1px solid var(--fig-blue)">CUDA</div>
           </div>
           <p class="text-xs font-bold text-[#2c5ea0] dark:text-[#7ba9dd]">Kernel Programming</p>
         </div>
         <div class="flex flex-col items-center gap-2 mt-2">
-          <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:var(--fig-blue-ink)">vLLM</div>
+          <div class="px-3 py-1.5 rounded text-sm font-semibold" style="background-color:var(--fig-blue-tint);color:var(--fig-blue-ink);border:1px solid var(--fig-blue)">vLLM</div>
           <p class="text-xs font-bold text-[#2c5ea0] dark:text-[#7ba9dd]">서빙 최적화</p>
         </div>
       </div>
@@ -129,22 +129,22 @@ softmax와 summation을 병렬화하기 까다롭다는 점은 이후 FlashAtten
     <SelfAttentionDiagram />
     <div class="text-sm mt-2">모든 token의 k, v와 "it"의 query만 사용합니다. 오른쪽은 $x_1$이 "it"에 해당한다고 가정한 Scaled Dot-Product 계산 흐름입니다. (가중치는 설명용 예시 값입니다.)</div>
   </div>
-    <div class="flex flex-col gap-2">
-      <div class="rounded p-3" style="background-color:var(--fig-blue-ink)">
-        <p class="text-sm font-bold text-white">④ Self-attention이 반영된 "it"(=$x_1$)의 새 embedding</p>
-        <p class="text-xs text-white/80 mt-1">출력 $a_1$이 곧 "it"의 새 표현</p>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
       <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">③ 각 token의 $v$에 $\alpha$를 곱해 모두 더함</p>
-        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$\alpha_j v_j$를 $\sum$으로 합산</p>
+        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">① "it"(=$x_1$)의 query를 모든 $k$와 내적</p>
+        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$q_1$을 $k_1$, $k_2$, $k_3$와 각각 내적하고 $\sqrt{d_k}$로 나눠 score $e_{1,j}$ 계산</p>
       </div>
       <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
         <p class="text-sm font-bold text-slate-900 dark:text-slate-100">② softmax로 분포 $\alpha$ 계산</p>
         <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">score $e_{1,j}$ 전체를 보고 합이 1이 되도록 정규화</p>
       </div>
       <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">① "it"(=$x_1$)의 query를 모든 $k$와 내적</p>
-        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$q_1$을 $k_1$, $k_2$, $k_3$와 각각 내적하고 $\sqrt{d_k}$로 나눠 score $e_{1,j}$ 계산</p>
+        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">③ 각 token의 $v$에 $\alpha$를 곱해 모두 더함</p>
+        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$\alpha_j v_j$를 $\sum$으로 합산</p>
+      </div>
+      <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
+        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">④ Self-attention이 반영된 "it"(=$x_1$)의 새 embedding</p>
+        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">출력 $a_1$이 곧 "it"의 새 표현</p>
       </div>
     </div>
 </div>
@@ -702,7 +702,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-4 flex flex-col">
     <p class="font-bold text-slate-900 dark:text-slate-100 mb-3">FlashAttention v2</p>
     <div class="flex flex-col items-center gap-1 mb-3">
-      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:var(--fig-blue-ink)">NVIDIA / cutlass</span>
+      <span class="px-2 py-1 rounded text-xs font-semibold" style="background-color:var(--fig-blue-tint);color:var(--fig-blue-ink);border:1px solid var(--fig-blue)">NVIDIA / cutlass</span>
     </div>
     <div class="text-xs text-slate-600 dark:text-slate-300 flex-1 space-y-1">
       <p>Fewer non-matmul FLOPs</p>
@@ -714,7 +714,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-4 flex flex-col">
     <p class="font-bold text-slate-900 dark:text-slate-100 mb-3">FlashAttention v3</p>
     <div class="flex flex-col items-center gap-1 mb-3">
-      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:var(--fig-blue-ink)">NVIDIA / cutlass</span>
+      <span class="px-2 py-1 rounded text-xs font-semibold" style="background-color:var(--fig-blue-tint);color:var(--fig-blue-ink);border:1px solid var(--fig-blue)">NVIDIA / cutlass</span>
     </div>
     <div class="text-xs text-slate-600 dark:text-slate-300 flex-1 space-y-1">
       <p>Optimized for Hopper</p>
@@ -726,7 +726,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-4 flex flex-col">
     <p class="font-bold text-slate-900 dark:text-slate-100 mb-3">FlashAttention v4</p>
     <div class="flex flex-col items-center gap-1 mb-3">
-      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:var(--fig-blue-ink)">CuTe DSL</span>
+      <span class="px-2 py-1 rounded text-xs font-semibold" style="background-color:var(--fig-blue-tint);color:var(--fig-blue-ink);border:1px solid var(--fig-blue)">CuTe DSL</span>
     </div>
     <div class="text-xs text-slate-600 dark:text-slate-300 flex-1 space-y-1">
       <p>Optimized for Blackwell</p>
