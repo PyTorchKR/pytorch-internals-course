@@ -2,19 +2,19 @@
 
 PyTorch 내부 구조를 다루는 7회 강의 자료 사이트입니다. 모두의 연구소 PyTorch + NPU랩에서 진행한 강의를 글로 옮겼습니다.
 
-사이트: <https://pytorch.liam.kim/>
+사이트: <https://core-sig.pytorch.kr/>
 
 ## Lectures
 
 | # | 제목 | 날짜 |
 |---|------|------|
-| 01 | [PyTorch의 기술적인 배경](https://pytorch.liam.kim/lectures/01-technical-background/) | 2024-12-04 |
-| 02 | [PyTorch Eager Mode](https://pytorch.liam.kim/lectures/02-eager-mode/) | 2024-12-11 |
-| 03 | [PyTorch Graph Mode](https://pytorch.liam.kim/lectures/03-graph-mode/) | 2024-12-18 |
-| 04 | [Automatic Differentiation in PyTorch](https://pytorch.liam.kim/lectures/04-automatic-differentiation/) | 2025-01-08 |
-| 05 | [Distributed Programming in PyTorch](https://pytorch.liam.kim/lectures/05-distributed-programming/) | 2025-01-15 |
-| 06 | [Beyond PyTorch: Custom Kernel과 vLLM](https://pytorch.liam.kim/lectures/06-beyond-pytorch/) | 2025-02-05 |
-| 07 | [CPU / GPU / NPU](https://pytorch.liam.kim/lectures/07-cpu-gpu-npu/) | 2025-02-12 |
+| 01 | [PyTorch의 기술적인 배경](https://core-sig.pytorch.kr/lectures/01-technical-background/) | 2024-12-04 |
+| 02 | [PyTorch Eager Mode](https://core-sig.pytorch.kr/lectures/02-eager-mode/) | 2024-12-11 |
+| 03 | [PyTorch Graph Mode](https://core-sig.pytorch.kr/lectures/03-graph-mode/) | 2024-12-18 |
+| 04 | [Automatic Differentiation in PyTorch](https://core-sig.pytorch.kr/lectures/04-automatic-differentiation/) | 2025-01-08 |
+| 05 | [Distributed Programming in PyTorch](https://core-sig.pytorch.kr/lectures/05-distributed-programming/) | 2025-01-15 |
+| 06 | [Beyond PyTorch: Custom Kernel과 vLLM](https://core-sig.pytorch.kr/lectures/06-beyond-pytorch/) | 2025-02-05 |
+| 07 | [CPU / GPU / NPU](https://core-sig.pytorch.kr/lectures/07-cpu-gpu-npu/) | 2025-02-12 |
 
 본문의 PyTorch 소스 인용은 `v2.14.0` 태그 기준입니다.
 
