@@ -981,30 +981,56 @@ Decode 스텝의 shape은 세 값으로 정해집니다:
 
 #### 한 스텝에 여러 종류의 request 섞기
 
-스케줄러는 한 스텝에 decode, extend, prefill 토큰을 함께 담습니다. Extend는 chunk 단위 prefill이 일부 진행된 prompt로, 지난 chunk가 멈춘 자리부터 이어서 처리합니다. 예를 들어 다음 네 request가 준비되어 있다고 합시다.
+스케줄러는 한 스텝에 decode, extend, prefill 토큰을 함께 담습니다. 세 가지는 KV cache가 이미 있는지와 이번 스텝에 넣는 토큰이 몇 개인지로 구분합니다.
+
+- **prefill**: KV cache가 없는 prompt를 처음부터 처리합니다. 새 토큰은 여러 개입니다.
+- **extend**: prompt 앞부분의 KV cache가 이미 있고, 그 뒤 토큰을 이어서 처리합니다. 새 토큰은 여러 개입니다.
+- **decode**: KV cache가 있고, 새 토큰은 직전에 생성한 1개입니다.
+
+Extend는 chunked prefill에서 생깁니다. 긴 prompt를 chunk로 나누면 첫 chunk는 prefill입니다. 둘째 chunk부터는 앞 chunk가 만든 KV cache가 있으므로 extend입니다. Prefix caching으로 prompt 앞부분의 KV를 재사용할 때도 나머지 토큰은 extend로 처리합니다. Extend 토큰의 query는 기존 KV cache와 이번 chunk 안의 앞쪽 토큰을 함께 attend합니다. Decode는 새 토큰이 1개인 extend로 볼 수 있습니다.
+
+<div class="text-center my-4">
+  <ThemeImage lightSrc="/images/06/bucketing-kv-light.svg" darkSrc="/images/06/bucketing-kv-dark.svg" alt="decode, extend, prefill 비교. A(decode)는 기존 KV cache 뒤에 새 토큰 1개, C(extend)는 기존 KV cache 뒤에 새 토큰 8개, D(prefill)는 기존 KV 없이 새 토큰 4개" class="w-full max-w-3xl mx-auto" />
+  <div class="text-sm mt-2">회색은 이전 스텝까지 만든 KV cache이고, 색 칸만 이번 스텝의 입력 토큰입니다.</div>
+</div>
+
+예를 들어 다음 네 request가 준비되어 있다고 합시다.
 
 - A, B: decode. request마다 입력 토큰 1개
-- C: 진행 중인 prompt. 이번 chunk는 토큰 8개이고, 앞 chunk의 KV cache는 이미 있음
-- D: 짧은 prompt. 토큰 4개로 prefill이 끝남
+- C: extend. 이번 chunk는 토큰 8개이고, 앞 chunk의 KV cache는 이미 있음
+- D: prefill. 짧은 prompt라 토큰 4개로 prefill이 끝남
 
 입력 토큰은 모두 14개입니다. 컴파일해 둔 bucket이 16이면 스케줄러는 빈 slot 2개를 padding으로 채워 16 shape으로 실행합니다.
 
-```text
-| A  B | ·  · | C  C  C  C  C  C  C  C | D  D  D  D |
-decode  padding      extend C (8)         prefill D (4)
-```
+<div class="text-center my-4">
+  <ThemeImage lightSrc="/images/06/bucketing-step-light.svg" darkSrc="/images/06/bucketing-step-dark.svg" alt="bucket 16 한 스텝의 입력. decode A, B 2개, padding 2개, extend C 8개, prefill D 4개" class="w-full max-w-3xl mx-auto" />
+</div>
 
 #### Batching의 비용은 bucket 크기로 정해진다
 
-Batch는 가장 가까운 bucket까지 padding되므로, 비용은 실제 토큰 수가 아니라 bucket 크기만큼 듭니다. 그래서 request 하나를 더 넣어 batch가 더 큰 bucket으로 넘어가면 스텝 전체가 비싸집니다. 정적 shape backend의 스케줄러는 매 스텝 "batching할 수 있는가"보다 "batching해도 bucket에 맞는가"를 따집니다.
+Batch는 가장 가까운 bucket까지 padding되므로, 비용은 실제 토큰 수가 아니라 bucket 크기만큼 듭니다. 위 예에서 토큰 4개짜리 request를 하나 더 넣으면 입력은 18개가 됩니다. 18은 bucket 16에 들어가지 않으므로 bucket 32로 실행하고, 빈 slot 14개를 padding으로 채웁니다. 토큰은 4개 늘었지만 스텝 비용은 bucket 16에서 bucket 32로 올라갑니다. 정적 shape backend의 스케줄러는 매 스텝 "batching할 수 있는가"보다 "batching해도 bucket에 맞는가"를 따집니다.
 
-Batch size와 context 길이도 서로 독립이 아닙니다. Decode 스텝에서 커널이 읽는 KV cache 양은 batch size × context 길이에 비례합니다. Batch가 작을 때는 context가 길어져도 스텝 시간이 거의 늘지 않습니다. Batch가 크면 같은 context 증가가 스텝 시간을 크게 늘립니다. Request를 늘리는 효과도 일정하지 않습니다. 어떤 구간에서는 request를 두 배로 늘려도 토큰당 시간이 거의 그대로이지만, 다른 구간에서는 throughput 이득보다 토큰당 시간 증가가 더 큽니다.
+<div class="text-center my-4">
+  <ThemeImage lightSrc="/images/06/bucketing-cost-light.svg" darkSrc="/images/06/bucketing-cost-dark.svg" alt="실제 입력 토큰 수에 따른 스텝 비용 계단. 비용은 bucket 8, 16, 32 단위로 오르고, 토큰 14개는 bucket 16, 토큰 4개 request를 더한 18개는 bucket 32로 넘어간다. 계단과 대각선 사이의 빗금은 padding" class="w-full max-w-2xl mx-auto" />
+  <div class="text-sm mt-2">개념도입니다. 빗금 영역은 padding에 쓰는 비용입니다.</div>
+</div>
+
+Batch size와 context 길이도 서로 독립이 아닙니다. Decode 스텝에서 커널이 읽는 KV cache 양은 batch size × context 길이에 비례합니다. Context가 KV block 3개만큼 늘면 batch 2는 block 6개를 더 읽고, batch 8은 block 24개를 더 읽습니다. 그래서 batch가 작을 때는 context가 길어져도 스텝 시간이 거의 늘지 않고, batch가 크면 같은 context 증가가 스텝 시간을 크게 늘립니다. Request를 늘리는 효과도 일정하지 않습니다. 어떤 구간에서는 request를 두 배로 늘려도 토큰당 시간이 거의 그대로이지만, 다른 구간에서는 throughput 이득보다 토큰당 시간 증가가 더 큽니다.
+
+<div class="text-center my-4">
+  <ThemeImage lightSrc="/images/06/bucketing-batch-context-light.svg" darkSrc="/images/06/bucketing-batch-context-dark.svg" alt="context가 KV block 3개만큼 늘 때 batch 2는 KV block 6개, batch 8은 24개를 더 읽는다" class="w-full max-w-3xl mx-auto" />
+</div>
 
 #### 측정한 비용으로 merge 여부를 정하기
 
 Decode group 두 개를 하나로 합치면(merge) 두 축이 함께 움직입니다. 스텝의 sequence 수가 늘고, 짧은 쪽 group은 긴 쪽 shape에 맞춰 padding됩니다. 그런데 attention 커널은 block table을 따라 KV block을 모아 읽으므로, padding 중 일부는 실제로 읽지 않습니다. 읽지 않는 양은 batch가 얼마나 찼는지, sequence 길이가 얼마나 고르지 않은지에 따라 달라집니다. 그래서 선언된 shape만 보고는 실제 비용을 알 수 없습니다.
 
 한 가지 해법은 엔진이 로드 시점에 device에서 shape마다 비용을 여러 조건으로 측정해 표로 만들어 두는 것입니다. 스케줄러는 merge한 shape의 측정 비용이 두 group을 따로 실행하는 비용보다 낮을 때만 merge합니다.
+
+<div class="text-center my-4">
+  <ThemeImage lightSrc="/images/06/bucketing-merge-light.svg" darkSrc="/images/06/bucketing-merge-dark.svg" alt="짧은 sequence 4개 group과 긴 sequence 2개 group을 따로 실행하면 스텝 2번, merge하면 6 × 10 shape 스텝 1번. merge하면 짧은 group이 padding되고 그중 일부만 실제로 읽는다. 측정한 비용 표에서 merge 비용이 따로 실행한 비용의 합보다 낮을 때만 merge한다" class="w-full max-w-3xl mx-auto" />
+  <div class="text-sm mt-2">개념도입니다. 칸 하나는 KV block 하나입니다. 읽는 padding과 건너뛰는 padding의 비율은 예시입니다.</div>
+</div>
 
 ### vLLM의 PyTorch 중심 전략
 
