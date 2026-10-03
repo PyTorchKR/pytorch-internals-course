@@ -1,6 +1,6 @@
-# Simple English(ASD-STE100) 리뷰 2026-10-03 (Opus 리뷰 → Fable 검수 → 저자 결정 → 적용 중)
+# Simple English(ASD-STE100) 리뷰 2026-10-03 (Opus 리뷰 → Fable 검수 → 저자 결정 → 적용 완료)
 
-`src/content/lectures/*.mdx` 7개를 [simple-english 스킬](https://github.com/AminBlg/SimpleEnglish)(ASD-STE100 Simplified Technical English, Plain 모드)의 CHECK 모드로 검토한 기록. 스킬은 영어용이라 규칙을 한국어에 옮긴 적용표(A~N)를 만들어 썼다. 지침은 [PROMPT.md](PROMPT.md). **01~06강은 저자 결정대로 반영했다(아래 "반영 현황"). 07강은 findings만 있고 본문은 아직 고치지 않았다.** 기술 사실은 바꾸지 않았고, 2026-09-05 리뷰에서 저자가 보류한 항목과 2026-09-27 AI-slop 리뷰에서 유지하기로 한 항목(도입 질문, Q&A)은 다시 제기하지 않았다.
+`src/content/lectures/*.mdx` 7개를 [simple-english 스킬](https://github.com/AminBlg/SimpleEnglish)(ASD-STE100 Simplified Technical English, Plain 모드)의 CHECK 모드로 검토한 기록. 스킬은 영어용이라 규칙을 한국어에 옮긴 적용표(A~N)를 만들어 썼다. 지침은 [PROMPT.md](PROMPT.md). **01~07강 모두 저자 결정대로 반영했다(아래 "반영 현황", 2026-10-03 완료).** 기술 사실은 바꾸지 않았고, 2026-09-05 리뷰에서 저자가 보류한 항목과 2026-09-27 AI-slop 리뷰에서 유지하기로 한 항목(도입 질문, Q&A)은 다시 제기하지 않았다.
 
 ## TL;DR
 
@@ -36,7 +36,7 @@
 | 04 | 36 / 2 / 2 | 12개 개념 중 11개 통일, 1개 변경 없음. FX graph도 통일 | #47 | 28번은 불릿 유지, 37번은 단계 문단을 "단계: 명사구" 리드인으로 재배열. "지도 학습"과 "training loop"는 리뷰 제안과 반대 방향으로 결정 |
 | 05 | 34 / 6 / 0 | 16개 개념 중 10개 통일, 6개 변경 없음·결정 없음 | #49 | 2·10·11·14·17·21·40번은 v2.14.0 소스·문서 확인 후 반영. torchrun 플래그는 하이픈 표기로 통일(컴포넌트 포함) |
 | 06 | 29 / 10 / 1 | 22개 개념 모두 결정, 그중 5개는 리뷰 제안과 반대 방향 | #51 | HBM/SRAM과 block은 FlashAttention 논문·Triton 문서 기준. 404가 된 Koyeb 출처 삭제(그림 유지 여부는 대기) |
-| 07 | 저자 결정 대기 | | | |
+| 07 | 33 / 5 / 2 | 21개 개념 중 20개 통일, 1개 변경 없음 | #53 | 일반 용어는 "단독은 한글, 영어 합성어는 영어", 모델은 ML/AI면 model·개념이면 모델 |
 
 ## 강의 전체에 걸친 패턴 (중요도 순)
 
