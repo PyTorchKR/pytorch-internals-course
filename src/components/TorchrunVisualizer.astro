@@ -30,16 +30,16 @@ const ringPath = 'M 54 154 L 123 154 L 192 154 L 261 154 L 261 310 L 192 310 L 1
               fill="var(--bg-surface)"
               stroke="var(--border)" stroke-width="0.5"/>
         <text x="20" y="20" font-family="monospace" font-size="10" fill="var(--text-muted)">user@<tspan fill="var(--text)" font-weight="500">node-0</tspan> $ torchrun \</text>
-        <text x="20" y="34" font-family="monospace" font-size="10" fill="var(--text)">    --nnodes=2 --nproc_per_node=8 \</text>
-        <text x="20" y="48" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv_endpoint=192.168.0.2:29500 \</text>
+        <text x="20" y="34" font-family="monospace" font-size="10" fill="var(--text)">    --nnodes=2 --nproc-per-node=8 \</text>
+        <text x="20" y="48" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv-endpoint=192.168.0.2:29500 \</text>
         <text x="20" y="62" font-family="monospace" font-size="10" fill="var(--text)">    dist_matmul_allreduce.py</text>
 
         <rect x="375" y="6" width="295" height="64" rx="6"
               fill="var(--bg-surface)"
               stroke="var(--border)" stroke-width="0.5"/>
         <text x="385" y="20" font-family="monospace" font-size="10" fill="var(--text-muted)">user@<tspan fill="var(--text)" font-weight="500">node-1</tspan> $ torchrun \</text>
-        <text x="385" y="34" font-family="monospace" font-size="10" fill="var(--text)">    --nnodes=2 --nproc_per_node=8 \</text>
-        <text x="385" y="48" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv_endpoint=192.168.0.2:29500 \</text>
+        <text x="385" y="34" font-family="monospace" font-size="10" fill="var(--text)">    --nnodes=2 --nproc-per-node=8 \</text>
+        <text x="385" y="48" font-family="monospace" font-size="10" fill="var(--text)">    --rdzv-endpoint=192.168.0.2:29500 \</text>
         <text x="385" y="62" font-family="monospace" font-size="10" fill="var(--text)">    dist_matmul_allreduce.py</text>
       </g>
 
@@ -340,7 +340,7 @@ const ringPath = 'M 54 154 L 123 154 L 192 154 L 261 154 L 261 310 L 192 310 L 1
   const stages = [
     {
       title: '1. torchrun 명령어 실행',
-      desc: '두 노드에서 완전히 같은 명령을 실행합니다. --node_rank 같은 노드 번호는 주지 않습니다. 어느 노드가 몇 번인지는 다음 단계의 rendezvous가 정합니다.',
+      desc: '두 노드에서 완전히 같은 명령을 실행합니다. --node-rank 같은 노드 번호는 주지 않습니다. 어느 노드가 몇 번인지는 다음 단계의 rendezvous가 정합니다.',
       classes: ['show-command'],
     },
     {
@@ -350,7 +350,7 @@ const ringPath = 'M 54 154 L 123 154 L 192 154 L 261 154 L 261 310 L 192 310 L 1
     },
     {
       title: '3. Worker spawn + 환경변수 설정',
-      desc: 'agent가 nproc_per_node=8만큼 worker process를 띄우면서 RANK, LOCAL_RANK, WORLD_SIZE, MASTER_ADDR, MASTER_PORT를 환경변수로 넣어 줍니다. worker는 이 환경변수에서 자기 rank를 읽습니다.',
+      desc: 'agent가 --nproc-per-node=8만큼 worker process를 띄우면서 RANK, LOCAL_RANK, WORLD_SIZE, MASTER_ADDR, MASTER_PORT를 환경변수로 넣어 줍니다. worker는 이 환경변수에서 자기 rank를 읽습니다.',
       classes: ['rdzv-agents', 'spawned', 'ranks-shown'],
     },
     {
