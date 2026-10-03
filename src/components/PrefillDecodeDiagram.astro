@@ -11,7 +11,7 @@
     class="pd-svg"
     viewBox="0 -25 680 380"
     role="img"
-    aria-label="Prefill은 토큰 4개를 한 번에 병렬 처리하고, Decode는 KV cache를 재사용하며 토큰 하나씩 순차 처리하는 과정"
+    aria-label="Prefill은 token 4개를 한 번에 병렬 처리하고, Decode는 KV cache를 재사용하며 token 하나씩 순차 처리하는 과정"
   >
     <text class="pd-lbl-phase" x="236" y="22">Prefill</text>
     <text class="pd-lbl-tag" x="236" y="36">병렬 · 1 pass</text>
@@ -23,7 +23,7 @@
   <div class="pd-legend">
     <div class="pd-legend-item"><span class="pd-legend-cell"></span>마우스를 올린 셀: 테두리 강조</div>
     <div class="pd-legend-item">점: attention (query 행 × key 열), layer 계산 후 표시</div>
-    <div class="pd-legend-item"><span class="pd-legend-swatch pd-legend-swatch-fb"></span>출력 토큰이 다음 입력으로 되돌아감</div>
+    <div class="pd-legend-item"><span class="pd-legend-swatch pd-legend-swatch-fb"></span>출력 token이 다음 입력으로 되돌아감</div>
   </div>
 
   <div class="pd-controls">
@@ -516,17 +516,17 @@
 
     const STEPS: Step[] = [
       { tag: '대기', text: '아직 계산 전입니다. Play를 누르면 layer가 계산될 때마다 그 layer의 attention 점이 나타납니다.' },
-      { active: ['cp-0-0', 'cp-1-0', 'cp-2-0', 'cp-3-0'], phase: 'p', tag: 'Prefill · Layer 0 (input embedding)', text: '프롬프트 토큰 4개를 한 번에 임베딩합니다. attention은 아직 없으므로 점도 없습니다.' },
-      { active: ['cp-0-1', 'cp-1-1', 'cp-2-1', 'cp-3-1'], phase: 'p', tag: 'Prefill · Layer 1 (causal self-attention)', text: '토큰 4개가 같은 layer를 동시에 통과합니다. 각 토큰은 자기 자신과 앞 토큰만 참조하므로 점이 1+2+3+4=10개 생깁니다(causal mask).' },
+      { active: ['cp-0-0', 'cp-1-0', 'cp-2-0', 'cp-3-0'], phase: 'p', tag: 'Prefill · Layer 0 (input embedding)', text: '프롬프트 token 4개를 한 번에 임베딩합니다. attention은 아직 없으므로 점도 없습니다.' },
+      { active: ['cp-0-1', 'cp-1-1', 'cp-2-1', 'cp-3-1'], phase: 'p', tag: 'Prefill · Layer 1 (causal self-attention)', text: 'token 4개가 같은 layer를 동시에 통과합니다. 각 token은 자기 자신과 앞 token만 참조하므로 점이 1+2+3+4=10개 생깁니다(causal mask).' },
       { active: ['cp-0-2', 'cp-1-2', 'cp-2-2', 'cp-3-2'], phase: 'p', tag: 'Prefill · Layer 2', text: 'Layer 2에서도 같은 모양의 점이 생깁니다. 이 layer까지의 K/V가 cache에 쌓입니다.' },
-      { active: ['cp-0-3', 'cp-1-3', 'cp-2-3', 'cp-3-3'], phase: 'p', output: 'a', fb: 1, tag: 'Prefill 완료, 첫 토큰 <code>a</code>', text: '모든 layer가 끝났습니다. 토큰 4개의 K/V가 모든 layer에 대해 cache에 저장되고, 마지막 위치의 출력으로 첫 토큰 <code>a</code>가 나옵니다.' },
-      { active: ['cd-0-0'], decodeIn: 'a', phase: 'd', tag: 'Decode · <code>a</code> 입력', text: '이제 <code>a</code> 하나만 입력으로 들어갑니다. 여기서부터는 토큰 하나씩 순서대로 진행됩니다.' },
+      { active: ['cp-0-3', 'cp-1-3', 'cp-2-3', 'cp-3-3'], phase: 'p', output: 'a', fb: 1, tag: 'Prefill 완료, 첫 token <code>a</code>', text: '모든 layer가 끝났습니다. token 4개의 K/V가 모든 layer에 대해 cache에 저장되고, 마지막 위치의 출력으로 첫 token <code>a</code>가 나옵니다.' },
+      { active: ['cd-0-0'], decodeIn: 'a', phase: 'd', tag: 'Decode · <code>a</code> 입력', text: '이제 <code>a</code> 하나만 입력으로 들어갑니다. 여기서부터는 token 하나씩 순서대로 진행됩니다.' },
       { active: ['cd-0-1'], decodeIn: 'a', phase: 'd', tag: 'Decode · Layer 1 (KV cache 재사용)', text: '다섯 번째 row에 점 5개가 생깁니다. I, like, my, cat의 K/V는 cache에서 읽고 <code>a</code>의 K/V만 새로 계산합니다. query는 <code>a</code> 하나뿐입니다.' },
       { active: ['cd-0-2'], decodeIn: 'a', phase: 'd', tag: 'Decode · Layer 2', text: 'Layer 2에도 다섯 번째 row가 추가됩니다. 한 번에 컬럼 하나만 처리합니다.' },
       { active: ['cd-0-3'], decodeIn: 'a', phase: 'd', output: 'lot', fb: 2, tag: 'Decode 출력 <code>lot</code>', text: '출력으로 <code>lot</code>이 나옵니다. <code>a</code>의 K/V 한 줄이 cache에 추가됩니다.' },
       { active: ['cd-1-0'], decodeIn: 'lot', phase: 'd', tag: 'Decode · <code>lot</code> 입력', text: '<code>lot</code>을 입력으로 다음 스텝을 시작합니다. <code>lot</code>이 나오기 전에는 이 스텝을 시작할 수 없습니다.' },
       { active: ['cd-1-1'], decodeIn: 'lot', phase: 'd', tag: 'Decode · Layer 1', text: '여섯 번째 row에 점 6개가 생깁니다. cache 길이가 하나 늘었습니다.' },
-      { active: ['cd-1-2'], decodeIn: 'lot', phase: 'd', tag: 'Decode · Layer 2', text: '여섯 번째 row가 위 layer에도 추가됩니다. 토큰 N개를 만들려면 forward pass가 N번 필요합니다.' },
+      { active: ['cd-1-2'], decodeIn: 'lot', phase: 'd', tag: 'Decode · Layer 2', text: '여섯 번째 row가 위 layer에도 추가됩니다. token N개를 만들려면 forward pass가 N번 필요합니다.' },
       { active: ['cd-1-3'], decodeIn: 'lot', phase: 'd', output: 'dot', tag: 'Decode 완료', text: '점이 모두 채워져 causal mask의 삼각형이 완성됩니다. 최종 출력은 <em>I like my cat a lot .</em> 입니다.' },
     ];
 

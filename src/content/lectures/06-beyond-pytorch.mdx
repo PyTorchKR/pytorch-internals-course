@@ -1034,7 +1034,7 @@ Decode group은 같은 shape으로 함께 실행하는 decode request의 묶음�
 
 ### vLLM의 PyTorch 중심 전략
 
-vLLM은 PyTorch 기반일 뿐 아니라, 다양한 하드웨어를 직접 붙이지 않겠다고 명시했습니다. vLLM 측의 입장은 *"하드웨어는 일단 PyTorch에 잘 붙여 오기만 하면, 그 위에서 vLLM이 동작하도록 우리가 만들겠다"* 에 가깝습니다.
+vLLM은 PyTorch 위에서 동작합니다. vLLM 팀은 새 하드웨어 지원을 vLLM 본체가 아니라 vendor가 유지하는 out-of-tree hardware plugin으로 분리했습니다([vLLM blog: Introducing vLLM Hardware Plugin](https://vllm.ai/blog/2025-05-12-hardware-plugin)). vLLM 측의 입장은 *"하드웨어는 일단 PyTorch에 잘 붙여 오기만 하면, 그 위에서 vLLM이 동작하도록 우리가 만들겠다"* 에 가깝습니다.
 
 아래에 하드웨어가 있고, 그 위에 PyTorch가 추상화 레이어로 놓입니다. 그림은 Models와 Utilities가 PyTorch를 거쳐 여러 하드웨어에 닿는 구조("narrow waist")를 보여 주며, vLLM은 그 위쪽에서 동작합니다. vLLM은 하드웨어 다양성 대응을 PyTorch 레이어에 맡깁니다.
 
