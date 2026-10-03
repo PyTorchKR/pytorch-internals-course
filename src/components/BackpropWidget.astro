@@ -101,6 +101,13 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
   </div>
   <p class="bp-scroll-hint">회로가 잘려 보이면 옆으로 밀어서 보세요.</p>
 
+  <!-- Nav: above the description so its position does not move between steps -->
+  <div class="bp-nav">
+    <button id="bp-btn-prev" class="bp-btn" type="button" disabled>← 이전</button>
+    <button id="bp-btn-next" class="bp-btn" type="button">다음 →</button>
+    <button id="bp-btn-reset" class="bp-btn bp-btn-reset" type="button" aria-label="처음으로">↻</button>
+  </div>
+
   <div class="bp-body">
     <!-- Left: description -->
     <div class="bp-left">
@@ -126,12 +133,6 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     </div>
   </div>
 
-  <!-- Nav -->
-  <div class="bp-nav">
-    <button id="bp-btn-prev" class="bp-btn" type="button" disabled>← 이전</button>
-    <button id="bp-btn-next" class="bp-btn" type="button">다음 →</button>
-    <button id="bp-btn-reset" class="bp-btn bp-btn-reset" type="button" aria-label="처음으로">↻</button>
-  </div>
 </div>
 
 <style>
@@ -250,7 +251,6 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     gap: 20px;
-    margin-bottom: 14px;
     padding: 4px 2px 0;
   }
   .bp-left { min-width: 0; }
@@ -297,7 +297,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
   .bp-widget.is-bwd .bp-gc-formula :global(.katex *) { color: var(--bp-grad) !important; }
 
   /* Navigation */
-  .bp-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .bp-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
   .bp-btn {
     padding: 4px 14px;
     border-radius: 6px;
