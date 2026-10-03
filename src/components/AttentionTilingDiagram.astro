@@ -178,8 +178,11 @@ const triPath = lowerTriPath();
       <text x="215" y="135" text-anchor="middle">A = QKᵀ : N×N</text>
       <text x="355" y="135" text-anchor="middle">A = mask(A)</text>
       <text x="495" y="135" text-anchor="middle">A = softmax(A) : N×N</text>
-      <text x="580" y="135" text-anchor="middle">V : N×d</text>
-      <text x="620" y="135" text-anchor="middle">O : N×d</text>
+      {/* V, O are narrow and adjacent, so their shapes go below the vectors */}
+      <text x="580" y="135" text-anchor="middle">V</text>
+      <text x="620" y="135" text-anchor="middle">O</text>
+      <text x="580" y="270" text-anchor="middle" font-size="10">N×d</text>
+      <text x="620" y="270" text-anchor="middle" font-size="10">N×d</text>
     </g>
 
     {/* ===== Q VECTOR ===== */}
