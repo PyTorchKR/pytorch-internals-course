@@ -9,6 +9,7 @@ import PrefillDecodeDiagram from '../../components/PrefillDecodeDiagram.astro';
 import KvCacheWidget from '../../components/KvCacheWidget.astro';
 import AttentionTilingDiagram from '../../components/AttentionTilingDiagram.astro';
 import ThemeImage from '../../components/ThemeImage.astro';
+import SelfAttentionDiagram from '../../components/SelfAttentionDiagram.astro';
 
 # Week 6: Beyond PyTorch: Custom Kernel과 vLLM
 
@@ -69,13 +70,13 @@ PyTorch + NPU 온라인 모임 #6 | 2025-02-05
       <div class="flex flex-col items-center gap-3 flex-1 justify-center">
         <div class="flex flex-col items-center gap-2">
           <div class="flex gap-2">
-            <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:#3a7bd5">Triton</div>
-            <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:#3a7bd5">CUDA</div>
+            <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:var(--fig-blue-ink)">Triton</div>
+            <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:var(--fig-blue-ink)">CUDA</div>
           </div>
           <p class="text-xs font-bold text-[#2c5ea0] dark:text-[#7ba9dd]">Kernel Programming</p>
         </div>
         <div class="flex flex-col items-center gap-2 mt-2">
-          <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:#3a7bd5">vLLM</div>
+          <div class="px-3 py-1.5 rounded text-white text-sm font-semibold" style="background-color:var(--fig-blue-ink)">vLLM</div>
           <p class="text-xs font-bold text-[#2c5ea0] dark:text-[#7ba9dd]">서빙 최적화</p>
         </div>
       </div>
@@ -110,11 +111,11 @@ PyTorch + NPU 온라인 모임 #6 | 2025-02-05
 
 ### Self Attention과 Scaled Dot-Product
 
-LLM에서 가장 중요한 연산을 하나 꼽으라면 단연 **Self-Attention**, 그중에서도 실제로 그것을 계산하는 연산인 **Scaled Dot-Product**입니다. 아래 첫 번째 그림처럼 한 문장이 주어졌을 때, self-attention은 token들 사이의 관계로 "이 문장 안에서 이 token이 어떤 의미를 갖는가"를 뽑아내는 과정입니다.
+LLM에서 가장 중요한 연산을 하나 꼽으라면 단연 **Self-Attention**, 그중에서도 실제로 그것을 계산하는 연산인 **Scaled Dot-Product**입니다. 아래 그림의 왼쪽처럼 한 문장이 주어졌을 때, self-attention은 token들 사이의 관계로 "이 문장 안에서 이 token이 어떤 의미를 갖는가"를 뽑아내는 과정입니다.
 
 이 과정은 잘 알려져 있듯이 **K(Key), Q(Query), V(Value)** 세 가지 값으로 이루어집니다. 각 token의 embedding에 세 개의 weight를 곱해 만드는 벡터로, query는 "내가 무엇을 찾는가", key는 "내가 무엇을 갖고 있는가", value는 "실제로 전달할 내용"에 해당합니다. Attention은 token들 사이의 연관성의 크기입니다. 이 크기는 query–key 내적으로 구합니다. 이 크기로 value를 가중해 누적하면(=scaled dot-product), 특정 token에 self-attention이 반영된 새로운 표현(embedding)이 만들어집니다.
 
-아래 그림에서 계산 측면의 포인트 하나는, 입력 token embedding으로부터 K·Q·V를 뽑아내는 부분은 token마다 독립이라 모두 병렬로 처리할 수 있다는 점입니다. 그 뒤의 단계는 그림 오른쪽 아래 카드 ①~④ 순서입니다.
+아래 그림에서 계산 측면의 포인트 하나는, 입력 token embedding으로부터 K·Q·V를 뽑아내는 부분은 token마다 독립이라 모두 병렬로 처리할 수 있다는 점입니다. 그 뒤의 단계는 그림 아래 카드 ①~④ 순서입니다.
 
 요약하자면 계산 특성은 다음과 같습니다.
 
@@ -125,16 +126,11 @@ softmax와 summation을 병렬화하기 까다롭다는 점은 이후 FlashAtten
 
 <div class="flex flex-col gap-8 mt-6">
   <div class="text-center">
-    <img src="/images/06/slide06_1.png" alt="문장 속 'it' token이 다른 token들과 갖는 self-attention 연관성 시각화" class="h-72 mx-auto" />
-    <div class="text-sm mt-2">모든 token의 kv값과, "it"의 query만 사용</div>
+    <SelfAttentionDiagram />
+    <div class="text-sm mt-2">모든 token의 k, v와 "it"의 query만 사용합니다. 오른쪽은 $x_1$이 "it"에 해당한다고 가정한 Scaled Dot-Product 계산 흐름입니다. (가중치는 설명용 예시 값입니다.)</div>
   </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-    <div class="text-center">
-      <img src="/images/06/slide06_2.png" alt="Scaled Dot-Product 계산 흐름: query-key 내적, softmax 정규화, value 가중합으로 새 embedding 생성" class="h-80 mx-auto" />
-      <div class="text-sm mt-2">그림 속 $x_1$이 "it"에 해당한다고 가정한 Scaled Dot-Product 계산 흐름</div>
-    </div>
     <div class="flex flex-col gap-2">
-      <div class="rounded p-3" style="background-color:#3a7bd5">
+      <div class="rounded p-3" style="background-color:var(--fig-blue-ink)">
         <p class="text-sm font-bold text-white">④ Self-attention이 반영된 "it"(=$x_1$)의 새 embedding</p>
         <p class="text-xs text-white/80 mt-1">출력 $a_1$이 곧 "it"의 새 표현</p>
       </div>
@@ -151,7 +147,6 @@ softmax와 summation을 병렬화하기 까다롭다는 점은 이후 FlashAtten
         <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$q_1$을 $k_1$, $k_2$, $k_3$와 각각 내적하고 $\sqrt{d_k}$로 나눠 score $e_{1,j}$ 계산</p>
       </div>
     </div>
-  </div>
 </div>
 
 > 출처: [https://jalammar.github.io/illustrated-transformer/](https://jalammar.github.io/illustrated-transformer/)
@@ -707,7 +702,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-4 flex flex-col">
     <p class="font-bold text-slate-900 dark:text-slate-100 mb-3">FlashAttention v2</p>
     <div class="flex flex-col items-center gap-1 mb-3">
-      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:#3a7bd5">NVIDIA / cutlass</span>
+      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:var(--fig-blue-ink)">NVIDIA / cutlass</span>
     </div>
     <div class="text-xs text-slate-600 dark:text-slate-300 flex-1 space-y-1">
       <p>Fewer non-matmul FLOPs</p>
@@ -719,7 +714,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-4 flex flex-col">
     <p class="font-bold text-slate-900 dark:text-slate-100 mb-3">FlashAttention v3</p>
     <div class="flex flex-col items-center gap-1 mb-3">
-      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:#3a7bd5">NVIDIA / cutlass</span>
+      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:var(--fig-blue-ink)">NVIDIA / cutlass</span>
     </div>
     <div class="text-xs text-slate-600 dark:text-slate-300 flex-1 space-y-1">
       <p>Optimized for Hopper</p>
@@ -731,7 +726,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-4 flex flex-col">
     <p class="font-bold text-slate-900 dark:text-slate-100 mb-3">FlashAttention v4</p>
     <div class="flex flex-col items-center gap-1 mb-3">
-      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:#3a7bd5">CuTe DSL</span>
+      <span class="px-2 py-1 rounded text-white text-xs font-semibold" style="background-color:var(--fig-blue-ink)">CuTe DSL</span>
     </div>
     <div class="text-xs text-slate-600 dark:text-slate-300 flex-1 space-y-1">
       <p>Optimized for Blackwell</p>

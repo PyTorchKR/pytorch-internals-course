@@ -1,0 +1,250 @@
+---
+/**
+ * Self-attention figure for lecture 06: attention weights of the query "it"
+ * (left) and the scaled dot-product flow that produces them (right).
+ *
+ * Both panels are fixed-viewBox SVGs with right-angle connectors only.
+ * Math labels are KaTeX HTML placed over the SVG in viewBox percentages
+ * (same approach as BackpropWidget). Colors come from --fig-* variables.
+ *
+ * The numbers are illustrative, not measured from a real model.
+ * Left panel weights: animal 0.55, street 0.25, it 0.08, The 0.05, . 0.04.
+ * Right panel renormalizes over the three shown tokens:
+ *   it 0.08 / 0.88 = 0.09, animal 0.55 / 0.88 = 0.63, street 0.25 / 0.88 = 0.28.
+ */
+import katex from 'katex';
+
+const tex = (s: string) => katex.renderToString(s, { throwOnError: false });
+type Anchor = 'c' | 'l' | 'r';
+type Label = { html: string; x: number; y: number; a?: Anchor; cls?: string };
+const pct = (v: number, total: number) => `${((v / total) * 100).toFixed(3)}%`;
+
+// ---------------------------------------------------------------- left panel
+const LW = 340;
+const LH = 344;
+const tokens = ['The', 'animal', "didn't", 'cross', 'the', 'street', 'because', 'it', 'was', 'too', 'tired', '.'];
+const weights: Record<number, number> = { 0: 0.05, 1: 0.55, 5: 0.25, 7: 0.08, 11: 0.04 };
+const TX0 = 8;
+const TX1 = 128; // token box right edge: connectors end here
+const rowTop = (i: number) => 6 + 28 * i;
+const rowY = (i: number) => rowTop(i) + 12;
+const QX0 = 250;
+// The query box is centered on the "street" row so that edge runs straight.
+// Edges enter the box 12 units apart; rails sit 14 units apart, and the edge
+// whose target is farther from the box uses the rail closer to it, so no two
+// edges cross.
+const QY0 = 122;
+const QY1 = 194;
+// [token row, entry y on query box, rail x]; null rail = straight line
+const routes: [number, number, number | null][] = [
+  [0, 134, 236],
+  [1, 146, 222],
+  [5, 158, null],
+  [7, 170, 222],
+  [11, 182, 236],
+];
+const leftEdges = routes.map(([row, sy, rx]) => {
+  const w = weights[row];
+  return {
+    d: rx === null ? `M ${QX0} ${sy} H ${TX1}` : `M ${QX0} ${sy} H ${rx} V ${rowY(row)} H ${TX1}`,
+    width: (1 + 8 * w).toFixed(2),
+    opacity: Math.min(1, 0.3 + 1.3 * w).toFixed(2),
+  };
+});
+const leftLabels: Label[] = [];
+tokens.forEach((t, i) => {
+  leftLabels.push({ html: t, x: TX0 + 10, y: rowY(i), a: 'l', cls: i === 7 ? 'sad-it' : '' });
+  if (weights[i] !== undefined) {
+    leftLabels.push({ html: weights[i].toFixed(2), x: TX1 - 6, y: rowY(i), a: 'r', cls: 'sad-w' });
+  }
+});
+leftLabels.push({ html: 'it', x: (QX0 + 322) / 2, y: (QY0 + QY1) / 2 - 8, cls: 'sad-it sad-big' });
+leftLabels.push({ html: 'query', x: (QX0 + 322) / 2, y: (QY0 + QY1) / 2 + 12, cls: 'sad-sub' });
+
+// --------------------------------------------------------------- right panel
+const RW = 520;
+const RH = 488;
+const CX = [100, 280, 460]; // column centers (k_j, h_j, alpha_j)
+const VX = CX.map((c) => c - 60); // v_j
+const QCX = CX[0] + 60; // q_1 (only the query token's q is used)
+const BW = 52;
+const BY0 = 290;
+const BY1 = 322;
+const words = ['it', 'animal', 'street'];
+const raw = [0.08, 0.55, 0.25];
+const total = raw.reduce((a, b) => a + b, 0);
+const alpha = raw.map((r) => r / total);
+const TRACK_TOP = 122;
+const TRACK_H = 48;
+const NODE_Y0 = 226;
+const NODE_Y1 = 252;
+const NODE_W = 64;
+const kX = [CX[0] - 14, CX[1] + 14, CX[2] + 14]; // k_j arrow x into score node j
+const qArr = [CX[0] + 14, CX[1] - 14, CX[2] - 14]; // q_1 rail arrival x
+const rightPaths: { d: string; cls: string }[] = [];
+const add = (d: string, cls = 'a') => rightPaths.push({ d, cls });
+CX.forEach((c, j) => {
+  add(`M ${c} 428 V 404`);
+  const kids = j === 0 ? [VX[0], CX[0], QCX] : [VX[j], CX[j]];
+  kids.forEach((kx) => add(`M ${c} 374 V 348 H ${kx} V ${BY1}`));
+  add(`M ${kX[j]} ${BY0} V ${NODE_Y1}`);
+  add(`M ${c} ${NODE_Y0} V 204`);
+  add(`M ${c} 186 V ${TRACK_TOP + TRACK_H}`);
+  add(`M ${c} ${TRACK_TOP} V 100 H ${VX[j] + 12}`);
+  add(`M ${VX[j]} ${BY0} V 112`);
+});
+// q_1 rails: the two right-going rails sit 12 units apart, and the rail that
+// goes farther runs lower so they never cross. The left-going rail mirrors
+// the lower level.
+const Q_HI = 264;
+const Q_LO = Q_HI + 12;
+add(`M ${QCX - 14} ${BY0} V ${Q_LO} H ${qArr[0]} V ${NODE_Y1}`, 'q');
+add(`M ${QCX} ${BY0} V ${Q_HI} H ${qArr[1]} V ${NODE_Y1}`, 'q');
+add(`M ${QCX + 14} ${BY0} V ${Q_LO} H ${qArr[2]} V ${NODE_Y1}`, 'q');
+// odot -> Sigma -> a_1
+add('M 40 88 V 56 H 205');
+add('M 220 88 V 71');
+add('M 400 88 V 56 H 235');
+add('M 220 41 V 30');
+
+const rightLabels: Label[] = [];
+CX.forEach((c, j) => {
+  const n = j + 1;
+  rightLabels.push({ html: tex(`x_${n}`), x: c, y: 440 });
+  rightLabels.push({ html: words[j], x: c, y: 468, cls: 'sad-it' });
+  rightLabels.push({ html: tex(`h_${n}`), x: c, y: 389 });
+  rightLabels.push({ html: tex(`k_${n}`), x: c, y: 306, cls: 'sad-k' });
+  rightLabels.push({ html: tex(`v_${n}`), x: VX[j], y: 306, cls: 'sad-v' });
+  rightLabels.push({ html: tex(`e_{1,${n}}`), x: c, y: (NODE_Y0 + NODE_Y1) / 2 });
+  rightLabels.push({ html: tex(`\\alpha_${n}`), x: c - 20, y: TRACK_TOP + TRACK_H / 2, a: 'r' });
+  rightLabels.push({ html: alpha[j].toFixed(2), x: c + 20, y: TRACK_TOP + TRACK_H / 2, a: 'l', cls: 'sad-w' });
+  rightLabels.push({ html: tex('\\odot'), x: VX[j], y: 100, cls: 'sad-op' });
+});
+rightLabels.push({ html: tex('q_1'), x: QCX, y: 306, cls: 'sad-q' });
+rightLabels.push({ html: 'softmax', x: 280, y: 195 });
+rightLabels.push({ html: tex('\\Sigma'), x: 220, y: 56, cls: 'sad-op' });
+rightLabels.push({ html: tex('a_1'), x: 220, y: 16, cls: 'sad-out' });
+
+const pos = (l: Label, w: number, h: number) =>
+  `left:${pct(l.x, w)};top:${pct(l.y, h)}`;
+---
+
+<div class="sad">
+  <div class="sad-col sad-col-l">
+    <div class="sad-title">"it"가 각 token에 주는 attention</div>
+    <div class="sad-panel sad-pl">
+      <svg viewBox={`0 0 ${LW} ${LH}`} xmlns="http://www.w3.org/2000/svg" role="img"
+        aria-label="문장의 각 token에 대한 'it'의 attention 가중치. animal이 가장 크고 street가 그 다음이다.">
+        {leftEdges.map((e) => (
+          <path d={e.d} fill="none" class="sad-conn" stroke-width={e.width} opacity={e.opacity} />
+        ))}
+        {tokens.map((_, i) => (
+          <rect x={TX0} y={rowTop(i)} width={TX1 - TX0} height="24" rx="4"
+            class={i === 7 ? 'sad-box sad-box-q' : 'sad-box sad-box-t'} />
+        ))}
+        <rect x={QX0} y={QY0} width={322 - QX0} height={QY1 - QY0} rx="6" class="sad-box sad-box-q" />
+      </svg>
+      <div class="sad-lbls">
+        {leftLabels.map((l) => (
+          <span class={`sad-l sad-a-${l.a ?? 'c'} ${l.cls ?? ''}`} style={pos(l, LW, LH)} set:html={l.html} />
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="sad-col sad-col-r">
+    <div class="sad-title">Scaled Dot-Product 계산 흐름 (query = <span set:html={tex('x_1')} />)</div>
+    <div class="sad-panel sad-pr">
+      <svg viewBox={`0 0 ${RW} ${RH}`} xmlns="http://www.w3.org/2000/svg" role="img"
+        aria-label="x1의 q를 모든 k와 내적해 score를 만들고, softmax로 alpha를 구한 뒤 v를 가중합해 a1을 만드는 흐름">
+        <defs>
+          <marker id="sad-ah" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <path d="M0,0 L8,3.5 L0,7 z" class="sad-mk" />
+          </marker>
+          <marker id="sad-ah-q" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <path d="M0,0 L8,3.5 L0,7 z" class="sad-mk-q" />
+          </marker>
+        </defs>
+        {rightPaths.map((p) => (
+          <path d={p.d} fill="none" class={p.cls === 'q' ? 'sad-arrow sad-arrow-q' : 'sad-arrow'}
+            marker-end={p.cls === 'q' ? 'url(#sad-ah-q)' : 'url(#sad-ah)'} />
+        ))}
+        {CX.map((c, j) => (
+          <>
+            <rect x={c - 32} y="374" width="64" height="30" rx="5" class="sad-box sad-box-h" />
+            <rect x={c - BW / 2} y={BY0} width={BW} height={BY1 - BY0} rx="5" class="sad-box sad-box-k" />
+            <rect x={VX[j] - BW / 2} y={BY0} width={BW} height={BY1 - BY0} rx="5" class="sad-box sad-box-v" />
+            <rect x={c - NODE_W / 2} y={NODE_Y0} width={NODE_W} height={NODE_Y1 - NODE_Y0} rx="5" class="sad-box sad-box-e" />
+            <rect x={c - 12} y={TRACK_TOP} width="24" height={TRACK_H} rx="3" class="sad-track" />
+            <rect x={c - 12} y={TRACK_TOP + TRACK_H - alpha[j] * TRACK_H} width="24" height={alpha[j] * TRACK_H} rx="3" class="sad-bar" />
+            <circle cx={VX[j]} cy="100" r="12" class="sad-box sad-box-n" />
+          </>
+        ))}
+        <rect x={QCX - BW / 2} y={BY0} width={BW} height={BY1 - BY0} rx="5" class="sad-box sad-box-q" />
+        <rect x="70" y="186" width="420" height="18" rx="9" class="sad-box sad-box-s" />
+        <circle cx="220" cy="56" r="15" class="sad-box sad-box-n" />
+        <rect x="192" y="2" width="56" height="28" rx="5" class="sad-box sad-box-o" />
+      </svg>
+      <div class="sad-lbls">
+        {rightLabels.map((l) => (
+          <span class={`sad-l sad-a-${l.a ?? 'c'} ${l.cls ?? ''}`} style={pos(l, RW, RH)} set:html={l.html} />
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .sad {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (min-width: 768px) {
+    .sad { grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); }
+  }
+  .sad-title {
+    font-size: 0.8rem;
+    text-align: center;
+    margin-bottom: 0.4rem;
+    color: var(--fig-text-2);
+  }
+  .sad-panel { position: relative; container-type: inline-size; font-family: inherit; color: var(--fig-text); }
+  .sad-pl { --sad-fs: max(10px, calc(100cqw * 12 / 340)); }
+  .sad-pr { --sad-fs: max(9px, calc(100cqw * 12 / 520)); }
+  .sad-panel svg { display: block; width: 100%; height: auto; }
+  .sad-lbls { position: absolute; inset: 0; pointer-events: none; font-size: var(--sad-fs); }
+  .sad-l { position: absolute; white-space: nowrap; line-height: 1.2; color: var(--fig-text); }
+  .sad-a-c { transform: translate(-50%, -50%); }
+  .sad-a-l { transform: translate(0, -50%); }
+  .sad-a-r { transform: translate(-100%, -50%); }
+  .sad-panel :global(.sad-l .katex) { font-size: 1em !important; color: inherit !important; }
+  .sad-it { font-weight: 600; }
+  .sad-op { font-size: 1.3em; }
+  .sad-big { font-size: 1.25em; color: var(--fig-amber-ink); }
+  .sad-sub { font-size: 0.8em; color: var(--fig-amber-ink); }
+  .sad-w { color: var(--fig-amber-ink); font-size: 0.9em; }
+  .sad-q { color: var(--fig-amber-ink); }
+  .sad-k { color: var(--fig-blue-ink); }
+  .sad-v { color: var(--fig-teal-ink); }
+  .sad-out { color: var(--fig-text); }
+
+  .sad-box { stroke-width: 1.2; }
+  .sad-box-t { fill: var(--fig-fill); stroke: var(--fig-line-soft); }
+  .sad-box-h { fill: var(--fig-fill); stroke: var(--fig-line); }
+  .sad-box-q { fill: var(--fig-amber-tint); stroke: var(--fig-amber); }
+  .sad-box-k { fill: var(--fig-blue-tint); stroke: var(--fig-blue); }
+  .sad-box-v { fill: var(--fig-teal-tint); stroke: var(--fig-teal); }
+  .sad-box-e { fill: var(--fig-surface); stroke: var(--fig-line); }
+  .sad-box-s { fill: var(--fig-fill); stroke: var(--fig-line); }
+  .sad-box-n { fill: var(--fig-surface); stroke: var(--fig-text-2); }
+  .sad-box-o { fill: var(--fig-coral-tint); stroke: var(--fig-coral); }
+  .sad-track { fill: var(--fig-surface); stroke: var(--fig-line-soft); stroke-width: 1; }
+  .sad-bar { fill: var(--fig-amber); }
+  .sad-conn { stroke: var(--fig-amber); stroke-linejoin: miter; stroke-linecap: butt; }
+  .sad-arrow { stroke: var(--fig-text-2); stroke-width: 1.4; stroke-linejoin: miter; }
+  .sad-arrow-q { stroke: var(--fig-amber); }
+  .sad-mk { fill: var(--fig-text-2); }
+  .sad-mk-q { fill: var(--fig-amber); }
+</style>
