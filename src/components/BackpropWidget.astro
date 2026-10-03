@@ -18,6 +18,7 @@
   <div class="bp-circuit-wrap">
     <div class="bp-circuit-inner">
     <div class="bp-eq-overlay" id="bp-eq-overlay"></div>
+    <div class="bp-lbl-layer" id="bp-lbl-layer"></div>
     <svg id="bp-ckt" viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="bp-ah-off" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
@@ -32,136 +33,58 @@
       </defs>
 
       <!-- EDGES -->
+      <!--
+        Edge rule: every forward edge has a gradient rail at a constant 6px
+        offset on both horizontal and vertical segments. The gradient rail
+        is always on the outer side of the first bend (above/east for edges
+        that go down, below/east for edges that go up). All edges into one
+        gate bend at the same x, 40px before the gate's left edge (forward
+        rails at gate-40, gradient rails at gate-34).
+      -->
       <!-- x → ADD -->
-      <path id="bp-pe1" class="bp-edge bp-edge-fwdline" d="M 140 55 H 200 L 268 86" fill="none" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe1" class="bp-edge bp-edge-fwdline" d="M 140 55 H 225 V 86 H 266" fill="none" marker-end="url(#bp-ah-off)"/>
       <!-- y → ADD -->
-      <path id="bp-pe2" class="bp-edge bp-edge-fwdline" d="M 140 130 H 200 L 268 98" fill="none" marker-end="url(#bp-ah-off)"/>
-      <path id="bp-pe1b" class="bp-edge bp-edge-grad" d="M 261 80 L 200 49 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
-      <path id="bp-pe2b" class="bp-edge bp-edge-grad" d="M 261 104 L 200 136 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe2" class="bp-edge bp-edge-fwdline" d="M 140 130 H 225 V 98 H 266" fill="none" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe1b" class="bp-edge bp-edge-grad" d="M 270 80 H 231 V 49 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe2b" class="bp-edge bp-edge-grad" d="M 270 104 H 231 V 136 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
 
       <!-- ADD → MUL -->
-      <path id="bp-pe3" class="bp-edge bp-edge-fwdline" d="M 337 92 H 355 L 428 151" fill="none" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe3" class="bp-edge bp-edge-fwdline" d="M 337 92 H 385 V 151 H 426" fill="none" marker-end="url(#bp-ah-off)"/>
       <!-- z → MUL -->
-      <path id="bp-pe4" class="bp-edge bp-edge-fwdline" d="M 140 205 H 355 L 428 163" fill="none" marker-end="url(#bp-ah-off)"/>
-      <path id="bp-pe3b" class="bp-edge bp-edge-grad" d="M 421 145 L 355 86 H 337" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
-      <path id="bp-pe4b" class="bp-edge bp-edge-grad" d="M 421 169 L 355 211 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe4" class="bp-edge bp-edge-fwdline" d="M 140 205 H 385 V 163 H 426" fill="none" marker-end="url(#bp-ah-off)"/>
+      <path id="bp-pe3b" class="bp-edge bp-edge-grad" d="M 430 145 H 391 V 86 H 337" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
+      <path id="bp-pe4b" class="bp-edge bp-edge-grad" d="M 430 169 H 391 V 211 H 140" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
 
       <!-- MUL → Output -->
       <path id="bp-pe5" class="bp-edge bp-edge-fwdline" d="M 497 157 H 560" fill="none" marker-end="url(#bp-ah-off)"/>
       <path id="bp-pe5b" class="bp-edge bp-edge-grad" d="M 560 151 H 497" fill="none" marker-end="url(#bp-ah-bwd)" opacity="0"/>
 
-      <!--
-        Label placement rule: each label sits next to its own edge color.
-        e1,e3,e5: backward(red) edge is ABOVE forward(blue) → red label above, blue below
-        e2,e4: backward(red) edge is BELOW forward(blue) → blue label above, red below
-      -->
-
-      <!-- FORWARD LABELS (blue) — next to the blue forward edge -->
-      <!-- e1: fwd at y=55 (below bwd y=49) → blue label below -->
-      <g id="bp-fl-e1" class="bp-lbl" opacity="0">
-        <text x="179" y="72" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-fwd">-2</text>
-      </g>
-      <!-- e2: fwd at y=130 (above bwd y=136) → blue label above -->
-      <g id="bp-fl-e2" class="bp-lbl" opacity="0">
-        <text x="178" y="122" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-fwd">5</text>
-      </g>
-      <!-- e3: fwd at y≈92 (below bwd y≈86) → blue label below -->
-      <g id="bp-fl-e3" class="bp-lbl" opacity="0">
-        <text x="370" y="112" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-fwd">q = 3</text>
-      </g>
-      <!-- e4: fwd at y=205 (above bwd y=211) → blue label above -->
-      <g id="bp-fl-e4" class="bp-lbl" opacity="0">
-        <text x="274" y="197" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-fwd">-4</text>
-      </g>
-      <!-- e5: fwd at y=157 (below bwd y=151) → blue label below -->
-      <g id="bp-fl-e5" class="bp-lbl" opacity="0">
-        <text x="524" y="175" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-fwd">-12</text>
-      </g>
-
-      <!-- BACKWARD LABELS (red) — next to the red backward edge -->
-      <!-- e1: bwd at y=49 (above fwd y=55) → red label above -->
-      <g id="bp-bl-e1" class="bp-lbl" opacity="0">
-        <text x="187" y="41" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-grad">&part; = -4</text>
-      </g>
-      <!-- e2: bwd at y=136 (below fwd y=130) → red label below -->
-      <g id="bp-bl-e2" class="bp-lbl" opacity="0">
-        <text x="190" y="154" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-grad">&part; = -4</text>
-      </g>
-      <!-- e3: bwd at y≈86 (above fwd y≈92) → red label above -->
-      <g id="bp-bl-e3" class="bp-lbl" opacity="0">
-        <text x="373" y="78" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-grad">&part; = -4</text>
-      </g>
-      <!-- e4: bwd at y=211 (below fwd y=205) → red label below -->
-      <g id="bp-bl-e4" class="bp-lbl" opacity="0">
-        <text x="279" y="229" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-grad">&part; = 3</text>
-      </g>
-      <!-- e5: bwd at y=151 (above fwd y=157) → red label above -->
-      <g id="bp-bl-e5" class="bp-lbl" opacity="0">
-        <text x="523" y="143" text-anchor="middle"
-          font-size="12.5" class="bp-val bp-val-grad">&part; = 1</text>
-      </g>
+      <!-- Value labels are KaTeX HTML elements in #bp-lbl-layer (see script). -->
 
       <!-- INPUT NODES -->
       <rect class="bp-node-rect" x="30" y="35" width="110" height="40" rx="7"/>
       <text x="85" y="48" text-anchor="middle"
         class="bp-node-label" font-size="10">입력</text>
-      <text x="85" y="66" text-anchor="middle"
-        class="bp-node-val" font-size="15">x = -2</text>
-      <g id="bp-badge-x" class="bp-badge" opacity="0">
-        <text x="85" y="94" text-anchor="middle"
-          font-size="12" class="bp-val bp-val-grad">&part;f/&part;x = -4</text>
-      </g>
 
       <rect class="bp-node-rect" x="30" y="110" width="110" height="40" rx="7"/>
       <text x="85" y="123" text-anchor="middle"
         class="bp-node-label" font-size="10">입력</text>
-      <text x="85" y="141" text-anchor="middle"
-        class="bp-node-val" font-size="15">y = 5</text>
-      <g id="bp-badge-y" class="bp-badge" opacity="0">
-        <text x="85" y="169" text-anchor="middle"
-          font-size="12" class="bp-val bp-val-grad">&part;f/&part;y = -4</text>
-      </g>
 
       <rect class="bp-node-rect" x="30" y="185" width="110" height="40" rx="7"/>
       <text x="85" y="198" text-anchor="middle"
         class="bp-node-label" font-size="10">입력</text>
-      <text x="85" y="216" text-anchor="middle"
-        class="bp-node-val" font-size="15">z = -4</text>
-      <g id="bp-badge-z" class="bp-badge" opacity="0">
-        <text x="85" y="244" text-anchor="middle"
-          font-size="12" class="bp-val bp-val-grad">&part;f/&part;z = 3</text>
-      </g>
 
       <!-- GATES -->
       <rect id="bp-r-add" class="bp-gate-rect" x="265" y="74" width="72" height="36" rx="18"
         stroke-width="1.5"/>
-      <text x="301" y="102" text-anchor="middle"
-        font-size="24" class="bp-gate-glyph" id="bp-g-add">+</text>
 
       <rect id="bp-r-mul" class="bp-gate-rect" x="425" y="139" width="72" height="36" rx="18"
         stroke-width="1.5"/>
-      <text x="461" y="167" text-anchor="middle"
-        font-size="24" class="bp-gate-glyph" id="bp-g-mul">&times;</text>
 
       <!-- OUTPUT -->
       <rect class="bp-node-rect" x="560" y="139" width="112" height="36" rx="7"/>
       <text x="616" y="152" text-anchor="middle"
         class="bp-node-label" font-size="10">출력</text>
-      <text id="bp-val-f" class="bp-node-val" x="616" y="168" text-anchor="middle"
-        font-size="15">f = ?</text>
-      <g id="bp-badge-f" class="bp-badge" opacity="0">
-        <text x="616" y="194" text-anchor="middle"
-          font-size="12" class="bp-val bp-val-grad">&part;f/&part;f = 1</text>
-      </g>
 
       <!-- LEGEND -->
       <line x1="586" y1="20" x2="606" y2="20" class="bp-legend-fwd"/>
@@ -200,9 +123,9 @@
 
   <!-- Nav -->
   <div class="bp-nav">
-    <button id="bp-btn-prev" type="button" disabled>이전</button>
-    <button id="bp-btn-next" type="button" class="bp-btn-primary">다음</button>
-    <button id="bp-btn-reset" type="button" class="bp-btn-reset">처음으로</button>
+    <button id="bp-btn-prev" class="bp-btn" type="button" disabled>← 이전</button>
+    <button id="bp-btn-next" class="bp-btn" type="button">다음 →</button>
+    <button id="bp-btn-reset" class="bp-btn bp-btn-reset" type="button" aria-label="처음으로">↻</button>
   </div>
 </div>
 
@@ -279,9 +202,6 @@
   .bp-gate-rect { fill: var(--bp-panel); stroke: var(--bp-idle); stroke-width: 1.25; transition: stroke 0.25s, fill 0.25s; }
   .bp-gate-rect.is-fwd { stroke: var(--bp-fwd); fill: var(--bp-fwd-soft); stroke-width: 1.75; }
   .bp-gate-rect.is-grad { stroke: var(--bp-grad); fill: var(--bp-grad-soft); stroke-width: 1.75; }
-  .bp-gate-glyph { fill: var(--bp-muted); font-family: inherit; font-weight: 400; transition: fill 0.25s; }
-  .bp-gate-glyph.is-fwd { fill: var(--bp-fwd); }
-  .bp-gate-glyph.is-grad { fill: var(--bp-grad); }
 
   .bp-edge { transition: stroke 0.25s, opacity 0.25s; }
   .bp-edge-fwdline { stroke: var(--bp-idle); stroke-width: 1.75; }
@@ -291,14 +211,24 @@
   .bp-mk-fwd { fill: var(--bp-fwd); }
   .bp-mk-grad { fill: var(--bp-grad); }
 
-  /* Value labels: text with a halo in the panel color, no boxes */
-  .bp-val {
-    font-family: var(--bp-mono); font-weight: 500;
-    paint-order: stroke; stroke: var(--bp-panel); stroke-width: 5px; stroke-linejoin: round;
+  /* Value labels: KaTeX HTML elements placed in viewBox units (percent of the SVG box) */
+  .bp-circuit-inner { container-type: inline-size; }
+  .bp-widget :global(.bp-lbl-layer) {
+    position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    --bp-fs: max(11px, calc(100cqw * 13 / 720));
+    font-size: var(--bp-fs);
   }
-  .bp-val-fwd { fill: var(--bp-fwd); }
-  .bp-val-grad { fill: var(--bp-grad); }
-  .bp-lbl, .bp-badge { transition: opacity 0.25s; }
+  .bp-widget :global(.bp-ol) {
+    position: absolute; white-space: nowrap; line-height: 1.25;
+    transition: opacity 0.25s;
+  }
+  .bp-widget :global(.bp-ol .katex) { font-size: 1em !important; color: inherit !important; }
+  .bp-widget :global(.bp-ol-node) { font-size: 1.15em; color: var(--bp-ink); }
+  .bp-widget :global(.bp-ol-gate) { font-size: 1.55em; color: var(--bp-muted); transition: color 0.25s; }
+  .bp-widget :global(.bp-ol-gate.is-fwd) { color: var(--bp-fwd); }
+  .bp-widget :global(.bp-ol-gate.is-grad) { color: var(--bp-grad); }
+  .bp-widget :global(.bp-ol-fwd) { color: var(--bp-fwd); }
+  .bp-widget :global(.bp-ol-grad) { color: var(--bp-grad); }
 
   .bp-legend-fwd { stroke: var(--bp-fwd); stroke-width: 2; }
   .bp-legend-grad { stroke: var(--bp-grad); stroke-width: 2; stroke-dasharray: 4 3; }
@@ -356,21 +286,23 @@
   .bp-widget.is-bwd .bp-gc-formula :global(.katex *) { color: var(--bp-grad) !important; }
 
   /* Navigation */
-  .bp-nav { display: flex; gap: 8px; align-items: center; justify-content: center; }
-  .bp-nav button {
-    font: inherit; font-size: 13px; font-weight: 500;
-    padding: 7px 18px; border-radius: 999px;
-    border: 1px solid var(--bp-line); background: transparent; color: var(--bp-ink);
-    cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
+  .bp-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .bp-btn {
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--bp-line);
+    background: var(--bp-panel);
+    color: var(--bp-ink);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
   }
-  .bp-nav button:hover:not(:disabled) { border-color: var(--bp-muted); }
-  .bp-nav button:focus-visible { outline: 2px solid var(--bp-fwd); outline-offset: 2px; }
-  .bp-nav button:disabled { opacity: 0.35; cursor: default; }
-  .bp-nav .bp-btn-primary { background: var(--bp-fwd); border-color: var(--bp-fwd); color: #fff; padding: 7px 26px; }
-  :global([data-theme='dark']) .bp-nav .bp-btn-primary { color: #10151c; }
-  .bp-nav .bp-btn-primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--bp-fwd); }
-  .bp-nav .bp-btn-reset { border-color: transparent; color: var(--bp-muted); }
-  .bp-nav .bp-btn-reset:hover:not(:disabled) { color: var(--bp-ink); border-color: transparent; }
+  .bp-btn:hover { background: var(--accent-shadow); }
+  .bp-btn:disabled { opacity: 0.4; cursor: default; }
+  .bp-btn:focus-visible { outline: 2px solid var(--bp-fwd); outline-offset: 2px; }
+  .bp-btn-reset { margin-left: auto; }
 
   @media (max-width: 640px) {
     /* Keep the circuit at a readable scale and let the panel scroll sideways. */
@@ -439,7 +371,7 @@
       ].join(''),
       phase: 'init', phaseLabel: '준비', activeGate: null,
       fwdEdges: [], bwdEdges: [], flabels: [], blabels: [], badges: [],
-      fVal: 'f = ?', fColor: 'off',
+      fVal: 'f = \\text{?}', fColor: 'off',
     },
     {
       title: 'Forward Pass \u2014 ADD 게이트',
@@ -452,7 +384,7 @@
       ].join(''),
       phase: 'fwd', phaseLabel: 'Forward pass', activeGate: 'add',
       fwdEdges: ['e1', 'e2'], bwdEdges: [], flabels: ['e1', 'e2'], blabels: [], badges: [],
-      fVal: 'f = ?', fColor: 'off',
+      fVal: 'f = \\text{?}', fColor: 'off',
     },
     {
       title: 'Forward Pass \u2014 MUL 게이트',
@@ -467,7 +399,7 @@
       ].join(''),
       phase: 'fwd', phaseLabel: 'Forward pass', activeGate: 'mul',
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: [], flabels: ['e3', 'e4', 'e5'], blabels: [], badges: [],
-      fVal: 'f = \u221212', fColor: 'fwd',
+      fVal: 'f = -12', fColor: 'fwd',
     },
     {
       title: 'Backward Pass 시작',
@@ -479,7 +411,7 @@
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: null,
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5'], flabels: [], blabels: ['e5'], badges: ['f'],
-      fVal: 'f = \u221212', fColor: 'fwd',
+      fVal: 'f = -12', fColor: 'fwd',
     },
     {
       title: 'Backward Pass \u2014 MUL 게이트',
@@ -491,7 +423,7 @@
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: 'mul',
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4'], flabels: [], blabels: ['e3', 'e4'], badges: ['f', 'z'],
-      fVal: 'f = \u221212', fColor: 'fwd',
+      fVal: 'f = -12', fColor: 'fwd',
     },
     {
       title: 'Backward Pass \u2014 ADD 게이트',
@@ -503,7 +435,7 @@
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: 'add',
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'], flabels: [], blabels: ['e1', 'e2'], badges: ['f', 'z', 'x', 'y'],
-      fVal: 'f = \u221212', fColor: 'fwd',
+      fVal: 'f = -12', fColor: 'fwd',
     },
     {
       title: 'Backpropagation 완료',
@@ -522,7 +454,7 @@
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'],
       flabels: ['e1', 'e2', 'e3', 'e4', 'e5'], blabels: ['e5', 'e3', 'e4', 'e1', 'e2'],
       badges: ['f', 'z', 'x', 'y'],
-      fVal: 'f = \u221212', fColor: 'fwd',
+      fVal: 'f = -12', fColor: 'fwd',
     },
   ];
 
@@ -594,8 +526,8 @@
     });
 
     const fv = document.getElementById('bp-val-f')!;
-    fv.textContent = s.fVal;
-    fv.style.fill = s.fColor === 'fwd' ? 'var(--bp-fwd)' : 'var(--bp-muted)';
+    fv.innerHTML = tex(s.fVal);
+    fv.style.color = s.fColor === 'fwd' ? 'var(--bp-fwd)' : 'var(--bp-muted)';
 
     ['add', 'mul'].forEach(g => {
       const on = s.activeGate === g;
@@ -624,7 +556,7 @@
     const nextBtn = document.getElementById('bp-btn-next') as HTMLButtonElement;
     prevBtn.disabled = cur === 0;
     nextBtn.disabled = cur === N - 1;
-    nextBtn.textContent = cur === N - 1 ? '완료' : '다음';
+    nextBtn.textContent = cur === N - 1 ? '완료' : '다음 →';
   }
 
   function go(d: number): void {
@@ -649,6 +581,49 @@
   widget.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+  });
+
+  // Value labels: anchor a = t/b/c (vertical) + l/c (horizontal) at (x, y) in viewBox units.
+  type Anchor = 'tc' | 'bc' | 'tl' | 'bl' | 'cc';
+  const TRANSFORM: Record<Anchor, string> = {
+    tc: 'translate(-50%,0)', bc: 'translate(-50%,-100%)', tl: 'none',
+    bl: 'translate(0,-100%)', cc: 'translate(-50%,-50%)',
+  };
+  const VB_H = 260;
+  const OVERLAYS: [string, string, string, number, number, Anchor][] = [
+    // [id, class, tex, x, y, anchor]
+    ['bp-nv-x', 'node', 'x = -2', 85, 62, 'cc'],
+    ['bp-nv-y', 'node', 'y = 5', 85, 137, 'cc'],
+    ['bp-nv-z', 'node', 'z = -4', 85, 212, 'cc'],
+    ['bp-val-f', 'node', 'f = \\text{?}', 616, 164, 'cc'],
+    ['bp-g-add', 'gate', '+', 301, 92, 'cc'],
+    ['bp-g-mul', 'gate', '\\times', 461, 157, 'cc'],
+    ['bp-fl-e1', 'fwd', '-2', 182, 59, 'tc'],
+    ['bp-fl-e2', 'fwd', '5', 182, 126, 'bc'],
+    ['bp-fl-e3', 'fwd', 'q = 3', 343, 96, 'tl'],
+    ['bp-fl-e4', 'fwd', '-4', 250, 201, 'bc'],
+    ['bp-fl-e5', 'fwd', '-12', 528, 161, 'tc'],
+    ['bp-bl-e1', 'grad', '\\partial f/\\partial x = -4', 150, 45, 'bl'],
+    ['bp-bl-e2', 'grad', '\\partial f/\\partial y = -4', 150, 141, 'tl'],
+    ['bp-bl-e3', 'grad', '\\partial f/\\partial q = -4', 343, 82, 'bl'],
+    ['bp-bl-e4', 'grad', '\\partial f/\\partial z = 3', 250, 215, 'tc'],
+    ['bp-bl-e5', 'grad', '\\partial f/\\partial f = 1', 528, 135, 'bc'],
+    ['bp-badge-x', 'grad', '\\partial f/\\partial x = -4', 85, 81, 'tc'],
+    ['bp-badge-y', 'grad', '\\partial f/\\partial y = -4', 85, 156, 'tc'],
+    ['bp-badge-z', 'grad', '\\partial f/\\partial z = 3', 85, 231, 'tc'],
+    ['bp-badge-f', 'grad', '\\partial f/\\partial f = 1', 616, 181, 'tc'],
+  ];
+  const layer = document.getElementById('bp-lbl-layer')!;
+  OVERLAYS.forEach(([id, kind, src, x, y, a]) => {
+    const el = document.createElement('span');
+    el.id = id;
+    el.className = `bp-ol bp-ol-${kind}`;
+    el.style.left = `${(x / VIEWBOX_W) * 100}%`;
+    el.style.top = `${(y / VB_H) * 100}%`;
+    el.style.transform = TRANSFORM[a];
+    if (kind !== 'node' && kind !== 'gate') el.style.opacity = '0';
+    el.innerHTML = tex(src);
+    layer.appendChild(el);
   });
 
   // Render equation as KaTeX
