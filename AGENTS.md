@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Korean lecture notes on PyTorch internals (모두의 연구소 PyTorch + NPU랩), built with
-Astro 6 + MDX and Tailwind CSS v4. Each lecture is one prose article in
+Astro 7 + MDX and Tailwind CSS v4. Each lecture is one prose article in
 `src/content/lectures/NN-*.mdx`; figures live in `public/images/NN/` and
 interactive figures in `src/components/`.
 
