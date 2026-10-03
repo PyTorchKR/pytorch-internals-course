@@ -766,7 +766,7 @@ FlashAttention v2는 **CUTLASS**를 사용합니다. CUTLASS는 CUDA 위에 올�
 
 #### v4: Blackwell 세대, 그리고 CuTe DSL
 
-**FlashAttention v4**는 Blackwell(그리고 Hopper)을 타깃으로 다시 작성된 버전으로, Hot Chips 2025에서 처음 공개되었습니다. 구현 언어는 C++ CUTLASS가 아니라 CUTLASS의 Python 프론트엔드인 **CuTe DSL**입니다. 또 softmax의 `exp` 계산을 특수 함수 유닛(SFU) 대신 일반 연산 유닛의 다항식 근사로 옮기는 등, 알고리즘 자체를 새 하드웨어의 자원 밸런스에 맞춰 재설계했습니다. 논문 기준으로 B200(BF16)에서 cuDNN 9.13 대비 최대 1.3배, Triton 구현 대비 2.7배 빠릅니다. FlashAttention v3와의 직접 비교는 논문에 없고, Hot Chips 발표 수치(B200 FA4 약 1.6 PFLOPs/s vs H100 FA3 약 0.74 PFLOPs/s)는 서로 다른 GPU 사이의 비교입니다. v3에 이어 v4에서도 하드웨어 세대가 바뀌자 커널을 다시 작성했습니다.
+**FlashAttention v4**는 Blackwell(그리고 Hopper)을 타깃으로 다시 작성된 버전으로, Hot Chips 2025에서 처음 공개되었습니다. 구현 언어는 C++ CUTLASS가 아니라 CUTLASS의 Python 프론트엔드인 **CuTe DSL**입니다. 또 softmax의 `exp` 계산 일부를 FMA 유닛의 다항식 근사로 돌려 특수 함수 유닛(SFU, 논문의 MUFU)과 나눠 처리하는 등, 알고리즘 자체를 새 하드웨어의 자원 밸런스에 맞춰 재설계했습니다. 논문 기준으로 B200(BF16)에서 cuDNN 9.13 대비 최대 1.3배, Triton 구현 대비 2.7배 빠릅니다. FlashAttention v3와의 직접 비교는 논문에 없고, Hot Chips 발표 수치(B200 FA4 약 1.6 PFLOPs/s vs H100 FA3 약 0.74 PFLOPs/s)는 서로 다른 GPU 사이의 비교입니다. v3에 이어 v4에서도 하드웨어 세대가 바뀌자 커널을 다시 작성했습니다.
 
 > 출처: [FlashAttention-4: Algorithm and Kernel Pipelining Co-Design for Asymmetric Hardware Scaling](https://arxiv.org/abs/2603.05451)
 
@@ -888,6 +888,8 @@ NVIDIA는 Triton을 CUDA Tile IR로 lowering하는 backend도 공개했습니다
 <div class="flex justify-center mt-4">
   <img src="/images/06/inference-engines-and-servers-architecture.png" alt="LLM 추론 스택에서 모델·커널 위에 얹히는 Inference Engine과 Inference Server 아키텍처" class="max-w-2xl mx-auto" />
 </div>
+
+> 출처: [Koyeb - Best LLM Inference Engines and Servers to Deploy LLMs in Production](https://www.koyeb.com/blog/best-llm-inference-engines-and-servers-to-deploy-llms-in-production)
 
 ### vLLM: 오픈소스 LLM Serving Engine
 
