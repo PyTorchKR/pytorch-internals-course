@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 410" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="13">
+<defs><marker id="ah-n" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#888780"/></marker><marker id="ah-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,1 L9,5 L0,9 Z" fill="#EF9F27"/></marker></defs>
+<text x="20" y="30" font-size="14" font-weight="600" fill="#2C2C2A">Before: profile로 고른 trace</text>
+<text x="440" y="30" font-size="14" font-weight="600" fill="#2C2C2A">After: trace를 한 덩어리로 스케줄링</text>
+<line x1="420" y1="16" x2="420" y2="330" stroke="#B4B2A9" stroke-dasharray="4 4"/>
+<rect x="40" y="60" width="200" height="66" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+<text x="52" y="76" font-size="12" font-weight="600" fill="#854F0B">B1</text>
+<text x="52" y="96" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">a = load x</text>
+<text x="52" y="114" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">if a &gt; 0</text>
+<rect x="40" y="170" width="200" height="48" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+<text x="52" y="186" font-size="12" font-weight="600" fill="#854F0B">B2</text>
+<text x="52" y="206" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">b = a * 2</text>
+<rect x="290" y="170" width="110" height="48" rx="6" fill="#F1EFE8" stroke="#888780" stroke-width="1.5"/>
+<text x="302" y="186" font-size="12" font-weight="600" fill="#5F5E5A">B3</text>
+<text x="302" y="206" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#2C2C2A">b = 0</text>
+<rect x="40" y="262" width="200" height="84" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+<text x="52" y="278" font-size="12" font-weight="600" fill="#854F0B">B4</text>
+<rect x="46" y="284" width="188" height="20" rx="3" fill="#DCEBFA" stroke="#378ADD"/>
+<text x="52" y="298" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#185FA5">t = load y</text>
+<text x="52" y="316" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">c = b + t</text>
+<text x="52" y="334" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">store c</text>
+<path d="M 140 126 V 169" fill="none" stroke="#EF9F27" stroke-width="2" marker-end="url(#ah-a)"/>
+<text x="150" y="153" font-size="12" fill="#854F0B">90%</text>
+<path d="M 240 93 H 345 V 169" fill="none" stroke="#888780" stroke-width="2" marker-end="url(#ah-n)"/>
+<text x="290" y="86" font-size="12" fill="#5F5E5A">10%</text>
+<path d="M 140 218 V 261" fill="none" stroke="#EF9F27" stroke-width="2" marker-end="url(#ah-a)"/>
+<path d="M 345 218 V 304 H 241" fill="none" stroke="#888780" stroke-width="2" marker-end="url(#ah-n)"/>
+<rect x="440" y="60" width="240" height="210" rx="6" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+<text x="452" y="80" font-size="13" font-weight="600" fill="#854F0B">trace (B1 + B2 + B4)</text>
+<text x="452" y="112" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">a = load x</text>
+<text x="452" y="144" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">if a &lt;= 0 → B3'</text>
+<text x="452" y="176" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">b = a * 2</text>
+<text x="534" y="176" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">‖</text>
+<rect x="556" y="162" width="94" height="20" rx="3" fill="#DCEBFA" stroke="#378ADD"/>
+<text x="562" y="176" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#185FA5">t = load y</text>
+<text x="452" y="198" font-size="12" fill="#185FA5">B4에서 위로 옮김, 같은 cycle</text>
+<text x="452" y="226" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">c = b + t</text>
+<text x="452" y="256" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#854F0B">store c</text>
+<rect x="750" y="170" width="110" height="86" rx="6" fill="#F1EFE8" stroke="#888780" stroke-width="1.5"/>
+<text x="762" y="186" font-size="12" font-weight="600" fill="#5F5E5A">B3'</text>
+<text x="762" y="210" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#2C2C2A">b = 0</text>
+<rect x="756" y="222" width="98" height="20" rx="3" fill="#FBE3D6" stroke="#D85A30"/>
+<text x="762" y="236" font-size="13" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#D85A30">t = load y</text>
+<text x="805" y="276" font-size="12" text-anchor="middle" fill="#D85A30">compensation code</text>
+<path d="M 680 140 H 805 V 169" fill="none" stroke="#888780" stroke-width="2" marker-end="url(#ah-n)"/>
+<text x="692" y="133" font-size="12" fill="#5F5E5A">10%</text>
+<path d="M 750 222 H 681" fill="none" stroke="#888780" stroke-width="2" marker-end="url(#ah-n)"/>
+<rect x="40" y="373" width="16" height="16" rx="3" fill="#FAEEDA" stroke="#EF9F27" stroke-width="1.5"/>
+<text x="64" y="386" font-size="12" fill="#2C2C2A">자주 실행되는 경로 (trace)</text>
+<rect x="270" y="373" width="16" height="16" rx="3" fill="#DCEBFA" stroke="#378ADD" stroke-width="1.5"/>
+<text x="294" y="386" font-size="12" fill="#2C2C2A">trace 안에서 옮긴 연산</text>
+<rect x="470" y="373" width="16" height="16" rx="3" fill="#FBE3D6" stroke="#D85A30" stroke-width="1.5"/>
+<text x="494" y="386" font-size="12" fill="#2C2C2A">보상 코드 (compensation code)</text>
+</svg>
