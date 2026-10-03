@@ -34,9 +34,9 @@ PyTorch, TensorFlow, JAX 같은 ML Framework은 모델을 기술하는 데 그�
 
 ML Framework의 발전은 이전 연구와 산업적 성과가 축적된 결과입니다. 서로 다른 분야에서 발전한 기술적 흐름이 합쳐져 지금의 ML Framework를 구성하고 있습니다.
 
-> **Q: PyTorch의 경우, ML 컴파일러의 이름이 있을까요?**
+> **Q**: PyTorch의 경우, ML 컴파일러의 이름이 있을까요?
 >
-> PyTorch 1.x에도 **TorchScript/JIT**라는 컴파일 스택이 있었으며, `torch.jit.trace`나 `torch.jit.script`를 통해 모델을 컴파일할 수 있었습니다. 다만 일반적인 사용 방식은 연산을 즉시 실행하는 eager mode가 중심이었습니다.
+> **A**: PyTorch 1.x에도 **TorchScript/JIT**라는 컴파일 스택이 있었으며, `torch.jit.trace`나 `torch.jit.script`를 통해 모델을 컴파일할 수 있었습니다. 다만 일반적인 사용 방식은 연산을 즉시 실행하는 eager mode가 중심이었습니다.
 > PyTorch 2.0에서는 **`torch.compile()`**을 통해 기존 Python 코드에 적은 수정만으로 컴파일 최적화를 적용할 수 있게 되었습니다. 내부적으로 **TorchDynamo**가 연산 그래프를 추출하고, **AOTAutograd**가 역전파 그래프까지 준비하며, 기본 컴파일러 백엔드인 **TorchInductor**가 그래프를 최적화하고 실행 코드를 생성합니다. GPU 코드 생성에는 주로 도메인 특화 언어(DSL)이자 컴파일러인 **Triton**을 활용합니다.
 
 ## 오늘 다룰 주제들
@@ -381,18 +381,20 @@ PyTorch에서 새 하드웨어 backend를 연결하는 지점은 세 곳입니�
 
 ### TorchScript와 Python/C++ 관계
 
-> **Q: TorchScript는 Python과 C++ 사이에 위치해 있다고 봐도 되나요?**
-
-그렇게 보기는 어렵습니다. TorchScript는 Python과 C++ 사이의 binding layer가 아니라 PyTorch 프로그램을 직렬화 가능한 graph 형태로 변환하던 compilation 방식입니다. 현재 TorchScript는 deprecated 상태이며, 새로운 export 용도에는 `torch.export` 사용이 권장됩니다.
+> **Q**: TorchScript는 Python과 C++ 사이에 위치해 있다고 봐도 되나요?
+>
+> **A**: 그렇게 보기는 어렵습니다. TorchScript는 Python과 C++ 사이의 binding layer가 아니라 PyTorch 프로그램을 직렬화 가능한 graph 형태로 변환하던 compilation 방식입니다. 현재 TorchScript는 deprecated 상태이며, 새로운 export 용도에는 `torch.export` 사용이 권장됩니다.
 
 ### CUDA와 Triton의 차이점
 
-> **Q: CUDA와 Triton은 어떻게 다른가요?**
-
-- **라이선스**: CUDA는 proprietary, Triton은 오픈소스
-- **설계 목적**: CUDA는 범용 GPU 컴퓨팅, Triton은 고성능 텐서 연산 커널 개발
-- **작성 방식**: CUDA C++는 C++ 확장 문법으로, Triton은 Python 기반 DSL과 @triton.jit으로 커널을 작성
-- **프로그래밍 모델**: CUDA C++는 스레드 중심, Triton은 데이터 블록(타일) 중심
-- **최적화 방식**: CUDA C++는 세밀한 직접 제어, Triton은 컴파일러 자동화에 중점
-
-Triton은 단순한 Python API가 아니라 Python syntax를 사용하는 kernel programming DSL입니다. PyTorch Inductor는 NVIDIA GPU용 kernel을 생성할 때 Triton을 주요 code generation backend 중 하나로 사용합니다. 이는 모든 PyTorch operator나 모든 하드웨어 backend가 Triton을 사용한다는 의미는 아닙니다.
+> **Q**: CUDA와 Triton은 어떻게 다른가요?
+>
+> **A**:
+>
+> - **라이선스**: CUDA는 proprietary, Triton은 오픈소스
+> - **설계 목적**: CUDA는 범용 GPU 컴퓨팅, Triton은 고성능 텐서 연산 커널 개발
+> - **작성 방식**: CUDA C++는 C++ 확장 문법으로, Triton은 Python 기반 DSL과 @triton.jit으로 커널을 작성
+> - **프로그래밍 모델**: CUDA C++는 스레드 중심, Triton은 데이터 블록(타일) 중심
+> - **최적화 방식**: CUDA C++는 세밀한 직접 제어, Triton은 컴파일러 자동화에 중점
+>
+> Triton은 단순한 Python API가 아니라 Python syntax를 사용하는 kernel programming DSL입니다. PyTorch Inductor는 NVIDIA GPU용 kernel을 생성할 때 Triton을 주요 code generation backend 중 하나로 사용합니다. 이는 모든 PyTorch operator나 모든 하드웨어 backend가 Triton을 사용한다는 의미는 아닙니다.
