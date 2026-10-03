@@ -4,6 +4,7 @@ date: "2024-12-04"
 lecture: 1
 ---
 
+import ThemeImage from '../../components/ThemeImage.astro';
 
 # Week 1: PyTorch의 기술적인 배경
 
@@ -329,13 +330,17 @@ Eager vs. graph mode가 "graph를 만드는가"의 축이라면, 이 축은 "코
 - **Trace cache** (1996): 실행 경로를 따라 나타나는 명령어열을 캐시에 저장
 - **Chrome V8 Engine** (2008): 런타임 정보를 활용하는 최적화 JIT로 발전
 
-<img src="/images/01/slide16_1.png" class="rounded shadow-lg" alt="Trace Scheduling paper by Joseph A. Fisher, 1981" />
+<img src="/images/01/slide16_1.png" class="mx-auto w-full max-w-[320px] rounded shadow-lg" alt="Trace Scheduling paper by Joseph A. Fisher, 1981" />
 
-<div class="text-xs mt-2 opacity-60">
+<div class="text-xs mt-2 opacity-60 text-center">
 Fisher, J.A. "Trace Scheduling: A Technique for Global Microcode Compaction" IEEE Trans. on Computers, 1981
 </div>
 
 PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파일 타임에 활용해 최적화하는 넓은 개념입니다. Trace scheduling은 PGO에서 사용하는 기법 중 하나입니다. Trace scheduling은 브랜치 예측으로 자주 실행되는 동적 실행 경로(Trace)를 추출합니다. 그리고 이 경로에 맞게 명령어를 스케줄링합니다. 양질의 프로파일 데이터가 필요하며, 올바른 트레이스를 만들어 롤백 없이 효율적인 성능을 제공하는 것이 핵심입니다.
+
+<ThemeImage lightSrc="/images/01/trace-scheduling-light.svg" darkSrc="/images/01/trace-scheduling-dark.svg" alt="Trace scheduling 전후: 90% 실행되는 B1, B2, B4를 하나의 trace로 묶고, B4의 t = load y를 b = a * 2와 같은 cycle로 옮긴 뒤, off-trace block B3'에 t = load y를 compensation code로 복사한 그림." class="mx-auto w-full max-w-[880px]" />
+
+위 그림은 trace scheduling의 전후를 보여 줍니다. Profile에서 B1 → B2 → B4 경로가 90% 실행되므로, compiler는 이 세 block을 하나의 trace로 묶어 함께 스케줄링합니다. B4의 `t = load y`는 `b = a * 2`와 의존성이 없으므로 위로 옮겨 같은 cycle에 실행합니다. 그러면 B3을 거치는 경로는 `t = load y`를 지나지 않습니다. 그래서 compiler는 off-trace block B3'에 같은 연산을 복사해 넣습니다. 이 복사본을 compensation code라고 합니다.
 
 
 ## PyTorch에 통합된 기술
