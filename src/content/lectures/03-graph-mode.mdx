@@ -65,7 +65,7 @@ PyTorch 2.0에서 1.0 대비 가장 크게 바뀐 부분은 graph mode입니다.
 
 PyTorch는 2.0 이후 eager mode의 유연성과 graph mode의 컴파일러 최적화를 결합한 형태로 발전했습니다. 그 뒤로 연구뿐만 아니라 production에서도 널리 쓰입니다.
 
-<img src="/images/03/slide03_1.png" alt="PyTorch 2.0 compiler stack: frontend의 Dynamo·AOTAutograd, backend의 Inductor, 그 아래 Triton 등 codegen backend" class="h-72" />
+<img src="/images/03/slide03_1.png" alt="PyTorch 2.0 compiler stack: frontend의 Dynamo·AOTAutograd, backend의 Inductor, 그 아래 Triton 등 codegen backend" class="mx-auto w-full max-w-[716px]" />
 
 https://pytorch.org/get-started/pytorch-2.0/
 
@@ -135,7 +135,7 @@ L9:  output(r);
   darkSrc="/images/03/trace-diagram-dark.svg"
   lightSrc="/images/03/trace-diagram-light.svg"
   alt="같은 Program이라도 Input A와 Input B에서 서로 다른 trace가 만들어짐"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 이론적으로 프로그램 전체를 trace로 만들 수 있지만, 두 가지 한계가 있습니다:
@@ -181,7 +181,7 @@ Trace Cache는 예측된 제어 흐름을 따라 decoded micro-op을 연속적�
   darkSrc="/images/03/trace-cache-dark.svg"
   lightSrc="/images/03/trace-cache-light.svg"
   alt="실행 흐름 안에서 같은 구간이 세 번 반복됨"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 Trace Cache의 동작 방식은 다음과 같습니다:
@@ -198,14 +198,14 @@ Trace Cache의 동작 방식은 다음과 같습니다:
 
 아래 그림은 (a) 기존 Instruction Cache와 (b) Trace Cache의 구조적 차이를 비교하여 보여줍니다:
 
-<img src="/images/03/slide10_2.png" alt="(a) Instruction Cache에는 블록 A~E가 흩어져 있고, (b) Trace Cache에는 A~E가 한 줄로 이어져 저장됨" class="h-32" />
+<img src="/images/03/slide10_2.png" alt="(a) Instruction Cache에는 블록 A~E가 흩어져 있고, (b) Trace Cache에는 A~E가 한 줄로 이어져 저장됨" class="mx-auto" />
 
 - **(a) Instruction Cache**: 블록 A, B → C → D → E가 메모리 상에 비연속적으로 배치되어 있어, 점프할 때마다 다른 위치에서 fetch해야 합니다. 한 번에 한 덩어리만 읽을 수 있으므로 블록마다 fetch를 반복합니다. 그만큼 효율이 떨어집니다.
 - **(b) Trace Cache**: 동일한 블록들을 A, B, C, D, E 순서로 하나의 연속적인 trace로 묶어 저장합니다. 한 번에 fetch할 수 있으므로 성능이 올라갑니다.
 
 이 세 장치가 연결되어 동작하는 흐름은 다음과 같습니다:
 
-<img src="/images/03/slide10_1.png" alt="Trace Predictor가 Trace Cache를 거쳐 Execution Engine에 trace를 보내고, outstanding trace buffers가 Instruction Cache·Branch Predictor로 trace를 만들어 Trace Cache와 Trace Predictor를 update" class="h-52" />
+<img src="/images/03/slide10_1.png" alt="Trace Predictor가 Trace Cache를 거쳐 Execution Engine에 trace를 보내고, outstanding trace buffers가 Instruction Cache·Branch Predictor로 trace를 만들어 Trace Cache와 Trace Predictor를 update" class="mx-auto w-full max-w-[814px]" />
 
 1. Trace Predictor가 다음에 실행될 trace를 예측하여 Trace Cache에서 해당 trace를 fetch → Execution Engine에 전달
 2. Trace Cache에 원하는 trace가 없으면(trace cache miss), Instruction Cache + Branch Predictor를 통해 instruction을 하나씩 fetch하면서 새로운 trace 후보를 outstanding trace buffers에 수집
@@ -225,7 +225,7 @@ Partial evaluation은 프로그램을 최적화하는 기법으로, 입력을 �
 
 프로그램 `p`에 고정된 입력 `in1`(static input)을 주어 부분 평가(partial-evaluate)한 뒤, 동적 입력 `in2`(dynamic input)에 의해 영향을 받는 나머지 계산만 수행하는 **특화된 프로그램(specialized program)** 을 생성합니다. 이렇게 생성된 특화 프로그램은 원래 프로그램 `p`보다 더 빠르게 실행됩니다.
 
-<img src="/images/03/slide11_1.png" alt="프로그램 p와 static input in1으로 특화 프로그램을 만들고, 특화 프로그램은 dynamic input in2만 받아 실행" class="h-56" />
+<img src="/images/03/slide11_1.png" alt="프로그램 p와 static input in1으로 특화 프로그램을 만들고, 특화 프로그램은 dynamic input in2만 받아 실행" class="mx-auto w-full max-w-[837px]" />
 
 > Jones, Neil D. "An introduction to partial evaluation." ACM Computing Surveys (CSUR) 28.3 (1996): 480-503. https://dl.acm.org/doi/10.1145/243439.243447
 
@@ -246,7 +246,7 @@ Static input에만 의존하는 계산을 한 번 해 두면 호출할 때마다
   darkSrc="/images/03/partial-evaluation-dark.svg"
   lightSrc="/images/03/partial-evaluation-light.svg"
   alt="partial evaluation 전 trace는 static·dynamic input을 모두 받고, 후에는 static-only 계산이 빠져 dynamic input만 받음"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 Partial Evaluation은 static input에만 의존하는 계산을 미리 평가하고, 그 결과를 상수로 반영한 나머지 계산만 남깁니다.
@@ -345,7 +345,7 @@ Dynamo가 frame 단위에서 bytecode를 분석하므로, 먼저 CPython이 코�
 
 Python 코드가 실행되면 CPython이 소스 코드를 bytecode로 변환합니다. 그리고 VM의 evaluation loop(bytecode를 하나씩 읽어 실행하는 루프)에서 실행합니다. Dynamo는 이 실행을 그대로 기록하지 않습니다. 대신 bytecode instruction을 순서대로 **symbolic execution**(실제 값 대신 값을 나타내는 기호를 두고 명령을 따라가며 그 효과만 기록하는 방식)하면서 Python 값과 tensor 연산을 추적합니다. 그중 컴파일 가능한 tensor 연산을 FX graph에 추가합니다.
 
-<img src="/images/03/slide14_1.png" alt="Interpreter 안에서 compiler가 source code를 bytecode로 바꾸고 virtual machine이 실행" class="h-52" />
+<img src="/images/03/slide14_1.png" alt="Interpreter 안에서 compiler가 source code를 bytecode로 바꾸고 virtual machine이 실행" class="mx-auto" />
 
 CPython의 기본 동작은 다음과 같습니다:
 
@@ -377,7 +377,7 @@ Dynamo는 CPython frame evaluation API로 frame 단위에 개입합니다. Pytho
   darkSrc="/images/03/interpreter-frame-dark.svg"
   lightSrc="/images/03/interpreter-frame-light.svg"
   alt="Python VM 구조: thread별 call stack에 쌓인 frame들과, frame을 인자로 받아 실행하는 evaluation loop, 그리고 이를 교체하는 Dynamo"
-  class="h-64 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 구현 세부는 버전에 따라 다릅니다. CPython 3.10까지는 frame이 `PyFrameObject`로 heap에 하나씩 할당되었고, `f_back`으로 서로 연결됐습니다. 3.11부터는 `_PyInterpreterFrame`이 thread별 연속 메모리에 놓입니다. 3.11부터 `PyFrameObject`는 필요할 때만 만들어집니다(3.14 기준 `Include/internal/pycore_interpframe_structs.h`). 위 그림은 두 버전에 공통인 개념만 담았습니다.
@@ -390,7 +390,7 @@ Dynamo는 bytecode를 분석하면서 tensor 연산을 FX graph로 수집합니�
   darkSrc="/images/03/torch-dynamo-dark.svg"
   lightSrc="/images/03/torch-dynamo-light.svg"
   alt="bytecode를 graph break에서 Trace #1~#4로 나눠 컴파일하고, 실행 때 각 trace 앞에서 guard를 검사"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 위 다이어그램에서 색칠된 부분은 trace 불가능한 graph break 지점입니다. 나머지 구간은 각각 하나의 trace가 됩니다. 분할된 trace들은 다음과 같은 방식으로 실행됩니다:
@@ -406,7 +406,7 @@ Trace를 찾아가는 과정은 recursive합니다. Dynamo는 graph break 지점
 
 Dynamo는 CPython의 frame evaluation API를 이용해 frame 실행에 개입합니다. 아래 그림의 왼쪽은 Python의 기본 동작, 오른쪽은 Dynamo가 frame evaluation을 교체한 모습입니다:
 
-<img src="/images/03/slide21_1.png" alt="왼쪽은 기본 Python frame 실행, 오른쪽은 Dynamo가 guard를 검사하고 bytecode를 분석·변환해 FX graph와 compiled function을 만드는 흐름" class="h-64" />
+<img src="/images/03/slide21_1.png" alt="왼쪽은 기본 Python frame 실행, 오른쪽은 Dynamo가 guard를 검사하고 bytecode를 분석·변환해 FX graph와 compiled function을 만드는 흐름" class="mx-auto" />
 
 <div class="text-xs text-center -mt-2 mb-4">그림의 노드 이름은 `PyFrameObject`입니다. 3.11 이후에는 `_PyInterpreterFrame`이 frame의 기본 표현이며, 그림은 두 버전에 공통인 흐름만 보여 줍니다.</div>
 
@@ -486,7 +486,7 @@ Trace 생성의 입력과 결과물은 다음과 같습니다.
   darkSrc="/images/03/trace-generation-dark.svg"
   lightSrc="/images/03/trace-generation-light.svg"
   alt="frame 호출 시 cache entry guard 검사, transformed bytecode 실행, FX graph 계산, graph break, resume function 선택으로 이어지는 Dynamo 실행 흐름"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 <div class="text-xs text-center -mt-2 mb-4">그림의 `PyFrameObject`는 3.10까지의 표현입니다. 3.11 이후에는 `_PyInterpreterFrame`이 기본입니다.</div>

@@ -35,6 +35,12 @@ Use bun, not npm.
 - Use self-closing tags: `<br />`, `<img ... />`.
 - Leave a blank line between an HTML tag such as `<div>` and Markdown inside it.
 - Math uses `$...$` and `$$...$$` (remark-math + KaTeX).
+- Article prose rules in `src/styles/global.css` live in `@layer base`, so
+  Tailwind classes written in MDX override them. Keep new rules for MDX
+  content inside a layer; an unlayered rule silently beats every utility.
+- Size an image by width (`mx-auto w-full max-w-[<W>px]`), not with `h-*`.
+  Show SVGs and rasters up to 882px wide at their own width; cap larger
+  rasters so they render at most about 480px tall.
 - In an Astro component, a dark-mode rule must be written
   `:global([data-theme='dark']) .x`. A plain `[data-theme='dark'] .x` gets
   scoped and never matches.
