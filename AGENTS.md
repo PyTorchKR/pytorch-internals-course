@@ -38,7 +38,6 @@ This project is a presentation system for a Korean-language lecture series on Py
 |-----------|---------|-------|
 | `Slide.astro` | Slide container | `layout`: `default` / `cover` / `center`; `class`: additional CSS |
 | `Reveal.astro` | Progressive disclosure (click-to-reveal) | `items`: `true` (reveal children one-by-one) / `false` (reveal whole block) |
-| `Mermaid.astro` | Mermaid diagram rendering (client-side) | `scale`: number (default 1.0); `wide`: boolean (default false, removes max-width 60% constraint) |
 | `ThemeImage.astro` | Light/dark pair of `<img>` SVG figures | `lightSrc`, `darkSrc`, `alt`, `class` |
 | Figure widgets (`BackpropWidget`, `KvCacheWidget`, `SelfAttentionDiagram`, ...) | Interactive or math-labeled figures; follow "Figure and Widget Style" | none |
 
@@ -59,7 +58,6 @@ Schema: `title` (string), `date` (string), `lecture` (number)
 
 - **remark-math** + **rehype-katex**: LaTeX math rendering
 - **Shiki** (one-dark-pro): Code syntax highlighting
-- **mermaid.js**: Client-side diagram rendering
 - **Tailwind CSS v4**: Utility-first styling
 
 ## MDX Slide Format
@@ -75,7 +73,7 @@ lecture: N
 
 import Slide from '../../components/Slide.astro';
 import Reveal from '../../components/Reveal.astro';
-import Mermaid from '../../components/Mermaid.astro';
+import ThemeImage from '../../components/ThemeImage.astro';
 
 <Slide layout="cover">
 # Week N: Title
@@ -93,12 +91,9 @@ Regular markdown content with Tailwind CSS classes.
 </Slide>
 
 <Slide>
-## Mermaid Diagram
+## Diagram
 
-<Mermaid scale={0.7}>
-{`graph LR
-    A --> B --> C`}
-</Mermaid>
+<ThemeImage lightSrc="/images/0N/name-light.svg" darkSrc="/images/0N/name-dark.svg" alt="..." class="mx-auto w-full max-w-[680px]" />
 </Slide>
 
 <Slide layout="center">
@@ -106,30 +101,13 @@ Regular markdown content with Tailwind CSS classes.
 </Slide>
 ```
 
-### Mermaid Diagram Color Rules
+### Diagrams
 
-Mermaid diagrams support **automatic light/dark mode switching** — SVGs re-render on theme toggle without page reload (via `MutationObserver`).
-
-**CSS theme overrides** (`src/styles/global.css`):
-
-| Element | Light mode | Dark mode |
-|---------|-----------|-----------|
-| Node background | `#f0f0f0` (light gray) | `#2d2d3d` (dark gray) |
-| Node border | `#999` | `#666` |
-| Text (all SVG text) | `#222` (dark) | `#e0e0e0` (light) |
-| Lines / arrows | `#333`, 2px | `#ccc`, 2px |
-| Edge label background | `rgba(255,255,255,0.85)` | `rgba(30,30,46,0.85)` |
-| Note background | `#fff8dc` (cream) | `#3a3520` (dark olive) |
-| Cluster/subgraph fill | (default) | `#252535` |
-| Sequence diagram lines | `#666` | `#888` |
-
-**Guidelines**:
-
-- Default SVG max-width is **60%** of container, centered via `margin: 0 auto`
-- Use `<Mermaid wide>` to remove max-width constraint for wide diagrams (e.g., trees with many branches)
-- Mermaid `style` directives in diagram code (e.g., `style hw fill:#3a7bd5,color:#fff`) are **not** overridden by CSS — use them for accent colors on specific nodes
-- Do NOT use Mermaid `mindmap` for hierarchical data — use `flowchart TD` instead (mindmap renders horizontally and becomes unreadable at constrained widths)
-- CSS targets `.label-container path` for node backgrounds (not just `.node rect`) because Mermaid v11 uses `<path>` elements
+Draw every diagram as a light/dark SVG pair under `public/images/NN/`
+and embed it with `ThemeImage`, following "Figure and Widget Style"
+below. The site does not use Mermaid: all former Mermaid diagrams
+were redrawn as SVG so that they share the palette, the font stack and
+right-angle connectors.
 
 ### Figure and Widget Style
 
@@ -215,7 +193,7 @@ pytorch-internal-lecture/
 ├── src/
 │   ├── content/
 │   │   └── lectures/          # 7 MDX lecture files
-│   ├── components/            # Slide, Reveal, Mermaid components
+│   ├── components/            # Slide, Reveal, ThemeImage and figure components
 │   ├── layouts/               # LectureLayout.astro
 │   ├── pages/
 │   │   ├── index.astro        # Lecture listing page

@@ -896,45 +896,6 @@ a:hover {
   color: var(--text);
 }
 
-/* Mermaid (pre-rendered SVGs) */
-.mermaid-wrapper {
-  display: flex;
-  justify-content: center;
-  margin: 1.5rem 0;
-  width: 100%;
-}
-
-.mermaid-svg {
-  width: 100%;
-}
-
-/* Label widths are measured with the build machine's CJK font; viewers'
-   fallback fonts can be a few px wider, and foreignObject clips by default,
-   cutting off the last Hangul glyph. Let labels overflow instead. */
-.mermaid-svg foreignObject {
-  overflow: visible;
-}
-
-.mermaid-wrapper svg {
-  max-width: 60%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-}
-
-.mermaid-wide svg {
-  max-width: 100%;
-}
-
-/* Fallback for diagrams not yet pre-rendered */
-.mermaid-fallback {
-  background: var(--surface-2, #f0f0f0);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.8rem;
-  white-space: pre-wrap;
-}
-
 /* Grid */
 .article-body .grid {
   margin: 1rem 0;
@@ -1200,12 +1161,6 @@ a:hover {
   .article-body .katex-display {
     max-width: 100%;
     overflow-x: auto;
-  }
-
-  /* Mermaid pre-rendered SVGs: allow them to use the full mobile width
-     instead of being capped at 60%. */
-  .mermaid-wrapper svg {
-    max-width: 100%;
   }
 }
 
