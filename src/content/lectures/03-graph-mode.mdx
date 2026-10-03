@@ -59,7 +59,7 @@ PyTorch 2.0에서 1.0 대비 가장 크게 바뀐 부분은 graph mode입니다.
 - **AOTAutograd**: PyTorch 2.0은 머신러닝 컴파일러라서 자동 미분을 frontend에 포함함. AOTAutograd는 backend에 넘기기 전에 backward graph까지 만들어 둠
 - **Inductor 및 다양한 backend 지원**: 대표 backend는 Inductor[^inductor]이며, 그 아래에 Triton[^triton] 등의 codegen backend가 연결
 
-[^inductor]: PyTorch 2.0의 기본 backend compiler. Capture된 graph를 받아 최적화된 kernel 코드를 생성합니다. [Week 1](/lectures/01-technical-background/#pytorch-20)에서 Dynamo·Triton과 함께 PyTorch 2.0의 주요 ML 컴파일러 컴포넌트로 소개했습니다.
+[^inductor]: PyTorch 2.0의 기본 compiler backend. Capture된 graph를 받아 최적화된 kernel 코드를 생성합니다. [Week 1](/lectures/01-technical-background/#pytorch-20)에서 Dynamo·Triton과 함께 PyTorch 2.0의 주요 ML 컴파일러 컴포넌트로 소개했습니다.
 [^triton]: OpenAI가 개발한 GPU kernel 작성용 언어이자 컴파일러. [Week 1 Q&A의 "CUDA와 Triton의 차이점"](/lectures/01-technical-background/#cuda와-triton의-차이점)에서 소개했습니다.
 
 이 시기에 Meta는 PyTorch를 Linux Foundation에 기부했습니다. 이때 PyTorch Foundation이 설립되었습니다.
@@ -619,7 +619,7 @@ decomp_table = torch._decomp.get_decompositions([
 ])
 ```
 
-AOTAutograd와 backend compiler는 decomposition table을 사용해 상위 연산을 더 작은 연산으로 변환할 수 있습니다. 어떤 decomposition을 적용할지는 compilation 경로와 backend 설정에 따라 달라집니다.
+AOTAutograd와 compiler backend는 decomposition table을 사용해 상위 연산을 더 작은 연산으로 변환할 수 있습니다. 어떤 decomposition을 적용할지는 compilation 경로와 backend 설정에 따라 달라집니다.
 
 > 참고: https://docs.pytorch.org/docs/2.14/user_guide/torch_compiler/torch.compiler_ir.html (본문의 op 개수는 이 2.14 문서 기준)
 

@@ -24,7 +24,7 @@
 |---|---|---|
 | 01 | 8 / 2 / 3 | 6번은 backpropagation으로 통일, 10번은 BLAS full name 유지. 369·400행 "hardware backend" |
 | 02 | 27 / 3 / 1 | 21번은 dispatcher 대소문자 규칙(불릿·문장 첫머리 대문자), 28번은 446행 문장 유지. 사실 flag 4건 처리: 링크 v2.14.0 고정, 2.13 언급 제거, RegisterCUDA 표현, guard 연결 경로를 `VirtualGuardImpl`/`DeviceGuardImplInterface`로 |
-| 03 | 40 / 2 / 0 (43번 결정 대기) | 2번은 PEP 523 링크, 4번은 instruction window 정의 없이, 35번은 Mermaid 라벨까지. 207행 Trace cache miss. 사실 flag 552행(cache entry 위치) 고침 |
+| 03 | 40 / 3 / 0 | 2번은 PEP 523 링크, 4번은 instruction window 정의 없이, 35번은 Mermaid 라벨까지. 207행 Trace cache miss. 43번은 "compiler backend"로 통일. 사실 flag 552행(cache entry 위치) 고침 |
 | 04~07 | 저자 결정 대기 | |
 
 ## 1차 작업에서 생긴 오류 (원문 확인)
