@@ -424,6 +424,8 @@ Dynamo는 CPython의 frame evaluation API를 이용해 frame 실행에 개입합
 
 <img src="/images/03/slide21_1.png" alt="왼쪽은 기본 Python frame 실행, 오른쪽은 Dynamo가 guard를 검사하고 bytecode를 분석·변환해 FX graph와 compiled function을 만드는 흐름" class="h-64" />
 
+<div class="text-xs text-center -mt-2 mb-4">그림의 노드 이름은 `PyFrameObject`입니다. 3.11 이후에는 `_PyInterpreterFrame`이 frame의 기본 표현이며, 그림은 두 버전에 공통인 흐름만 보여 줍니다.</div>
+
 > 참고 1: https://docs.pytorch.org/docs/2.14/user_guide/torch_compiler/torch.compiler_dynamo_overview.html
 >
 > 참고 2: https://dev-discuss.pytorch.org/t/torchdynamo-an-experiment-in-dynamic-python-bytecode-transformation/361
@@ -451,6 +453,8 @@ Dynamo는 frame 실행 함수를 항상 교체해 두지 않습니다. `torch.co
 - 그 외 → tracing 시도. 이때 trace 중에 만나는 함수 호출은 가능하면 부모 trace에 inline됩니다. 새로운 tracing은 별도 frame 단위 컴파일이 필요할 때만 시작됩니다. Resume function(continuation function, graph break 이후 실행을 재개하는 함수)이 그 예입니다.
 
 <img src="/images/03/slide22_1.png" alt="Source code, Python bytecode analysis, guard, captured computation graph, transformed bytecode, resume functions로 이어지는 Dynamo의 내부 흐름 다이어그램" class="w-full max-w-4xl mx-auto diagram-bg" />
+
+<div class="text-xs text-center -mt-2 mb-4">그림의 코드는 원 슬라이드의 threshold 0.5를 그대로 씁니다. 흐름을 보는 용도로만 참고하세요. 본문 예제의 threshold는 0.8입니다.</div>
 
 > 참고: https://depyf.readthedocs.io/en/latest/walk_through.html
 
@@ -523,6 +527,8 @@ Trace 생성의 입력과 결과물은 다음과 같습니다.
   alt="frame 호출 시 cache entry guard 검사, transformed bytecode 실행, FX graph 계산, graph break, resume function 선택으로 이어지는 Dynamo 실행 흐름"
   class="h-80 mx-auto mt-4"
 />
+
+<div class="text-xs text-center -mt-2 mb-4">그림의 `PyFrameObject`는 3.10까지의 표현입니다. 3.11 이후에는 `_PyInterpreterFrame`이 기본입니다.</div>
 
 **일반적인 Python 실행 (Dynamo 없음):**
 

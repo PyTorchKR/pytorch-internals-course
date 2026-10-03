@@ -958,6 +958,8 @@ Tensor add_Tensor(const Tensor & self, const Tensor & other, Scalar alpha) {
 
 <img src="/images/02/slide37_1.png" alt="TORCH_LIBRARY에서 m.def로 neg schema를 정의하고, TORCH_LIBRARY_IMPL(aten, CPU)에서 m.impl로 CPU kernel을, TORCH_LIBRARY_IMPL(_, Tracer)에서 m.fallback으로 tracing handler를 등록하는 코드" class="h-80 mx-auto" />
 
+그림의 `Tracer`는 코드에서 쓰는 tracing key의 이름이며, 표의 Tracing과 같은 key입니다.
+
 **operator registration API**는 kernel을 Dispatcher에 등록하는 API입니다. 등록이란 dispatch table의 function pointer를 채우는 일입니다. 이 API를 사용하는 방법은 세 가지입니다:
 
 1. **`def`**: op의 schema를 정의합니다.
@@ -994,7 +996,7 @@ PyTorch는 새 subclass보다 새 op을 추가하는 방식으로 확장되므�
 
 > 위 그림은 원 슬라이드(2020년) 기준이라 Autograd가 Global set 쪽에 그려져 있습니다. 현재 PyTorch에서는 Autograd key가 tensor의 dispatch key set에 포함됩니다.
 
-Dispatch table에서 어떤 dispatch key로 index할지를 결정하는 핵심 추상화가 dispatch key set입니다. Dispatch key set은 dispatch key들의 bitset입니다. Dispatcher는 여러 소스에서 가져온 dispatch key set을 합치고(union) 일부 key를 뺍니다(mask out). 그리고 최종 dispatch key set에서 우선순위가 가장 높은 key를 골라 dispatch합니다.
+Dispatch table에서 어떤 dispatch key로 index할지를 결정하는 핵심 추상화가 dispatch key set입니다. Dispatch key set은 dispatch key들의 bitset입니다. Dispatcher는 여러 소스에서 가져온 dispatch key set을 합치고(union) 일부 key를 뺍니다(mask out). 그림의 Global set에 있는 `BackendSelect`는 factory 함수처럼 tensor 입력이 없는 op에서 backend를 고르는 key입니다. 그리고 최종 dispatch key set에서 우선순위가 가장 높은 key를 골라 dispatch합니다.
 
 ##### Dispatch key set의 소스
 

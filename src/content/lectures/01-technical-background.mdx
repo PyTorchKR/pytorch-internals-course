@@ -348,7 +348,7 @@ PGO(Profile-Guided Optimization)는 프로그램의 동적인 특성을 컴파�
 
 PyTorch는 앞에서 설명한 numerical computing API, heterogeneous execution, distributed communication, graph capture 및 compiler backend를 하나의 framework에서 제공합니다.
 
-**vLLM**은 이러한 통합 구조를 활용하는 사례입니다. vLLM의 hardware plugin은 가능한 경우 device-specific 기능을 PyTorch backend와 custom operator로 제공합니다. 상위 serving engine은 공통 PyTorch interface를 사용합니다. 이 구조에서 PyTorch는 여러 framework와 hardware backend 사이의 공통 interface, 곧 "Narrow Waist" 역할을 합니다.
+**vLLM**은 이러한 통합 구조를 활용하는 사례입니다. vLLM의 hardware plugin은 가능한 경우 device-specific 기능을 PyTorch backend와 custom operator로 제공합니다. 상위 serving engine은 공통 PyTorch interface를 사용합니다. 이 구조에서 PyTorch는 model·utility와 hardware backend 사이의 공통 interface, 곧 "Narrow Waist" 역할을 합니다.
 
 
 ### PyTorch 2.0

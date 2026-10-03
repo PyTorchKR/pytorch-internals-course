@@ -80,7 +80,7 @@ MPI와 OpenMP는 밑에 있는 메모리 시스템에 대한 가정뿐만 아니
 
 **OpenMP**
 
-<img src="/images/05/slide06_2.png" alt="OpenMP Fork-Join: Master thread가 fork로 thread team(A~D)을 만들고 join 뒤 다시 혼자 실행하는 과정을 반복" class="h-48 mx-auto" />
+<img src="/images/05/slide06_2.png" alt="OpenMP Fork-Join: Master thread가 fork로 thread team을 만들고(첫 번째 구간은 A~D, 두 번째 구간은 A~C) join 뒤 다시 혼자 실행하는 과정을 반복" class="h-48 mx-auto" />
 
 Master-Worker (Fork-Join) 모델
 
@@ -159,7 +159,7 @@ Rendezvous는 참여 process의 membership과 초기화 정보를 구성합니�
 
 **2. 각 프로세스 내부의 PyTorch 분산 처리 구조**
 
-하나의 Process를 확대해서 보면 그 안에서 PyTorch가 돌고 있고, 아래에서 위로 다음과 같은 세 개의 레이어로 구성됩니다.
+하나의 Process를 확대해서 보면 그 안에서 PyTorch가 돌고 있고, 아래에서 위로 다음과 같은 세 개의 레이어로 구성됩니다. 그림에서는 위쪽 DDP·FSDP·TP·SP·PP가 High-level 패키지, 가운데 "c10d · backend" 표시 아래의 collective·p2p와 ProcessGroup(Gloo, NCCL, MPI, XCCL/Custom)이 c10d와 Backend 연결부, 아래쪽 CUDA·MPI lib가 외부 통신 라이브러리입니다. 그림은 c10d와 Backend를 하나의 "c10d · backend" 영역으로 묶어 그립니다.
 
 * **Backend** 
     * 가장 맨 아래단에서 실제 통신을 담당합니다.
@@ -824,7 +824,7 @@ FSDP2의 내부 동작은 initialization, forward, backward 세 단계로 나눌
 
 <div class="text-xs mt-2 text-center">
 
-그림 출처: [PyTorch FSDP2 Tutorial](https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html) · 위아래 두 줄은 두 rank이고, 각 줄이 forward(all-gather → 계산 → 해제) → backward(all-gather → 계산 → reduce-scatter → 해제) → local update 순서입니다.
+그림 출처: [PyTorch FSDP2 Tutorial](https://docs.pytorch.org/tutorials/intermediate/FSDP_tutorial.html) · 그림의 두 줄은 모두 "FSDP instance 1: N layers"로 표시되어 있습니다. 각 줄은 forward(all-gather → 계산 → 해제) → backward(all-gather → 계산 → reduce-scatter → 해제) → local update 순서이고, 위아래 줄이 서로 다른 rank의 같은 흐름이라고 보면 됩니다(그림에 rank 라벨은 없고, 입력 Data가 두 줄에 갈라져 들어갑니다).
 
 </div>
 
