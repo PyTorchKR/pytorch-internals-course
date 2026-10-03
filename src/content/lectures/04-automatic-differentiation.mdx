@@ -534,7 +534,7 @@ def backward(self, ge_scalar, tangents_1):
 
 오른쪽 코드는 partition된 forward/backward 두 FX graph의 Python 코드입니다. AOTAutograd의 runtime wrapper는 이 둘을 `CompiledFunction`이라는 `torch.autograd.Function` 안에 넣습니다. `torch.autograd.Function`은 앞에서 본 custom differentiable function 기능입니다. 그래서 **compiled model은 forward와 backward를 모두 가진 하나의 custom Op처럼 동작합니다**. 참고로 `forward`가 `ge_scalar`를 추가로 반환하는 것은 partitioner[^partitioner]가 backward 계산의 일부(`ge` 비교)를 forward 쪽으로 옮겼기 때문이며, `backward`는 이 값을 받아 recomputation 없이 그대로 사용합니다.
 
-위 코드가 나온 로그 화면입니다. 초록이 forward, 빨강이 backward이고, 아래에 원래 함수 `torch.clamp_min(a, b) * 3`과 `derivatives.yaml`의 `clamp_min` 미분 규칙이 함께 표시되어 있습니다.
+위 코드가 나온 로그 화면입니다. 초록이 forward, 빨강이 backward입니다. 노란색으로 표시된 `ge_scalar`는 partitioner가 backward 계산을 forward로 옮긴 부분입니다. 아래에 원래 함수 `torch.clamp_min(a, b) * 3`과 `derivatives.yaml`의 `clamp_min` 미분 규칙이 함께 표시되어 있습니다.
 
 <img src="/images/04/slide22_1.png" alt="TORCH_LOGS=aot_graphs로 출력한 partition 후 forward/backward 그래프와 clamp_min 미분 규칙" class="w-full max-w-3xl mx-auto" />
 
@@ -827,7 +827,7 @@ to give us the forwards pass and the backwards pass.
 
 앞 절의 `joint_fw_bw`를 C++ dispatcher 수준에서 trace하면, forward와 backward가 모두 하나의 graph 안에 들어간 **joint FX graph**가 만들어집니다. 이것이 수행 순서표의 D 단계 결과물입니다.
 
-<img src="/images/04/slide30_1.png" alt="Forward와 backward 연산이 하나의 그래프에 공존하는 joint FX graph 예제" class="h-56 mx-auto" />
+<img src="/images/04/slide30_1.png" alt="TORCH_LOGS=aot_joint_graph로 출력한 joint graph 코드. forward 연산(초록)과 backward 연산(빨강)이 하나의 forward 함수 안에 있다" class="h-56 mx-auto" />
 
 위 graph에는 forward와 backward 연산이 함께 있고, forward에서 만들어진 중간 tensor가 backward node의 input으로 연결되는 관계도 살아 있습니다. G 단계의 partitioner는 이 정보를 이용해 저장할 tensor와 recompute할 tensor를 결정합니다.
 
@@ -837,6 +837,8 @@ to give us the forwards pass and the backwards pass.
 Decomposition은 실제로는 D 단계의 tracing 중에 적용됩니다. dispatcher를 지나는 op마다 decomposition table에 등록된 규칙이 있으면 더 작은 ATen op으로 바꿔 기록하므로, 결과 joint graph는 이미 ATen 수준입니다(앞의 joint graph 그림에 `clamp_min`이 아니라 `aten.maximum`이 보이는 이유입니다). 여기서는 이해를 위해 E 단계로 따로 떼어 설명합니다.
 
 <img src="/images/04/slide31_1.png" alt="clamp_min이 clamp → maximum으로 분해되는 PrimTorch decomposition 코드 예제" class="h-72 mx-auto" />
+
+그림의 `# torchinductor/decomposition.py`는 원 슬라이드의 옛 경로입니다. 현재 경로는 `torch/_inductor/decomposition.py`입니다.
 
 IR 계층은 다음과 같이 내려갑니다:
 
@@ -943,8 +945,8 @@ AOTAutograd가 만든 `torch.autograd.Function`은 training loop에서 다음 �
 사용자가 compiled model을 호출하면 `torch.autograd.Function`의 `forward()` 부분이 실제로 실행됩니다. 이 forward 코드는 등록된 backend가 이미 컴파일해 둔 상태이므로 가속된 형태로 동작합니다.
 
 <div class="flex flex-col items-center gap-2 mt-4 max-w-3xl mx-auto">
-  <img src="/images/04/slide32_1.png" alt="partition된 forward FX graph (forward는 이 시점에 컴파일 완료)" class="w-full h-auto" />
-  <p class="text-sm text-center">backend가 forward를 미리 컴파일</p>
+  <img src="/images/04/slide32_1.png" alt="partition된 forward FX graph 코드" class="w-full h-auto" />
+  <p class="text-sm text-center">[1]에서 실행되는 forward graph</p>
 </div>
 
 **[2] Compile된 `backward()`가 output tensor의 grad function으로 등록**
@@ -956,8 +958,8 @@ Forward가 실행되는 동안, 함께 묶여 있던 compiled `backward()`는 �
 이후 loss 쪽에서 `backward()`가 호출되면 Autograd engine이 등록된 `grad_fn`을 따라 내려오다가 [2]에서 걸어 둔 backward에 도달하고, 이때 한 스텝으로 backward 함수가 실행됩니다. 이 시점에 (아직 lowering되지 않았다면) 등록된 backend가 backward 그래프를 lowering한 뒤 실행하므로, 이후로는 가속된 형태로 동작합니다.
 
 <div class="flex flex-col items-center gap-2 mt-4 max-w-3xl mx-auto">
-  <img src="/images/04/slide32_2.png" alt="partition된 backward FX graph (backend lowering은 첫 backward() 호출 시점)" class="w-full h-auto" />
-  <p class="text-sm text-center">backend lowering은 첫 `backward()` 호출 때</p>
+  <img src="/images/04/slide32_2.png" alt="partition된 backward FX graph 코드" class="w-full h-auto" />
+  <p class="text-sm text-center">[3]에서 실행되는 backward graph</p>
 </div>
 
 Forward는 즉시, backward는 늦어도 첫 `backward()` 호출 때 backend compiler로 최적화됩니다. 사용자의 training loop는 거의 바뀌지 않습니다.
