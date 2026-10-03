@@ -413,7 +413,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
         '<p style="margin-top:8px;color:var(--text-muted);font-size:12px">점선 화살표 \u2192 gradient의 역방향 흐름</p>',
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: null,
-      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5'], flabels: [], blabels: ['e5'], badges: ['f'],
+      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5'], flabels: [], blabels: [], badges: ['f'],
       fVal: 'f = -12', fColor: 'fwd',
     },
     {
@@ -455,7 +455,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
       ].join(''),
       phase: 'done', phaseLabel: '완료', activeGate: null,
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'],
-      flabels: ['e1', 'e2', 'e3', 'e4', 'e5'], blabels: ['e5', 'e3', 'e4', 'e1', 'e2'],
+      flabels: ['e1', 'e2', 'e3', 'e4', 'e5'], blabels: ['e3', 'e4', 'e1', 'e2'],
       badges: ['f', 'z', 'x', 'y'],
       fVal: 'f = -12', fColor: 'fwd',
     },
