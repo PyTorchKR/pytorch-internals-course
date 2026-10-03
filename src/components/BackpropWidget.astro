@@ -5,6 +5,9 @@
  * with step-by-step explanations.
  * Supports dark/light mode via data-theme attribute.
  */
+import katex from 'katex';
+const symAdd = katex.renderToString('+', { throwOnError: false });
+const symMul = katex.renderToString('\\times', { throwOnError: false });
 ---
 
 <div class="bp-widget">
@@ -109,12 +112,12 @@
     <!-- Right: gate cards stacked -->
     <div class="bp-right">
       <div class="bp-gc bp-gc-add" id="bp-gc-add">
-        <div class="bp-gc-name">ADD gate <span class="bp-gc-sym">+</span></div>
+        <div class="bp-gc-name">ADD gate <span class="bp-gc-sym" set:html={symAdd}></span></div>
         <div class="bp-gc-rule" id="bp-gr-add"></div>
         <div class="bp-gc-formula" id="bp-gf-add"></div>
       </div>
       <div class="bp-gc bp-gc-mul" id="bp-gc-mul">
-        <div class="bp-gc-name">MUL gate <span class="bp-gc-sym">&times;</span></div>
+        <div class="bp-gc-name">MUL gate <span class="bp-gc-sym" set:html={symMul}></span></div>
         <div class="bp-gc-rule" id="bp-gr-mul"></div>
         <div class="bp-gc-formula" id="bp-gf-mul"></div>
       </div>
@@ -416,10 +419,10 @@
     {
       title: 'Backward Pass \u2014 MUL 게이트',
       body: () => [
-        '<p style="color:var(--text-muted);font-size:11.5px;margin-bottom:8px">chain rule: local gradient \u00d7 upstream gradient</p>',
+        '<p style="color:var(--text-muted);font-size:11.5px;margin-bottom:8px">chain rule: local gradient ', tex('\\times'), ' upstream gradient</p>',
         '<p>', tex('\\dfrac{\\partial f}{\\partial q} = z \\times 1 = -4 \\times 1 = -4'), '</p>',
         '<p style="margin-top:6px">', tex('\\dfrac{\\partial f}{\\partial z} = q \\times 1 = 3 \\times 1 = 3'), '</p>',
-        '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">각 입력의 gradient = 상대 입력값 × upstream gradient</p>',
+        '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">각 입력의 gradient = 상대 입력값 ', tex('\\times'), ' upstream gradient</p>',
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: 'mul',
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4'], flabels: [], blabels: ['e3', 'e4'], badges: ['f', 'z'],
