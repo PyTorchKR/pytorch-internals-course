@@ -133,10 +133,10 @@ const unitArray = Array.from({ length: units });
     align-items: center;
     justify-content: center;
     padding: 0 8px;
-    border: 1px solid rgba(125, 125, 125, 0.45);
+    border: 1px solid var(--fig-line);
     border-radius: 4px;
     font-size: 0.75em;
-    background: rgba(125, 125, 125, 0.05);
+    background: var(--fig-fill);
     box-sizing: border-box;
   }
 
@@ -155,24 +155,24 @@ const unitArray = Array.from({ length: units });
   .npu-mh-box {
     padding: 10px;
     text-align: center;
-    border: 1px solid rgba(125, 125, 125, 0.4);
+    border: 1px solid var(--fig-line);
     border-radius: 6px;
     font-size: 0.85em;
     background: transparent;
   }
 
   .npu-mh-box-accent {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.5);
+    background: var(--fig-blue-tint);
+    border-color: var(--fig-blue);
   }
 
   .npu-mh-interconnect {
     padding: 8px 16px;
     text-align: center;
-    border: 1px solid rgba(125, 125, 125, 0.4);
+    border: 1px solid var(--fig-line);
     border-radius: 20px;
     font-size: 0.85em;
-    background: rgba(125, 125, 125, 0.08);
+    background: var(--fig-fill);
     width: 100%;
   }
 
@@ -180,8 +180,8 @@ const unitArray = Array.from({ length: units });
     padding: 4px 16px;
     text-align: center;
     font-size: 0.8em;
-    color: rgb(239, 68, 68);
-    border-top: 2px dashed rgba(239, 68, 68, 0.6);
+    color: var(--fig-red);
+    border-top: 2px dashed var(--fig-red);
     width: 100%;
   }
 </style>

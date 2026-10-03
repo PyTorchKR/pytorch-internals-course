@@ -32,10 +32,10 @@
   </div>
 
   <div class="lr-controls">
-    <button id="lr-step">Step</button>
-    <button id="lr-play">Play</button>
-    <button id="lr-reset">Reset</button>
-    <button id="lr-toggle-err">Hide errors</button>
+    <button id="lr-step" class="fig-btn" type="button">한 스텝</button>
+    <button id="lr-play" class="fig-btn lr-btn-play" type="button" aria-label="재생"><svg class="lr-icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><svg class="lr-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg><span class="lr-play-label">재생</span></button>
+    <button id="lr-reset" class="fig-btn" type="button" aria-label="처음으로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+    <button id="lr-toggle-err" class="fig-btn lr-btn-err" type="button">오차 숨기기</button>
     <div class="lr-speed">
       <span class="lr-speed-label">speed</span>
       <input type="range" id="lr-speed" min="1" max="8" value="1" step="1" />
@@ -54,16 +54,13 @@
     text-align: center;
     font-size: 17px;
     font-weight: 500;
-    font-family: monospace;
-    color: var(--accent);
+    font-family: var(--fig-font-mono);
+    color: var(--fig-purple);
     margin: 0 0 0.75rem;
     transition: color 0.4s;
   }
   .lr-equation.converged {
-    color: #0f6e56;
-  }
-  [data-theme='dark'] .lr-equation.converged {
-    color: #5dcaa5;
+    color: var(--fig-teal-ink);
   }
   #lr-canvas {
     width: 100%;
@@ -105,23 +102,11 @@
     margin: 10px auto 0;
     flex-wrap: wrap;
   }
-  .lr-controls button {
-    padding: 4px 14px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--bg-surface);
-    color: var(--text);
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .lr-controls button:hover {
-    background: var(--accent-shadow);
-  }
-  .lr-controls button:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
+  .lr-btn-play { min-width: 104px; justify-content: center; }
+  .lr-btn-err { min-width: 100px; justify-content: center; }
+  .lr-icon-pause { display: none; }
+  .lr-btn-play.is-playing .lr-icon-play { display: none; }
+  .lr-btn-play.is-playing .lr-icon-pause { display: inline-block; }
   .lr-speed {
     flex: 1;
     min-width: 80px;
@@ -184,17 +169,19 @@
   }
 
   function colors() {
-    const dark = isDark();
+    const cs = getComputedStyle(document.documentElement);
+    const v = (name: string) => cs.getPropertyValue(name).trim();
     return {
-      dot:      dark ? 'rgba(179,177,168,0.95)' : 'rgba(55,50,60,0.82)',
-      dotRing:  dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.85)',
-      dotHi:    dark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.30)',
-      line:     dark ? '#AFA9EC' : '#534AB7',
-      lineDone: dark ? '#5DCAA5' : '#0F6E56',
-      err:      dark ? 'rgba(240,153,123,0.42)' : 'rgba(216,90,48,0.38)',
-      grid:     dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
-      axis:     dark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.20)',
-      tick:     dark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.40)',
+      dot:      v('--fig-text-2'),
+      dotRing:  v('--fig-surface'),
+      dotHi:    'rgba(255,255,255,0.3)', // no token: specular highlight on the dot
+      line:     v('--fig-purple'),
+      lineDone: v('--fig-teal-ink'),
+      err:      v('--fig-coral'),
+      grid:     v('--fig-line-soft'),
+      axis:     v('--fig-line'),
+      tick:     v('--fig-text-2'),
+      font:     getComputedStyle(canvas).fontFamily,
     };
   }
 
@@ -217,7 +204,7 @@
     ctx.clearRect(0, 0, W, H);
 
     // Grid
-    ctx.strokeStyle = C.grid; ctx.lineWidth = 0.5;
+    ctx.globalAlpha = 0.5; ctx.strokeStyle = C.grid; ctx.lineWidth = 0.5;
     for (let i = 1; i <= 5; i++) {
       ctx.beginPath(); ctx.moveTo(PAD.l, py(i * 0.2)); ctx.lineTo(W - PAD.r, py(i * 0.2)); ctx.stroke();
     }
@@ -225,12 +212,14 @@
       ctx.beginPath(); ctx.moveTo(px(i * 0.25), PAD.t); ctx.lineTo(px(i * 0.25), H - PAD.b); ctx.stroke();
     }
 
+    ctx.globalAlpha = 1;
+
     // Axes
     ctx.strokeStyle = C.axis; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t); ctx.lineTo(PAD.l, H - PAD.b); ctx.lineTo(W - PAD.r, H - PAD.b); ctx.stroke();
 
     // Tick labels
-    ctx.fillStyle = C.tick; ctx.font = '11px sans-serif';
+    ctx.fillStyle = C.tick; ctx.font = '11px ' + C.font;
     ctx.textAlign = 'right';
     for (let i = 0; i <= 5; i++) ctx.fillText((i * 0.2).toFixed(1), PAD.l - 5, py(i * 0.2) + 4);
     ctx.textAlign = 'center';
@@ -244,11 +233,11 @@
 
     // Error lines
     if (showErr) {
-      ctx.setLineDash([3, 4]); ctx.strokeStyle = C.err; ctx.lineWidth = 1;
+      ctx.setLineDash([3, 4]); ctx.globalAlpha = 0.6; ctx.strokeStyle = C.err; ctx.lineWidth = 1;
       DATA.forEach(([x, y]) => {
         ctx.beginPath(); ctx.moveTo(px(x), py(y)); ctx.lineTo(px(x), py(a * x + b)); ctx.stroke();
       });
-      ctx.setLineDash([]);
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
     }
 
     // Regression line
@@ -285,13 +274,20 @@
     iter += 1;
   }
 
+  const playLabel = playBtn.querySelector('.lr-play-label')!;
+  function setPlayUI(isPlaying: boolean) {
+    playBtn.classList.toggle('is-playing', isPlaying);
+    playLabel.textContent = isPlaying ? '일시정지' : '재생';
+    playBtn.setAttribute('aria-label', isPlaying ? '일시정지' : '재생');
+  }
+
   function loop() {
     if (!playing) return;
     for (let i = 0; i < spf; i++) stepOnce();
     draw();
     if (iter >= 100) {
       playing = false;
-      playBtn.textContent = 'Play';
+      setPlayUI(false);
       stepBtn.disabled = false;
       return;
     }
@@ -304,7 +300,7 @@
 
   playBtn.addEventListener('click', () => {
     playing = !playing;
-    playBtn.textContent = playing ? 'Pause' : 'Play';
+    setPlayUI(playing);
     stepBtn.disabled = playing;
     if (playing) loop();
     else if (raf !== null) clearTimeout(raf);
@@ -312,7 +308,7 @@
 
   resetBtn.addEventListener('click', () => {
     playing = false;
-    playBtn.textContent = 'Play';
+    setPlayUI(false);
     stepBtn.disabled = false;
     if (raf !== null) clearTimeout(raf);
     a = A0; b = B0; iter = 0;
@@ -321,7 +317,7 @@
 
   toggleErrBtn.addEventListener('click', () => {
     showErr = !showErr;
-    toggleErrBtn.textContent = showErr ? 'Hide errors' : 'Show errors';
+    toggleErrBtn.textContent = showErr ? '오차 숨기기' : '오차 보기';
     draw();
   });
 

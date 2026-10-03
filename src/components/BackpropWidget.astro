@@ -13,7 +13,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
 <div class="bp-widget">
   <div class="bp-header">
     <span class="bp-title">Backprop Intuition</span>
-    <span class="bp-step-lbl" id="bp-step-lbl">1 / 7</span>
+    <span class="bp-step-lbl" id="bp-step-lbl">스텝 1 / 7</span>
   </div>
 
   <div class="bp-prog" id="bp-prog"></div>
@@ -103,9 +103,9 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
 
   <!-- Nav: above the description so its position does not move between steps -->
   <div class="bp-nav">
-    <button id="bp-btn-prev" class="bp-btn" type="button" disabled>← 이전</button>
-    <button id="bp-btn-next" class="bp-btn" type="button">다음 →</button>
-    <button id="bp-btn-reset" class="bp-btn bp-btn-reset" type="button" aria-label="처음으로">↻</button>
+    <button id="bp-btn-prev" class="fig-btn" type="button" aria-label="이전" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg><span>이전</span></button>
+    <button id="bp-btn-next" class="fig-btn bp-btn-next" type="button" aria-label="다음"><span>다음</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg></button>
+    <button id="bp-btn-reset" class="fig-btn bp-btn-reset" type="button" aria-label="처음으로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
   </div>
 
   <div class="bp-body">
@@ -141,30 +141,21 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     --bp-muted: var(--text-muted);
     --bp-panel: var(--bg-surface);
     --bp-line: var(--border);
-    --bp-idle: #c6cad0;
-    --bp-fwd: #2457a6;
-    --bp-fwd-soft: rgba(36, 87, 166, 0.08);
-    --bp-grad: #c2410c;
-    --bp-grad-soft: rgba(194, 65, 12, 0.08);
-    --bp-local: #7c3aed;
-    --bp-done: #2f7d5b;
-    --bp-mono: 'Roboto Mono', ui-monospace, monospace;
-    font-family: 'Pretendard Std', 'Pretendard', -apple-system, sans-serif;
+    --bp-idle: var(--fig-line-soft);
+    --bp-fwd: var(--fig-blue-ink);
+    --bp-fwd-soft: var(--fig-blue-tint);
+    --bp-grad: var(--fig-coral);
+    --bp-grad-soft: var(--fig-coral-tint);
+    --bp-local: var(--fig-purple);
+    --bp-done: var(--fig-teal);
+    --bp-mono: var(--fig-font-mono);
+    font-family: inherit;
     font-feature-settings: 'tnum' 1;
     max-width: 800px;
     margin: 0 auto;
     padding: 0.75rem 0 0;
     color: var(--bp-ink);
     outline: none;
-  }
-  :global([data-theme='dark']) .bp-widget {
-    --bp-idle: #4b5057;
-    --bp-fwd: #7fa9e6;
-    --bp-fwd-soft: rgba(127, 169, 230, 0.12);
-    --bp-grad: #f0915c;
-    --bp-grad-soft: rgba(240, 145, 92, 0.12);
-    --bp-local: #a78bfa;
-    --bp-done: #6cc49a;
   }
   .bp-widget:focus-visible { box-shadow: 0 0 0 2px var(--bp-fwd); border-radius: 12px; }
 
@@ -203,8 +194,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
   .bp-scroll-hint { display: none; }
 
   /* SVG: nodes, gates, edges */
-  .bp-node-rect { fill: var(--bp-panel); stroke: rgba(0, 0, 0, 0.2); stroke-width: 1.25; }
-  :global([data-theme='dark']) .bp-node-rect { stroke: #50555c; }
+  .bp-node-rect { fill: var(--bp-panel); stroke: var(--fig-line); stroke-width: 1.25; }
   .bp-node-label { fill: var(--bp-muted); font-size: 10.5px; font-family: inherit; }
   .bp-node-val { fill: var(--bp-ink); font-family: var(--bp-mono); font-size: 14px; font-weight: 500; }
   .bp-gate-rect { fill: var(--bp-panel); stroke: var(--bp-idle); stroke-width: 1.25; transition: stroke 0.25s, fill 0.25s; }
@@ -298,22 +288,9 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
 
   /* Navigation */
   .bp-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-  .bp-btn {
-    padding: 4px 14px;
-    border-radius: 6px;
-    border: 1px solid var(--bp-line);
-    background: var(--bp-panel);
-    color: var(--bp-ink);
-    font-family: inherit;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .bp-btn:hover { background: var(--accent-shadow); }
-  .bp-btn:disabled { opacity: 0.4; cursor: default; }
-  .bp-btn:focus-visible { outline: 2px solid var(--bp-fwd); outline-offset: 2px; }
-  .bp-btn-reset { margin-left: auto; }
+  .bp-btn-next { min-width: 84px; justify-content: center; }
+  .bp-widget .fig-btn:focus-visible { outline: 2px solid var(--bp-fwd); outline-offset: 2px; }
+  .bp-nav .bp-btn-reset { margin-left: auto; }
 
   @media (max-width: 640px) {
     /* Keep the circuit at a readable scale and let the panel scroll sideways. */
@@ -507,7 +484,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
   function render(): void {
     const s = STEPS[cur];
 
-    document.getElementById('bp-step-lbl')!.textContent = `${cur + 1} / ${N}`;
+    document.getElementById('bp-step-lbl')!.textContent = `스텝 ${cur + 1} / ${N}`;
 
     const pg = document.getElementById('bp-prog')!;
     pg.innerHTML = '';
@@ -578,7 +555,10 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     const nextBtn = document.getElementById('bp-btn-next') as HTMLButtonElement;
     prevBtn.disabled = cur === 0;
     nextBtn.disabled = cur === N - 1;
-    nextBtn.textContent = cur === N - 1 ? '완료' : '다음 →';
+    const last = cur === N - 1;
+    nextBtn.setAttribute('aria-label', last ? '완료' : '다음');
+    nextBtn.querySelector('span')!.textContent = last ? '완료' : '다음';
+    nextBtn.querySelector('svg')!.style.display = last ? 'none' : '';
   }
 
   function go(d: number): void {

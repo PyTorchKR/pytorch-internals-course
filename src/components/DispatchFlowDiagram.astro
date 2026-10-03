@@ -95,14 +95,14 @@ const { class: className } = Astro.props;
   }
 
   .df-box {
-    fill: rgba(125, 125, 125, 0.08);
-    stroke: rgba(125, 125, 125, 0.5);
+    fill: var(--fig-fill);
+    stroke: var(--fig-line);
     stroke-width: 1.2;
   }
 
   .df-box-accent {
-    fill: rgba(59, 130, 246, 0.15);
-    stroke: rgba(59, 130, 246, 0.6);
+    fill: var(--fig-blue-tint);
+    stroke: var(--fig-blue);
   }
 
   .df-label {
@@ -124,13 +124,13 @@ const { class: className } = Astro.props;
   }
 
   .df-edge-accent {
-    stroke: rgb(59, 130, 246);
+    stroke: var(--fig-blue);
     stroke-dasharray: 5 4;
     opacity: 1;
   }
 
   .df-accent-fill {
-    fill: rgb(59, 130, 246);
+    fill: var(--fig-blue);
   }
 
   .df-edge-label {
@@ -141,7 +141,7 @@ const { class: className } = Astro.props;
   }
 
   .df-accent-text {
-    fill: rgb(59, 130, 246);
+    fill: var(--fig-blue-ink);
     opacity: 1;
   }
 
