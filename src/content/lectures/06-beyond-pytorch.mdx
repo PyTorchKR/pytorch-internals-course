@@ -1022,13 +1022,13 @@ vLLM은 PyTorch 위에서 동작합니다. vLLM 팀은 새 하드웨어 지원�
 
 아래에 하드웨어가 있고, 그 위에 PyTorch가 추상화 레이어로 놓입니다. 그림은 Models와 Utilities가 PyTorch를 거쳐 여러 하드웨어에 닿는 구조("narrow waist")를 보여 주며, vLLM은 그 위쪽에서 동작합니다. vLLM은 하드웨어 다양성 대응을 PyTorch 레이어에 맡깁니다.
 
-리벨리온은 이 점 때문에 PyTorch device backend와 vLLM platform·kernel integration을 함께 제공합니다. 그래야 기존 model과 serving workflow를 리벨리온 NPU에서 그대로 사용할 수 있기 때문입니다.
+PyTorch device support만으로는 vLLM 지원이 끝나지 않습니다. 그래서 리벨리온은 PyTorch device backend와 vLLM platform·kernel integration을 함께 제공합니다. 이렇게 해야 기존 model과 serving workflow를 리벨리온 NPU에서 그대로 사용할 수 있습니다.
 
 <div class="flex justify-center mt-4">
   <img src="/images/06/slide44_1.png" alt="PyTorch as a Narrow Waist: Models와 Utilities가 PyTorch 위에 있고, PyTorch 아래에 NVIDIA GPU, AMD GPU, Intel GPU, Google TPU 등이 놓인 구조" class="mx-auto w-full max-w-[578px]" />
 </div>
 
-vLLM은 **hardware plugin system**을 제공하며, vendor는 platform plugin을 별도 package(out-of-tree)로 유지할 수 있습니다. 리벨리온의 [vllm-rbln](https://github.com/rebellions-sw/vllm-rbln)도 이 방식으로 ATOM·REBEL 지원을 제공합니다. 다만 PyTorch device support만으로 vLLM 지원이 자동 완성되는 것은 아닙니다. vendor는 platform integration 외에 다음 구현을 추가로 제공해야 합니다: attention kernel, KV cache kernel, distributed communication.
+vLLM은 **hardware plugin system**을 제공하며, vendor는 platform plugin을 별도 package(out-of-tree)로 유지할 수 있습니다. 리벨리온의 [vllm-rbln](https://github.com/rebellions-sw/vllm-rbln)도 이 방식으로 ATOM·REBEL 지원을 제공합니다. vendor는 platform integration 외에 다음 구현을 추가로 제공해야 합니다: attention kernel, KV cache kernel, distributed communication.
 
 ### 모델 코드는 어디서 오는가: 자체 구현과 Transformers Backend
 

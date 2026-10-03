@@ -270,9 +270,10 @@ at::Tensor add_Tensor(c10::DispatchKeySet ks, const at::Tensor & self, const at:
 Dispatcher는 `requires_grad`가 켜진 tensor가 관여하는 연산을 Autograd dispatch key로 dispatch합니다. 이 kernel은 backward에서 호출되는 함수가 아니라, forward에서 add를 처리하는 함수입니다. 이 kernel은 forward를 실행하면서, 나중에 backward 때 어떻게 처리할지를 미리 기록해 둡니다:
 
 1. `compute_requires_grad`로 현재 계산이 나중에 gradient를 구해야 하는 계산인지 판별합니다.
-2. 필요하다면 해당 연산의 `grad_fn`(예: `AddBackward0`)을 찾아 등록합니다. `add`라는 함수가 정해져 있으므로 PyTorch는 대응하는 `grad_fn`이 무엇인지 알고 있습니다.
+2. 필요하다면 해당 연산의 `grad_fn`(예: `AddBackward0`)을 만듭니다. `add`라는 함수가 정해져 있으므로 PyTorch는 대응하는 `grad_fn`이 무엇인지 알고 있습니다.
 3. `next_edges`로 입력 쪽 node를 연결해 backward graph를 구성합니다.
-4. 이 모든 기록이 끝난 후에 실제 forward를 계산합니다.
+4. `at::redispatch::add`로 실제 forward를 계산합니다.
+5. `set_history`로 계산 결과 tensor에 `grad_fn`을 붙입니다.
 
 또한 특정 tensor에 `requires_grad=True`가 설정되어 있으면, 그 tensor로부터 영향을 받는 모든 output tensor도 자동으로 `requires_grad=True`가 됩니다. PyTorch가 forward 과정에서 이를 추적해 설정합니다. 단, `torch.no_grad()`나 `torch.inference_mode()` 안에서는 연산 출력의 `requires_grad`가 `False`로 override됩니다. 이때도 `torch.ones(2, requires_grad=True)`처럼 factory function으로 새로 만든 tensor는 `True`를 유지합니다.
 
@@ -423,7 +424,7 @@ backward()
 
 Python 레벨에서는 wrapper만 존재하고, 실제 구현은 대부분 C++로 작성되어 있습니다. GPU 환경에서는 CUDA 코드가 실행되지만, 전체 실행 흐름을 관리하는 큰 틀은 C++ 코드입니다. 각 단계에서 `grad_fn`을 찾아 실행하며, dispatch key를 통해 CPU kernel 또는 CUDA kernel을 선택합니다.
 
-Eager mode에서는 `backward()`를 호출할 때마다 이 준비 과정을 반복합니다. 이 과정은 gradient 함수를 찾아 등록하는 일이므로 오버헤드가 크지 않습니다. 반면 graph mode에서는 gradient 계산을 포함한 전체 그래프를 미리 생성하여 최적화된 방식으로 실행합니다.
+Eager mode에서는 `backward()`를 호출할 때마다 이 준비 과정을 반복합니다. 이 과정은 forward에서 이미 기록된 graph를 따라가며 node의 의존성 개수를 세는 일이므로 오버헤드가 크지 않습니다. 반면 graph mode에서는 gradient 계산을 포함한 전체 그래프를 미리 생성하여 최적화된 방식으로 실행합니다.
 
 Eager mode Autograd의 구조는 PyTorch 1.0 이후 최신 버전까지 그대로입니다. 내부 구현은 바뀌었지만(예: 앞에서 본 `_apply_functional` 분리) 동작 방식은 같습니다.
 
@@ -544,8 +545,6 @@ def backward(self, ge_scalar, tangents_1):
 **[3] `loss.backward()`**
 
 `loss.backward()`를 호출하면 [2]에서 만들어진 loss function의 backward가 먼저 실행되고, 이어서 그 입력이었던 `outputs`의 `grad_fn`, 즉 [1]에서 등록된 compiled backward가 하나의 큰 Op으로서 호출됩니다. 두 backward가 차례로 실행되어 model weight의 gradient가 계산됩니다.
-
-내부에서는 compiled forward와 backward를 가진 `torch.autograd.Function`을 만듭니다. 그다음 forward만 실행하고, backward는 `grad_fn`으로 달아 둡니다. 달아 둔 backward는 `loss.backward()` 때 호출됩니다.
 
 위 세 단계를 그림으로 나타내면 다음과 같습니다:
 
@@ -930,26 +929,26 @@ AOTAutograd의 출력은 이 중 두 번째(custom gradient rules)에 해당합�
 
 AOTAutograd가 만든 `torch.autograd.Function`은 training loop에서 다음 세 단계로 호출됩니다.
 
-**[1] Compile된 `forward()` 호출**
+**단계 1. Compile된 `forward()` 호출**
 
 사용자가 compiled model을 호출하면 `torch.autograd.Function`의 `forward()` 부분이 실제로 실행됩니다. 이 forward 코드는 등록된 backend가 이미 컴파일해 둔 상태이므로 가속된 형태로 동작합니다.
 
 <div class="flex flex-col items-center gap-2 mt-4 max-w-3xl mx-auto">
   <img src="/images/04/slide32_1.png" alt="partition된 forward FX graph 코드" class="w-full h-auto" />
-  <p class="text-sm text-center">[1]에서 실행되는 forward graph</p>
+  <p class="text-sm text-center">단계 1에서 실행되는 forward graph</p>
 </div>
 
-**[2] Compile된 `backward()`가 output tensor의 grad function으로 등록**
+**단계 2. Compile된 `backward()`가 output tensor의 grad function으로 등록**
 
 Forward가 실행되는 동안, 함께 묶여 있던 compiled `backward()`는 곧바로 실행되지는 않고 output tensor의 `grad_fn`으로 등록됩니다. Backend는 이 시점에 아직 backward를 lowering하지 않습니다.[^lazy-bw]
 
-**[3] `loss.backward()` 수행 과정에서 compiled `backward()` 실행**
+**단계 3. `loss.backward()` 수행 과정에서 compiled `backward()` 실행**
 
-이후 loss 쪽에서 `backward()`가 호출되면 Autograd engine이 등록된 `grad_fn`을 따라 내려옵니다. Engine이 [2]에서 걸어 둔 backward에 도달하면 backward 함수를 한 스텝으로 실행합니다. Backward graph가 아직 lowering되지 않았다면, 등록된 backend가 이 시점에 lowering한 뒤 실행합니다. 그 뒤로 backward는 가속된 형태로 동작합니다.
+이후 loss 쪽에서 `backward()`가 호출되면 Autograd engine이 등록된 `grad_fn`을 따라 내려옵니다. Engine이 단계 2에서 걸어 둔 backward에 도달하면 backward 함수를 한 스텝으로 실행합니다. Backward graph가 아직 lowering되지 않았다면, 등록된 backend가 이 시점에 lowering한 뒤 실행합니다. 그 뒤로 backward는 가속된 형태로 동작합니다.
 
 <div class="flex flex-col items-center gap-2 mt-4 max-w-3xl mx-auto">
   <img src="/images/04/slide32_2.png" alt="partition된 backward FX graph 코드" class="w-full h-auto" />
-  <p class="text-sm text-center">[3]에서 실행되는 backward graph</p>
+  <p class="text-sm text-center">단계 3에서 실행되는 backward graph</p>
 </div>
 
 Forward는 즉시, backward는 늦어도 첫 `backward()` 호출 때 backend compiler로 최적화됩니다. 사용자의 training loop는 거의 바뀌지 않습니다.
@@ -1045,7 +1044,7 @@ variable_factories.h
 
 (`*Everything.cpp`는 shard를 하나로 합친 버전이라 실제 빌드에는 shard만 쓰입니다.)
 
-본 강의에서 인용한 코드는 이 중 `Functions.h`와 `Functions.cpp`입니다.
+본 강의에서 인용한 코드는 이 중 `VariableType_2.cpp`(forward kernel)와 `Functions.h`/`Functions.cpp`(backward node)입니다.
 
 ### 3. 관심 있는 backward 클래스 찾기
 

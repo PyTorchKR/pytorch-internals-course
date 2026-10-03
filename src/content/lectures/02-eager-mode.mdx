@@ -309,9 +309,9 @@ Dispatch logic은 call stack에서 반복적으로 등장하는 template 기반 
 | #6-9 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **CUDA kernel dispatch** - CUDA backend로 등록된 mm kernel을 functor로 감싸서 실행 |
 | #10-13 | `Dispatcher::redispatch` → `mm::redispatch` at `Dispatcher.h` → `Operators_3.cpp` | **Redispatch** - Autograd kernel이 실행 도중 다음 dispatch key(CUDA)로 mm을 재전달 |
 | #16-19 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **Autograd kernel dispatch** - Autograd key로 등록된 mm의 VariableType kernel 실행 |
-| #20-23 | `Dispatcher::call` → `mm::call` → `Tensor::mm` at `Dispatcher.h` → `Operators_3.cpp` | **mm dispatch 진입** - dispatch key set에서 최우선 key(Autograd) 선택 후 kernel 호출 |
+| #20-24 | `Dispatcher::call` → `mm::call` → `Tensor::mm` at `Dispatcher.h` → `Operators_3.cpp` | **mm dispatch 진입** - dispatch key set에서 최우선 key(Autograd) 선택 후 kernel 호출 |
 | #28-31 | `WrapFunctionIntoFunctor` → `KernelFunction::call` at `boxing/*.h` | **matmul kernel dispatch** - CompositeImplicitAutograd key로 등록된 matmul kernel 실행 |
-| #32-35 | `Dispatcher::call` → `matmul::call` → `Tensor::matmul` at `Dispatcher.h` → `Operators_4.cpp` | **matmul dispatch 진입** - runtime key(예: `AutogradCUDA`) slot에 등록된 kernel 호출. matmul은 `CompositeImplicitAutograd` alias key로 등록되어 이 kernel이 여러 slot을 채움 |
+| #32-36 | `Dispatcher::call` → `matmul::call` → `Tensor::matmul` at `Dispatcher.h` → `Operators_4.cpp` | **matmul dispatch 진입** - runtime key(예: `AutogradCUDA`) slot에 등록된 kernel 호출. matmul은 `CompositeImplicitAutograd` alias key로 등록되어 이 kernel이 여러 slot을 채움 |
 
 </details>
 
@@ -347,7 +347,7 @@ Dispatch table에는 각 key에 해당하는 function pointer가 들어 있습�
 | #10-13 | redispatch logic | |
 | #14-15 | `VariableType` (autograd) | (자동생성) |
 | #16-19 | dispatch logic | |
-| #20-24 | `Dispatcher::call` → `Tensor::mm` | |
+| #20-24 | `Dispatcher::call` → `mm::call` → `Tensor::mm` | |
 | **#25** | **`at::native::_matmul_impl` at `LinearAlgebra.cpp:2031`** | **matmul 구현체 - input shape에 따라 mm, bmm 등으로 분기** |
 | **#26** | **`at::native::matmul` at `LinearAlgebra.cpp:2181`** | **matmul 진입점** |
 | #27 | `at::` at `RegisterCompositeImplicitAutograd.cpp:2774` | (자동생성) |
@@ -673,7 +673,7 @@ PyTorch 내부에서 대부분의 구현은 C++로 되어 있습니다. Python�
 
 Tensor의 lifecycle은 생성과 소멸로 나눌 수 있습니다. 복사(`clone()`)는 아래 "기존 tensor로부터 파생되는 경우"에서 다룹니다.
 
-**생성: scratch로 새로 만드는 경우**
+**생성: 처음부터 새로 만드는 경우**
 - `aten/src/ATen/native/TensorFactories.cpp`에 구현된 함수들을 통해 생성
   - `empty()`, `zeros()`, `ones()` 등
 
@@ -789,6 +789,8 @@ View는 같은 data를 해석만 달리해 변환 시간과 memory를 아낍니�
 
 - 같은 data를 다른 shape으로 해석 (reshape)
 - 특정 차원을 반복해 접근 (broadcast)
+
+View에서 broadcast는 stride 0으로 표현되고, elementwise kernel은 이런 stride를 TensorIterator로 처리합니다.
 
 TensorIterator는 elementwise op용 helper로, broadcast와 stride 처리를 대신해 주므로 kernel은 원소 단위 lambda만 쓰면 됩니다:
 
@@ -1047,7 +1049,7 @@ Runtime은 실제 device에서 연산을 수행하기 위한 저수준 인프라
 
 **Device index 해석:**
 - **Negative**: current device를 의미
-- **Non-negative**: 특정한 concrete한 device
+- **Non-negative**: 특정 device (concrete device)
 - Device type이 CPU면 device index는 -1 또는 0만 허용 (CPU는 하나뿐이므로, `torch.device('cpu')`는 -1)
 
 (`c10/core/Device.h`)
@@ -1064,7 +1066,7 @@ XPU에서는 unique한 `c10::Device`가 `gDevicePool`에 들어 있는 `sycl::de
 
 #### Stream
 
-Heterogeneous computing에서의 실행 모델에서, host가 device로 command/data를 전달하면 device가 이를 처리합니다. Host는 device 완료를 기다리지 않고 asynchronous하게 동작합니다.
+Heterogeneous computing의 실행 모델에서는 host가 device로 command/data를 전달하고, device가 이를 처리합니다. Host는 device 완료를 기다리지 않고 asynchronous하게 동작합니다.
 
 Stream은 host가 device로 전달한 command가 담긴 queue입니다:
 
