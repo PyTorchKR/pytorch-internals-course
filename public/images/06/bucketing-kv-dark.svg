@@ -1,40 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 848 204" role="img" aria-label="decode, extend, prefill이 읽는 기존 KV cache와 새 토큰 비교">
-<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#555" stroke-width="2"/></pattern></defs>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#8a8a9a" stroke-width="2"/></pattern></defs>
 <style>text{font-family:Pretendard,'Noto Sans KR',Inter,Helvetica,Arial,sans-serif;fill:#e0e0e0} .sub{fill:#aaa}</style>
-<rect x="150" y="11" width="16" height="16" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
+<rect x="150" y="11" width="16" height="16" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
 <text class="sub" x="174" y="24" font-size="14">이전 스텝까지 만든 KV cache (이번 입력 아님)</text>
 <rect x="450" y="11" width="16" height="16" rx="4" fill="#f0915a" stroke="#f0915a" stroke-width="1.5"/>
 <text class="sub" x="474" y="24" font-size="14">이번 스텝에 넣는 토큰</text>
 <text x="20" y="73.0" font-size="16" font-weight="bold">A</text>
 <text x="44" y="73.0" font-size="15" style="fill:#5b9bf0" font-weight="bold">decode</text>
-<rect x="150" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="175" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="200" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="225" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="250" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="275" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="300" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="325" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="350" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="375" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="400" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="425" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="450" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="475" y="56" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
+<rect x="150" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="175" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="200" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="225" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="250" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="275" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="300" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="325" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="350" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="375" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="400" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="425" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="450" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="475" y="56" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
 <rect x="508" y="56" width="22" height="22" rx="4" fill="#5b9bf0" stroke="#5b9bf0" stroke-width="1.5"/>
 <text class="sub" x="628" y="72.0" font-size="14">기존 KV 있음, 새 토큰 1개</text>
 <text x="20" y="121.0" font-size="16" font-weight="bold">C</text>
 <text x="44" y="121.0" font-size="15" style="fill:#f0915a" font-weight="bold">extend</text>
-<rect x="150" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="175" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="200" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="225" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="250" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="275" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="300" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="325" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="350" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
-<rect x="375" y="104" width="22" height="22" rx="4" fill="#4a4a5a" stroke="#666" stroke-width="1.5"/>
+<rect x="150" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="175" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="200" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="225" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="250" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="275" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="300" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="325" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="350" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
+<rect x="375" y="104" width="22" height="22" rx="4" fill="#55556a" stroke="#7a7a8a" stroke-width="1.5"/>
 <rect x="408" y="104" width="22" height="22" rx="4" fill="#f0915a" stroke="#f0915a" stroke-width="1.5"/>
 <rect x="433" y="104" width="22" height="22" rx="4" fill="#f0915a" stroke="#f0915a" stroke-width="1.5"/>
 <rect x="458" y="104" width="22" height="22" rx="4" fill="#f0915a" stroke="#f0915a" stroke-width="1.5"/>
