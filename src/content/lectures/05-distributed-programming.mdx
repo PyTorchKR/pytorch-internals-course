@@ -255,7 +255,7 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
   <div><strong>Gather</strong> : 반대로 여러 프로세스의 데이터를 한 곳으로 모으는 연산</div>
 </div>
 
-<hr style="margin: 0.5rem 0; border-top: 1px solid #94a3b8;" />
+<hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
   <img src="/images/05/torch_distributed_scatter.png" alt="Scatter 연산: 하나의 프로세스가 가진 데이터를 여러 프로세스에 분산" class="h-56 mx-auto diagram-bg p-2 rounded" />
@@ -269,7 +269,7 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
   <div><strong>All-Reduce</strong> : 같은 연산을 수행하되 결과를 <strong>모든</strong> 프로세스에 공유</div>
 </div>
 
-<hr style="margin: 0.5rem 0; border-top: 1px solid #94a3b8;" />
+<hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
   <img src="/images/05/torch_distributed_reduce.png" alt="Reduce 연산: 여러 프로세스의 데이터를 연산으로 합쳐 하나의 프로세스에 저장" class="h-56 mx-auto diagram-bg p-2 rounded" />
@@ -283,7 +283,7 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
   <div><strong>All-Gather</strong> : 각 프로세스가 가진 서로 다른 데이터를 모든 프로세스에 수집. FSDP에서 sharded parameter를 복원할 때 활용</div>
 </div>
 
-<hr style="margin: 0.5rem 0; border-top: 1px solid #94a3b8;" />
+<hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
   <img src="/images/05/torch_distributed_broadcast.png" alt="Broadcast 연산: 한 프로세스의 데이터를 모든 프로세스에 동일하게 전달" class="h-56 mx-auto diagram-bg p-2 rounded" />

@@ -439,7 +439,7 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
   </div>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
-    <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"재배치할 명령어 윈도우가 넓어짐"</div>
+    <div style={{ fontSize: '0.85em', color: 'var(--fig-blue-ink)', marginBottom: '4px', textAlign: 'center' }}>"재배치할 명령어 윈도우가 넓어짐"</div>
     <ThemeImage lightSrc="/images/07/loop_trace_deps_light.svg" darkSrc="/images/07/loop_trace_deps_dark.svg" alt="speculative trace 두 iteration 사이의 의존: 빨간 점선은 같은 이름 s2, t1을 다시 써서 생기는 False Dependency, 초록 실선은 addi s1에서 다음 iteration의 slli로 값이 넘어가는 True Dependency" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>speculative trace를 만들면<br/>같은 이름을 다시 쓰는 곳에 가짜 의존(빨강)이 생기고<br/>(그림은 대표로 s2, t1만 그리고, 분기 blt(#8)는 생략했습니다)</div>
   </div>
@@ -450,7 +450,7 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
   </div>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
-    <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"값을 쓸 때마다 새 이름을 주면 가짜 의존이 사라짐"</div>
+    <div style={{ fontSize: '0.85em', color: 'var(--fig-blue-ink)', marginBottom: '4px', textAlign: 'center' }}>"값을 쓸 때마다 새 이름을 주면 가짜 의존이 사라짐"</div>
     <ThemeImage lightSrc="/images/07/loop_trace_renamed_light.svg" darkSrc="/images/07/loop_trace_renamed_dark.svg" alt="renaming 후 trace: iteration i+1이 쓰는 값이 s2′, t1′처럼 새 이름을 받아 False Dependency가 사라지고, 두 iteration 사이에는 s1′ 하나만 남음" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>renaming 후에는<br/>값이 넘어가는 s1′ 하나만 남는다</div>
   </div>
@@ -461,7 +461,7 @@ iteration을 겹쳐 실행하는 데는 방해 요소가 두 가지 있고, 각�
   </div>
 
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '0 1 360px', maxWidth: '360px' }}>
-    <div style={{ fontSize: '0.85em', color: '#3b82f6', marginBottom: '4px', textAlign: 'center' }}>"의존 경로가 없는 명령어는 병렬 처리 가능"</div>
+    <div style={{ fontSize: '0.85em', color: 'var(--fig-blue-ink)', marginBottom: '4px', textAlign: 'center' }}>"의존 경로가 없는 명령어는 병렬 처리 가능"</div>
     <ThemeImage lightSrc="/images/07/loop_dfg_light.svg" darkSrc="/images/07/loop_dfg_dark.svg" alt="renaming 후 두 iteration의 data-flow graph. 노드는 명령어와 그 명령어가 만드는 값(slli s2, slli s2′ …), edge 이름은 그 edge로 전달되는 값. iteration 사이를 잇는 값은 루프 카운터 s1′ 하나뿐" class="w-full" />
     <div style={{ marginTop: '8px', fontSize: '0.85em', textAlign: 'center' }}>남은 의존만 그리면<br/>data-flow graph</div>
   </div>
