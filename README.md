@@ -1,4 +1,4 @@
-# PyTorch Internal Lecture
+# PyTorch Internals Course
 
 PyTorch 내부 구조를 다루는 7회 강의 자료 사이트입니다. 모두의 연구소 PyTorch + NPU랩에서 진행한 강의를 글로 옮겼습니다.
 

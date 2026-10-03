@@ -1,6 +1,6 @@
 export const siteConfig = {
   title: 'PyTorch + NPU랩',
-  subtitle: 'PyTorch Internal Lecture Series',
+  subtitle: 'PyTorch Internals Course',
   description: '모두의 연구소 PyTorch + NPU랩 강의 시리즈',
   author: 'PyTorch + NPU랩',
   lang: 'ko',
@@ -8,6 +8,6 @@ export const siteConfig = {
     { label: 'About', href: '/about' },
   ],
   social: {
-    github: 'https://github.com/appleparan/pytorch-internal-lecture',
+    github: 'https://github.com/appleparan/pytorch-internals-course',
   },
 } as const;
