@@ -94,6 +94,8 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
       <text class="bp-legend-txt" x="612" y="24" font-size="11">forward 값</text>
       <line x1="586" y1="38" x2="606" y2="38" class="bp-legend-grad"/>
       <text class="bp-legend-txt" x="612" y="42" font-size="11">gradient</text>
+      <line x1="586" y1="56" x2="606" y2="56" class="bp-legend-local"/>
+      <text class="bp-legend-txt" x="612" y="60" font-size="11">local gradient</text>
     </svg>
     </div>
   </div>
@@ -143,6 +145,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     --bp-fwd-soft: rgba(36, 87, 166, 0.08);
     --bp-grad: #c2410c;
     --bp-grad-soft: rgba(194, 65, 12, 0.08);
+    --bp-local: #7c3aed;
     --bp-done: #2f7d5b;
     --bp-mono: 'Roboto Mono', ui-monospace, monospace;
     font-family: 'Pretendard Std', 'Pretendard', -apple-system, sans-serif;
@@ -159,6 +162,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     --bp-fwd-soft: rgba(127, 169, 230, 0.12);
     --bp-grad: #f0915c;
     --bp-grad-soft: rgba(240, 145, 92, 0.12);
+    --bp-local: #a78bfa;
     --bp-done: #6cc49a;
   }
   .bp-widget:focus-visible { box-shadow: 0 0 0 2px var(--bp-fwd); border-radius: 12px; }
@@ -232,9 +236,13 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
   .bp-widget :global(.bp-ol-gate.is-grad) { color: var(--bp-grad); }
   .bp-widget :global(.bp-ol-fwd) { color: var(--bp-fwd); }
   .bp-widget :global(.bp-ol-grad) { color: var(--bp-grad); }
+  .bp-widget :global(.bp-ol-local) { color: var(--bp-local); }
+  .bp-desc-body :global(.bp-local-part),
+  .bp-desc-body :global(.bp-local-part *) { color: var(--bp-local) !important; }
 
   .bp-legend-fwd { stroke: var(--bp-fwd); stroke-width: 2; }
   .bp-legend-grad { stroke: var(--bp-grad); stroke-width: 2; stroke-dasharray: 4 3; }
+  .bp-legend-local { stroke: var(--bp-local); stroke-width: 2.5; stroke-dasharray: 1 3; stroke-linecap: round; }
   .bp-legend-txt { fill: var(--bp-muted); font-family: inherit; }
 
   /* Body: explanation and gate rules */
@@ -330,6 +338,14 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     return katex.renderToString(src, { throwOnError: false, displayMode: false });
   }
 
+  // Like tex(), but allows \htmlClass so a part of a formula can be colored via CSS.
+  function texC(src: string): string {
+    return katex.renderToString(src, {
+      throwOnError: false, displayMode: false,
+      trust: (ctx) => ctx.command === '\\htmlClass', strict: false,
+    });
+  }
+
   // Gate card formula data
   const gateFwd = {
     add: tex('f(a,\\,b) = a + b'),
@@ -340,11 +356,11 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
 
   const gateBwd = {
     add:
-      tex('\\tfrac{\\partial}{\\partial a} = 1 \\cdot \\delta') + '<br>' +
-      tex('\\tfrac{\\partial}{\\partial b} = 1 \\cdot \\delta'),
+      tex('\\tfrac{\\partial f}{\\partial a} = \\tfrac{\\partial f}{\\partial \\text{out}} \\cdot 1') + '<br>' +
+      tex('\\tfrac{\\partial f}{\\partial b} = \\tfrac{\\partial f}{\\partial \\text{out}} \\cdot 1'),
     mul:
-      tex('\\tfrac{\\partial}{\\partial a} = b \\cdot \\delta') + '<br>' +
-      tex('\\tfrac{\\partial}{\\partial b} = a \\cdot \\delta'),
+      tex('\\tfrac{\\partial f}{\\partial a} = \\tfrac{\\partial f}{\\partial \\text{out}} \\cdot b') + '<br>' +
+      tex('\\tfrac{\\partial f}{\\partial b} = \\tfrac{\\partial f}{\\partial \\text{out}} \\cdot a'),
     ruleAdd: 'upstream gradient를 모든 입력에 <strong>그대로 전달</strong>합니다.',
     ruleMul: '입력값을 <strong>서로 교환</strong>하여 gradient를 계산합니다.',
   };
@@ -359,6 +375,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     bwdEdges: string[];
     flabels: string[];
     blabels: string[];
+    llabels: string[];
     badges: string[];
     fVal: string;
     fColor: string;
@@ -373,7 +390,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
         '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">다음 버튼으로 forward pass를 시작하세요.</p>',
       ].join(''),
       phase: 'init', phaseLabel: '준비', activeGate: null,
-      fwdEdges: [], bwdEdges: [], flabels: [], blabels: [], badges: [],
+      fwdEdges: [], bwdEdges: [], flabels: [], blabels: [], llabels: [], badges: [],
       fVal: 'f = \\text{?}', fColor: 'off',
     },
     {
@@ -386,7 +403,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
         '</p>',
       ].join(''),
       phase: 'fwd', phaseLabel: 'Forward pass', activeGate: 'add',
-      fwdEdges: ['e1', 'e2'], bwdEdges: [], flabels: ['e1', 'e2'], blabels: [], badges: [],
+      fwdEdges: ['e1', 'e2'], bwdEdges: [], flabels: ['e1', 'e2'], blabels: [], llabels: [], badges: [],
       fVal: 'f = \\text{?}', fColor: 'off',
     },
     {
@@ -401,7 +418,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
         '</p>',
       ].join(''),
       phase: 'fwd', phaseLabel: 'Forward pass', activeGate: 'mul',
-      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: [], flabels: ['e3', 'e4', 'e5'], blabels: [], badges: [],
+      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: [], flabels: ['e3', 'e4', 'e5'], blabels: [], llabels: [], badges: [],
       fVal: 'f = -12', fColor: 'fwd',
     },
     {
@@ -413,31 +430,31 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
         '<p style="margin-top:8px;color:var(--text-muted);font-size:12px">점선 화살표 \u2192 gradient의 역방향 흐름</p>',
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: null,
-      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5'], flabels: [], blabels: [], badges: ['f'],
+      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5'], flabels: [], blabels: [], llabels: [], badges: ['f'],
       fVal: 'f = -12', fColor: 'fwd',
     },
     {
       title: 'Backward Pass \u2014 MUL 게이트',
       body: () => [
-        '<p style="color:var(--text-muted);font-size:11.5px;margin-bottom:8px">chain rule: local gradient ', tex('\\times'), ' upstream gradient</p>',
-        '<p>', tex('\\dfrac{\\partial f}{\\partial q} = z \\times 1 = -4 \\times 1 = -4'), '</p>',
-        '<p style="margin-top:6px">', tex('\\dfrac{\\partial f}{\\partial z} = q \\times 1 = 3 \\times 1 = 3'), '</p>',
+        '<p style="color:var(--text-muted);font-size:11.5px;margin-bottom:8px">chain rule: upstream gradient ', tex('\\times'), ' local gradient</p>',
+        '<p>', texC('\\dfrac{\\partial f}{\\partial q} = \\underbrace{1}_{\\text{upstream}} \\cdot \\htmlClass{bp-local-part}{\\underbrace{z}_{\\text{local}}} = -4'), '</p>',
+        '<p style="margin-top:6px">', texC('\\dfrac{\\partial f}{\\partial z} = \\underbrace{1}_{\\text{upstream}} \\cdot \\htmlClass{bp-local-part}{\\underbrace{q}_{\\text{local}}} = 3'), '</p>',
         '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">각 입력의 gradient = 상대 입력값 ', tex('\\times'), ' upstream gradient</p>',
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: 'mul',
-      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4'], flabels: [], blabels: ['e3', 'e4'], badges: ['f', 'z'],
+      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4'], flabels: [], blabels: ['e3', 'e4'], llabels: ['e3', 'e4'], badges: ['f', 'z'],
       fVal: 'f = -12', fColor: 'fwd',
     },
     {
       title: 'Backward Pass \u2014 ADD 게이트',
       body: () => [
         '<p style="color:var(--text-muted);font-size:11.5px;margin-bottom:8px">upstream grad ', tex('= -4'), ' 를 두 입력에 그대로 전달</p>',
-        '<p>', tex('\\dfrac{\\partial f}{\\partial x} = (-4) \\times 1 = -4'), '</p>',
-        '<p style="margin-top:6px">', tex('\\dfrac{\\partial f}{\\partial y} = (-4) \\times 1 = -4'), '</p>',
+        '<p>', texC('\\dfrac{\\partial f}{\\partial x} = \\underbrace{\\dfrac{\\partial f}{\\partial q}}_{\\text{upstream}=-4} \\cdot \\htmlClass{bp-local-part}{\\underbrace{\\dfrac{\\partial q}{\\partial x}}_{\\text{local}=1}} = -4'), '</p>',
+        '<p style="margin-top:6px">', texC('\\dfrac{\\partial f}{\\partial y} = \\underbrace{\\dfrac{\\partial f}{\\partial q}}_{\\text{upstream}=-4} \\cdot \\htmlClass{bp-local-part}{\\underbrace{\\dfrac{\\partial q}{\\partial y}}_{\\text{local}=1}} = -4'), '</p>',
         '<p style="margin-top:10px;color:var(--text-muted);font-size:12px">ADD의 local gradient는 1입니다.</p>',
       ].join(''),
       phase: 'bwd', phaseLabel: 'Backward pass', activeGate: 'add',
-      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'], flabels: [], blabels: ['e1', 'e2'], badges: ['f', 'z', 'x', 'y'],
+      fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'], flabels: [], blabels: ['e3', 'e1', 'e2'], llabels: ['e1', 'e2'], badges: ['f', 'z', 'x', 'y'],
       fVal: 'f = -12', fColor: 'fwd',
     },
     {
@@ -455,7 +472,7 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
       ].join(''),
       phase: 'done', phaseLabel: '완료', activeGate: null,
       fwdEdges: ['e1', 'e2', 'e3', 'e4', 'e5'], bwdEdges: ['e5', 'e3', 'e4', 'e1', 'e2'],
-      flabels: ['e1', 'e2', 'e3', 'e4', 'e5'], blabels: ['e3', 'e4', 'e1', 'e2'],
+      flabels: ['e1', 'e2', 'e3', 'e4', 'e5'], blabels: ['e3', 'e4', 'e1', 'e2'], llabels: [],
       badges: ['f', 'z', 'x', 'y'],
       fVal: 'f = -12', fColor: 'fwd',
     },
@@ -521,6 +538,8 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
       const bl = document.getElementById(`bp-bl-${id}`);
       if (fl) fl.style.opacity = s.flabels.includes(id) ? '1' : '0';
       if (bl) bl.style.opacity = s.blabels.includes(id) ? '1' : '0';
+      const ll = document.getElementById(`bp-ll-${id}`);
+      if (ll) ll.style.opacity = s.llabels.includes(id) ? '1' : '0';
     });
 
     ['x', 'y', 'z', 'f'].forEach(id => {
@@ -611,6 +630,10 @@ const symMul = katex.renderToString('\\times', { throwOnError: false });
     ['bp-bl-e3', 'grad', '\\partial f/\\partial q = -4', 343, 82, 'bl'],
     ['bp-bl-e4', 'grad', '\\partial f/\\partial z = 3', 250, 215, 'tc'],
     ['bp-bl-e5', 'grad', '\\partial f/\\partial f = 1', 528, 135, 'bc'],
+    ['bp-ll-e1', 'local', '\\partial q/\\partial x = 1', 248, 70, 'bl'],
+    ['bp-ll-e2', 'local', '\\partial q/\\partial y = 1', 248, 114, 'tl'],
+    ['bp-ll-e3', 'local', '\\partial f/\\partial q = z = -4', 400, 135, 'bl'],
+    ['bp-ll-e4', 'local', '\\partial f/\\partial z = q = 3', 400, 180, 'tl'],
     ['bp-badge-x', 'grad', '\\partial f/\\partial x = -4', 85, 81, 'tc'],
     ['bp-badge-y', 'grad', '\\partial f/\\partial y = -4', 85, 156, 'tc'],
     ['bp-badge-z', 'grad', '\\partial f/\\partial z = 3', 85, 231, 'tc'],
