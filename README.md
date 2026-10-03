@@ -20,7 +20,7 @@ PyTorch 내부 구조를 다루는 7회 강의 자료 사이트입니다. 모두
 
 ## Getting Started
 
-[Bun](https://bun.sh/) 1.3 이상이 필요합니다. CI는 1.3.13을 씁니다.
+[Bun](https://bun.sh/) 1.4 이상이 필요합니다. CI는 1.4.2를 씁니다.
 
 ```bash
 bun install --frozen-lockfile
@@ -58,7 +58,7 @@ bun run dev
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) 6 + MDX
+- [Astro](https://astro.build/) 7 + MDX
 - [Tailwind CSS](https://tailwindcss.com/) v4
-- [KaTeX](https://katex.org/) (remark-math + rehype-katex)
+- [KaTeX](https://katex.org/) (remark-math + rehype-katex, `unified` processor)
 - [Bun](https://bun.sh/) (패키지 매니저, 런타임)
