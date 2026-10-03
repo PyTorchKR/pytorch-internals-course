@@ -47,7 +47,8 @@ ML Framework의 발전은 이전 연구와 산업적 성과가 축적된 결과�
 **ML Framework의 배경 기술:**
 - Heterogeneous computing with GPU - Graphics에서 GPGPU로의 발전
     - Graphics: OpenGL (1992), DirectX (1995)
-    - GPGPU: HLSL (2002), CUDA (2007), OpenCL (2008), HSA (2012)
+    - Shader: HLSL (2002)
+    - GPGPU: CUDA (2007), OpenCL (2008), HSA (2012)
 - Supercomputing - BLAS, MPI 등 고성능 컴퓨팅 기술
     - Fast multiplication - BLAS (1979), cuBLAS (2007), CUTLASS (2018)
     - Distributed programming - MPI (1994)
@@ -57,7 +58,7 @@ ML Framework의 발전은 이전 연구와 산업적 성과가 축적된 결과�
     - Matlab (1970s), R (1993), NumPy (2005)
 
 **ML Framework 설계의 딜레마(Design Space):**
-- Two (or three) language problems
+- Two (or more) language problems
 - Eager vs. graph mode: "define-by-run" vs. "define-and-run"
 - Interpretation vs. JIT(Just in Time)/AOT(Ahead of Time) compilation
 
@@ -195,7 +196,7 @@ NumPy API는 PyTorch의 tensor API 설계에 영향을 주었고, NumPy 창시�
 
 ## ML Framework 설계의 딜레마(Design Space)
 
-배경 기술을 하나의 프레임워크로 통합하는 과정에서, 모든 ML Framework은 공통적인 설계 선택지들과 마주쳤습니다. 언어 문제, eager vs. graph mode, 그리고 graph를 추출하는 방법을 중심으로 살펴봅니다.
+배경 기술을 하나의 프레임워크로 통합하는 과정에서, 모든 ML Framework은 공통적인 설계 선택지들과 마주쳤습니다. 언어 문제, eager vs. graph mode, 그리고 interpretation vs. JIT/AOT compilation을 중심으로 살펴봅니다.
 
 ### Two (or More) Language Problems
 
