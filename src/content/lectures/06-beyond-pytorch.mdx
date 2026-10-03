@@ -109,11 +109,11 @@ PyTorch + NPU 온라인 모임 #6 | 2025-02-05
 
 ### Self Attention과 Scaled Dot-Product
 
-LLM에서 가장 중요한 연산을 하나 꼽으라면 단연 **Self-Attention**, 그중에서도 실제로 그것을 계산하는 연산인 **Scaled Dot-Product**입니다. 왼쪽 그림처럼 한 문장이 주어졌을 때, 토큰들 사이의 관계를 통해 "이 문장 안에서 이 토큰이 어떤 의미를 갖는가"를 더 명확하게 뽑아내는 과정이 곧 self-attention이라고 생각할 수 있습니다.
+LLM에서 가장 중요한 연산을 하나 꼽으라면 단연 **Self-Attention**, 그중에서도 실제로 그것을 계산하는 연산인 **Scaled Dot-Product**입니다. 아래 첫 번째 그림처럼 한 문장이 주어졌을 때, 토큰들 사이의 관계를 통해 "이 문장 안에서 이 토큰이 어떤 의미를 갖는가"를 더 명확하게 뽑아내는 과정이 곧 self-attention이라고 생각할 수 있습니다.
 
 이 과정은 잘 알려져 있듯이 **K(Key), Q(Query), V(Value)** 세 가지 값으로 이루어집니다. 각 토큰의 embedding에 세 개의 weight를 곱해 만드는 벡터로, query는 "내가 무엇을 찾는가", key는 "내가 무엇을 갖고 있는가", value는 "실제로 전달할 내용"에 해당합니다. Attention은 토큰들 사이의 연관성의 크기입니다. 이 크기는 query–key 내적으로 구합니다. 이 크기로 value를 가중해 누적하면(=scaled dot-product), 특정 토큰에 self-attention이 반영된 새로운 표현(embedding)이 만들어집니다.
 
-오른쪽 그림에서 계산 측면의 포인트 하나는, 입력 토큰 embedding으로부터 K·Q·V를 뽑아내는 부분은 토큰마다 독립이라 모두 병렬로 처리할 수 있다는 점입니다. 그 뒤의 단계는 오른쪽 카드 ①~④ 순서입니다.
+아래 그림에서 계산 측면의 포인트 하나는, 입력 토큰 embedding으로부터 K·Q·V를 뽑아내는 부분은 토큰마다 독립이라 모두 병렬로 처리할 수 있다는 점입니다. 그 뒤의 단계는 그림 오른쪽 아래 카드 ①~④ 순서입니다.
 
 요약하자면 계산 특성은 다음과 같습니다.
 
@@ -228,7 +228,7 @@ Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 �
 
 <PrefillDecodeDiagram />
 
-위 위젯에서 세로축은 layer, 화살표는 attention(토큰 간 의존)을 뜻합니다. Prefill에는 수직(레이어 간) 의존성과 우상향(KV 전달) 의존성이 있지만, 같은 레이어 안에서 한 토큰이 다른 토큰의 출력을 기다리는 가로 의존성은 없습니다. 그래서 같은 레이어 안의 모든 토큰을 가로로 병렬 처리할 수 있습니다. Decode는 새 토큰을 만들 때마다 직전 토큰의 결과가 입력으로 다시 들어가야 합니다. 그래서 토큰 단위로 순차 처리합니다.
+위 위젯에서 세로축은 layer이고, 가로선 위의 점은 attention(query 행 × key 열)을 뜻합니다. 주황색 호는 출력 토큰이 다음 입력으로 되돌아가는 경로입니다. 위젯의 프롬프트는 4 토큰(`I like my cat`)이고, 본문의 예시는 5 토큰입니다. Prefill에는 수직(레이어 간) 의존성과 우상향(KV 전달) 의존성이 있지만, 같은 레이어 안에서 한 토큰이 다른 토큰의 출력을 기다리는 가로 의존성은 없습니다. 그래서 같은 레이어 안의 모든 토큰을 가로로 병렬 처리할 수 있습니다. Decode는 새 토큰을 만들 때마다 직전 토큰의 결과가 입력으로 다시 들어가야 합니다. 그래서 토큰 단위로 순차 처리합니다.
 
 #### Q&A
 
@@ -241,7 +241,7 @@ Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 �
 > 옵션 차이가 아니라 실제 생성되는 계산 자체가 다릅니다. 배치 사이즈도 다르고, Prefill은 한 토큰의 출력이 옆 토큰의 입력이 될 필요가 없어 모양 자체가 달라지므로, 결과적으로 별도의 binary로 빌드해 사용합니다.
 
 > **Q. Prefill 그림의 화살표는 attention을 뜻하나요?**
-> 네, 여기서의 화살표는 attention을 의미합니다.
+> 네. 위젯에서는 점과 선이 attention을 나타냅니다.
 
 ### KV Cache
 
@@ -266,10 +266,10 @@ KV cache의 비용은 두 가지입니다. sequence 길이에 비례해 메모�
 
 ### Roofline Analysis
 
-Prefill과 Decode의 차이는 **Roofline Analysis** 그래프 한 장으로 정리됩니다. 아키텍처나 성능 분석을 하는 분들에게는 익숙한 그래프입니다. 그래프의 왼쪽 사선(Memory Bound 영역. Decode가 여기에 있음)과 오른쪽 가로선이 지붕(roof)처럼 보여서 붙은 이름입니다. 사선과 가로선이 만나는 점을 ridge point라고 합니다.
+Prefill과 Decode의 차이는 **Roofline Analysis** 그래프 한 장으로 정리됩니다. 아키텍처나 성능 분석을 하는 분들에게는 익숙한 그래프입니다. 그래프의 왼쪽 사선(Memory Bound 영역. Decode가 여기에 있음)과 오른쪽 가로선이 지붕(roof)처럼 보여서 붙은 이름입니다. 사선과 가로선이 만나는 점을 ridge point라고 합니다(아래 그림에서는 "turning point"로 표시됩니다).
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide12_1.png" alt="LLM 추론의 Roofline 분석 그래프: Memory Bound 영역의 Decode와 Compute Bound 영역의 Prefill" class="h-72" />
+  <img src="/images/06/slide12_1.png" alt="Nvidia A6000 GPU의 FP16 Roofline 그래프: 왼쪽 사선 구간은 memory-bound, 오른쪽 가로선 구간은 compute-bound이고, 두 구간이 만나는 곳에 turning point가 표시됨" class="h-72" />
 </div>
 
 > 출처: [LLM Inference Unveiled: Survey and Roofline Model Insights](https://arxiv.org/abs/2402.16363)
@@ -323,10 +323,10 @@ Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자�
 
 메모리 병목은 LLM 추론만의 문제가 아닙니다. 프로세서를 설계할 때도 메모리가 가장 자주 병목이 되고, 메모리 성능이 전체 시스템 성능을 좌우한다고 보는 것이 일반적입니다.
 
-이 현상은 오래전부터 알려져 있었습니다. 아래 1995년 논문은 **"Memory Wall"** 이라는 용어를 처음 쓰거나 적어도 널리 알렸고, 당시에도 *"프로세서의 성능은 연산을 얼마나 빨리 처리하느냐가 아니라, 데이터를 얼마나 빨리 들고 오고 내보낼 수 있느냐로 결정된다"* 는 지적이 있었습니다.
+이 현상은 오래전부터 알려져 있었습니다. 아래 논문은 1994년 12월 기술 보고서(1995년 ACM 게재)로, **"Memory Wall"** 이라는 용어를 처음 쓰거나 적어도 널리 알렸고, 당시에도 *"프로세서의 성능은 연산을 얼마나 빨리 처리하느냐가 아니라, 데이터를 얼마나 빨리 들고 오고 내보낼 수 있느냐로 결정된다"* 는 지적이 있었습니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide13_1.png" alt="Wulf & McKee의 논문 'Hitting the Memory Wall: Implications of the Obvious' 첫 페이지" class="h-64" />
+  <img src="/images/06/slide13_1.png" alt="Wulf & McKee의 논문 'Hitting the Memory Wall: Implications of the Obvious' 첫 페이지(December 1994 표기)" class="h-64" />
 </div>
 
 > 출처: Wulf & McKee, "Hitting the Memory Wall: Implications of the Obvious", ACM SIGARCH Computer Architecture News 23(1), 1995
@@ -388,7 +388,7 @@ Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자�
   <div class="text-sm mt-2">기준선: forward pass 한 번에 토큰 하나</div>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide18_1.png" alt="Speculative Decoding: draft 모델이 5개 토큰을 제안하고, target model이 한 번의 forward pass로 검증해 앞 2개를 accept하고 세 번째 자리에 자기 토큰 'Glitters'를 넣는 과정" class="h-48 mx-auto" />
+  <img src="/images/06/slide18_1.png" alt="Speculative Decoding: Assistant Model이 토큰 5개(All That Shines Is Not)를 제안하고, Main Model이 한 번의 forward pass로 검증해 앞 2개(All, That)를 accept한다. 아래쪽 Main Model(Auto-regressive) 줄에서는 세 번째 자리가 Glitters로 바뀌고 Is, Not이 이어지는 모습으로 그려짐" class="h-48 mx-auto" />
   <div class="text-sm mt-2">draft 5개 → 검증 → 2개 accept + 교정 토큰 1개</div>
 </div>
 </div>
@@ -402,7 +402,7 @@ Continuous Batching과 Speculative Decoding은 Decode를 Prefill처럼 병렬로
 마지막 토큰 하나를 처리하려면 그 전까지 생성된 모든 토큰으로부터 입력을 가져와 Attention을 다시 계산해야 합니다. 한 토큰당 비용이 $O(N)$이고, 그걸 $N$번 반복하니 sequence 전체의 누적 시간은 $O(N^2)$입니다. 즉 sequence 길이 $N$이 두 배가 되면 attention에 들어가는 누적 시간은 4배, 읽어야 하는 KV cache 메모리는 2배로 늘어나는 구조입니다. 컨텍스트가 길어지는 추세를 생각하면, 이 자승 항을 어떻게 다루느냐가 LLM 추론 효율의 또 다른 중요한 축이 됩니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide19_1.png" alt="sequence 길이에 따라 O(N^2)으로 커지는 causal attention mask 행렬" class="h-64" />
+  <img src="/images/06/slide19_1.png" alt="문서 경계 토큰(<eod>)이 들어 있는 packed sequence의 causal attention mask 행렬: 각 토큰이 자기 자신과 앞 토큰만 참조하는 하삼각 구조" class="h-64" />
 </div>
 
 > 출처: [4D masks support in Transformers](https://huggingface.co/blog/poedator/4d-masks)
@@ -417,7 +417,7 @@ FlashAttention은 계산을 block 단위로 쪼갭니다(tiling). 한 block을 �
 
 <div class="grid grid-cols-2 gap-4 mt-4">
 <div>
-  <img src="/images/06/slide20_1.png" alt="기존 Attention 구현에서 단계마다 중간 결과를 DRAM에 쓰고 다시 읽는 비효율" class="h-56" />
+  <img src="/images/06/slide20_1.png" alt="왼쪽은 Standard Attention으로 S, P, O 단계마다 Memory(HBM)에 쓰고 다시 읽는 왕복 구조이고, 오른쪽은 Flash Attention으로 K, V block을 불러와 한 kernel 안에서 처리하고 O만 쓰는 구조" class="h-56" />
 </div>
 <div>
   <img src="/images/06/slide20_2.png" alt="GPT-2 attention 실행 시간 비교: PyTorch 구현은 matmul, mask, softmax, dropout 단계를 합쳐 약 17ms, FlashAttention의 fused kernel은 약 2ms" class="h-56" />
@@ -448,7 +448,7 @@ PagedAttention은 OS의 virtual memory · paging과 거의 같은 발상으로 �
 둘을 decouple해 두고, request마다 **block table**이 logical block 번호를 physical block 위치로 매핑합니다(OS의 page table에 해당). 실제로 채워진 만큼만 physical block을 할당(on-demand allocation)합니다. Max를 가정한 over-provisioning이 필요 없고, 고정 크기 block은 physical 메모리에서 연속일 필요가 없어 external fragmentation도 사라집니다. 낭비는 각 sequence의 마지막 block에 남는 빈 자리 정도로 한정되어, 동시에 처리할 수 있는 request 수가 늘어납니다. 즉 PagedAttention은 attention 연산을 빠르게 하는 기법이 아니라 KV cache 메모리 관리 기법입니다. block 단위로 흩어진 KV를 읽어야 해서 attention kernel 자체는 논문 측정에서 FasterTransformer 대비 20–26% 느리지만, 같은 메모리에 더 많은 request를 담아 throughput은 2–4배 올라갑니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide21_1.png" alt="PagedAttention: KV cache의 logical cache block과 physical cache block을 decouple해 on-demand로 할당하는 구조" class="h-56" />
+  <img src="/images/06/slide21_1.png" alt="PagedAttention: Logical KV cache blocks(block당 4 slot)가 block table을 거쳐 Physical KV cache blocks의 비연속 위치(Block 7, 1, 3)로 매핑되고, 마지막 block은 on demand로 할당되는 구조" class="h-56" />
 </div>
 
 > 출처: [Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180)
@@ -492,7 +492,7 @@ FlashAttention이 가정하는 GPU 모델은 세 가지 요소로 이루어져 �
 같은 맥락에서, sequence가 길어질수록 attention 자체가 얼마나 무거워지는지를 한 번에 보여주는 그림은 다음과 같습니다. $Q \times K^T$ → mask → softmax → $\times V$로 이어지는 전 과정에서 연산량과 메모리 접근량 모두 $O(N^2)$으로 커집니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide27_1.png" alt="Attention 계산 흐름: QK^T 곱, mask, softmax, V 곱으로 이어지며 연산량과 메모리 접근량이 O(N^2)으로 커지는 구조" class="h-44" />
+  <img src="/images/06/slide27_1.png" alt="Attention 계산 흐름: Q와 K(N x d)로 A = QK^T (N x N)를 만들고, mask, softmax를 거친 뒤 V(N x d)를 곱해 O (N x d)를 얻는 단계와 각 행렬의 크기" class="h-44" />
 </div>
 
 ### FlashAttention: Tiling, Fusion, Online Softmax
@@ -520,12 +520,12 @@ FlashAttention은 앞 절에서 본 비효율을 풀기 위해 두 가지 기법
 
 <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center mt-4">
   <div class="text-center">
-    <img src="/images/06/fusion-multi.png" alt="Fusion 이전: op마다 중간 결과를 DRAM에 썼다가 다시 읽는 왕복 구조" class="h-44 mx-auto" />
+    <img src="/images/06/fusion-multi.png" alt="Fusion 이전: Memory와 Compute 사이에서 op마다 입력을 읽고 결과를 메모리에 썼다가 다음 op이 다시 읽는 왕복 구조" class="h-44 mx-auto" />
     <div class="text-sm mt-2">op마다 HBM 왕복</div>
   </div>
   <div class="text-3xl text-center" style="color:#3a7bd5">→</div>
   <div class="text-center">
-    <img src="/images/06/fusion-fused.png" alt="Fusion 이후: 여러 op을 하나의 커널로 합쳐 최종 결과만 DRAM에 한 번 내보내는 구조" class="h-44 mx-auto" />
+    <img src="/images/06/fusion-fused.png" alt="Fusion 이후: Memory에서 입력을 한 번 읽고, Compute 안에서 여러 op을 이어서 처리한 뒤 최종 결과만 메모리에 한 번 쓰는 구조" class="h-44 mx-auto" />
     <div class="text-sm mt-2">하나의 커널로 fuse</div>
   </div>
 </div>
@@ -792,7 +792,7 @@ GPU 아키텍처는 CUDA가 가정했던 깨끗한 SIMT[^simt] 아키텍처에�
   <p class="text-sm mt-2">CUDA가 가정한 GPU: 작은 control에 수많은 동일한 ALU (SIMT)</p>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide32_2.png" alt="V100부터 B100까지 세대마다 쌓인 전용 기능 목록: Tensor Core, sparsity, async copy, L2 residency, Transformer Engine, FP8/FP4, TMA 등" class="h-56 mx-auto" />
+  <img src="/images/06/slide32_2.png" alt="Nvidia Chips Becoming More Specialized: V100, A100, H100, B100 세대별로 쌓인 전용 기능(Tensor Core, sparsity, Asynchronous Copy, L2 Cache Residency, Transformer Engine, FP8/FP4 Data Format 등). B100 위쪽 빈 칸은 물음표로 표시됨" class="h-56 mx-auto" />
   <p class="text-sm mt-2">세대마다 전용 기능이 쌓여 복잡해진 최근 GPU (V100 → B100)</p>
 </div>
 </div>
@@ -883,10 +883,10 @@ NVIDIA는 Triton을 CUDA Tile IR로 lowering하는 backend도 공개했습니다
 
 ## Serving 최적화 Framework
 
-커널 위쪽에는 서빙(serving) 레이어가 있습니다. Continuous Batching, Speculative Decoding 같은 기법은 점점 서빙 프레임워크의 기본 기능이 되고 있습니다. 오늘날 LLM 추론 스택에서는 모델·커널 위에 Inference Engine이 있고, 그 위에 Inference Server가 있습니다. Inference Engine은 weight를 올리고 batching·decoding·KV cache 관리를 맡아 모델을 실행합니다. Inference Server는 엔진 앞에서 API로 request를 받고, 모델 배포와 확장을 관리합니다.
+커널 위쪽에는 서빙(serving) 레이어가 있습니다. Continuous Batching, Speculative Decoding 같은 기법은 점점 서빙 프레임워크의 기본 기능이 되고 있습니다. 오늘날 LLM 추론 스택에서는 모델·커널 위에 Inference Engine이 있고, 그 위에 Inference Server가 있습니다. Inference Engine은 weight를 올리고 batching·decoding·KV cache 관리를 맡아 모델을 실행합니다. Inference Server는 엔진 앞에서 API로 request를 받고, 모델 배포와 확장을 관리합니다. 아래 그림은 Inference Engine을 Inference Server 안에 중첩해 그리며, kernel 계층은 따로 그리지 않습니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/inference-engines-and-servers-architecture.png" alt="LLM 추론 스택에서 모델·커널 위에 얹히는 Inference Engine과 Inference Server 아키텍처" class="max-w-2xl mx-auto" />
+  <img src="/images/06/inference-engines-and-servers-architecture.png" alt="Inference Server 안에 Query Queue Scheduler, Metrics, 그리고 Batching·Model·Query Response를 담은 Inference Engine이 들어 있고, 서버가 Hardware(GPU/CPU)와 연결되는 구조. Application이 HTTP/gRPC로 요청을 보냄" class="max-w-2xl mx-auto" />
 </div>
 
 > 출처: [Koyeb - Best LLM Inference Engines and Servers to Deploy LLMs in Production](https://www.koyeb.com/blog/best-llm-inference-engines-and-servers-to-deploy-llms-in-production)
@@ -1010,12 +1010,12 @@ Decode group 두 개를 하나로 합치면(merge) 두 축이 함께 움직입�
 
 vLLM은 PyTorch 기반일 뿐 아니라, 다양한 하드웨어를 직접 붙이지 않겠다고 명시했습니다. vLLM 측의 입장은 *"하드웨어는 일단 PyTorch에 잘 붙여 오기만 하면, 그 위에서 vLLM이 동작하도록 우리가 만들겠다"* 에 가깝습니다.
 
-아래에 하드웨어가 있고, 그 위에 PyTorch가 추상화 레이어로 놓이며, 그 위에 vLLM이 올라갑니다. vLLM은 하드웨어 다양성 대응을 PyTorch 레이어에 맡깁니다.
+아래에 하드웨어가 있고, 그 위에 PyTorch가 추상화 레이어로 놓입니다. 그림은 Models와 Utilities가 PyTorch를 거쳐 여러 하드웨어에 닿는 구조("narrow waist")를 보여 주며, vLLM은 그 위쪽에서 동작합니다. vLLM은 하드웨어 다양성 대응을 PyTorch 레이어에 맡깁니다.
 
 리벨리온은 이 점 때문에 PyTorch device backend와 vLLM platform·kernel integration을 함께 제공합니다. 그래야 기존 model과 serving workflow를 리벨리온 NPU에서 그대로 사용할 수 있기 때문입니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide44_1.png" alt="vLLM의 계층 구조: 하드웨어 위에 PyTorch가 추상화 레이어로 놓이고 그 위에 vLLM이 올라가는 구성" class="h-64" />
+  <img src="/images/06/slide44_1.png" alt="PyTorch as a Narrow Waist: Models와 Utilities가 PyTorch 위에 있고, PyTorch 아래에 NVIDIA GPU, AMD GPU, Intel GPU, Google TPU 등이 놓인 구조" class="h-64" />
 </div>
 
 vLLM은 **hardware plugin system**을 제공하며, vendor는 platform plugin을 별도 package(out-of-tree)로 유지할 수 있습니다. 리벨리온의 [vllm-rbln](https://github.com/rebellions-sw/vllm-rbln)도 이 방식으로 ATOM·REBEL 지원을 제공합니다. 다만 PyTorch device support만으로 vLLM 지원이 자동 완성되는 것은 아닙니다. vendor는 platform integration 외에 다음 구현을 추가로 제공해야 합니다: attention kernel, KV cache kernel, distributed communication.
@@ -1088,7 +1088,7 @@ $2BDF$의 2는 내적(dot product)에서 옵니다.
 즉 행렬곱의 FLOPs는 "관여하는 차원의 곱 × 2"이고, FLOPs 계산은 내적의 개수를 세는 문제입니다. Transformer는 행렬곱의 연쇄이므로, 아래 그림처럼 각 행렬곱의 shape만 적으면 전체 FLOPs와 파라미터 수를 기계적으로 셀 수 있습니다. "파라미터 $P$개 모델의 forward pass ≈ 토큰당 $2P$ FLOPs (학습은 backward까지 $6P$)"라는 근사도 여기서 나옵니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/transformer-diagram.png" alt="Transformer 한 layer를 구성하는 모든 행렬곱의 shape과 파라미터·FLOPs를 정리한 다이어그램" class="max-w-3xl w-full mx-auto" />
+  <img src="/images/06/transformer-diagram.png" alt="Transformer 한 layer(Attention과 MLP)의 각 행렬곱 shape을 B, T, S, D, N, K, G, H, F 기호로 표시한 다이어그램과, 기호별 차원 의미를 정리한 symbol-dimension 표" class="max-w-3xl w-full mx-auto" />
 </div>
 
 > 출처: [All the Transformer Math You Need to Know (How to Scale Your Model, JAX Scaling Book)](https://jax-ml.github.io/scaling-book/transformers/)
