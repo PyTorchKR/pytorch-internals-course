@@ -1,0 +1,525 @@
+---
+// KvCacheWidget.astro
+// Interactive comparison: decode without KV cache (recompute K·V of every token each step)
+// vs with KV cache (compute only the new token's K·V and append). No props required.
+---
+
+<div class="kvc-widget">
+  <h2 class="kvc-sr-only">KV cache 유무에 따른 decode 계산량 비교</h2>
+
+  <div class="kvc-panels">
+    <div class="kvc-panel kvc-panel-off">
+      <div class="kvc-panel-title"><span class="kvc-badge kvc-badge-off">KV cache 없음</span></div>
+      <svg
+        class="kvc-svg"
+        viewBox="0 0 350 240"
+        role="img"
+        aria-label="KV cache가 없으면 decode 스텝마다 sequence 전체 token의 Q, K, V를 다시 계산하고 마지막 query가 모든 K를 참조한다"
+      >
+        <g class="kvc-svg-a"></g>
+      </svg>
+      <div class="kvc-cap">이번 스텝에서 계산한 K·V: <b data-kvc-cap-a>3개</b></div>
+    </div>
+
+    <div class="kvc-panel kvc-panel-on">
+      <div class="kvc-panel-title"><span class="kvc-badge kvc-badge-on">KV cache 있음</span></div>
+      <svg
+        class="kvc-svg"
+        viewBox="0 0 350 240"
+        role="img"
+        aria-label="KV cache가 있으면 새 token의 Q, K, V만 계산하고 K와 V를 cache 끝에 append하며 이전 K와 V는 cache에서 읽기만 한다"
+      >
+        <g class="kvc-svg-b"></g>
+      </svg>
+      <div class="kvc-cap">이번 스텝에서 계산한 K·V: <b data-kvc-cap-b>3개</b></div>
+    </div>
+  </div>
+
+  <div class="kvc-legend">
+    <div class="kvc-legend-item"><span class="kvc-sw kvc-sw-calc"></span>이번 스텝에서 계산</div>
+    <div class="kvc-legend-item"><span class="kvc-sw kvc-sw-cache"></span>cache에 저장된 값</div>
+    <div class="kvc-legend-item"><span class="kvc-sw kvc-sw-read"></span>cache에서 읽기(read)</div>
+    <div class="kvc-legend-item"><span class="kvc-arrow">◂</span>cache 끝에 append</div>
+  </div>
+
+  <div class="kvc-controls">
+    <button class="kvc-btn" data-kvc-play type="button" aria-label="Play">
+      <svg class="kvc-icon kvc-icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="kvc-icon kvc-icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>
+      <span class="kvc-btn-label">Play</span>
+    </button>
+    <button class="kvc-btn" data-kvc-reset type="button" aria-label="Reset">
+      <svg class="kvc-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      <span>Reset</span>
+    </button>
+    <input type="range" class="kvc-slider" data-kvc-slider min="0" max="4" step="1" value="0" aria-label="Step slider" />
+    <span class="kvc-step-l" data-kvc-step-l>스텝 0 / 4</span>
+  </div>
+
+  <div class="kvc-expl">
+    <div class="kvc-expl-tag" data-kvc-expl-tag>Prefill 완료</div>
+    <div class="kvc-expl-text" data-kvc-expl-text></div>
+  </div>
+
+  <div class="kvc-metrics">
+    <div class="kvc-metric kvc-metric-off">
+      <div class="kvc-metric-l"><span class="kvc-badge kvc-badge-off">KV cache 없음</span></div>
+      <div class="kvc-metric-v" data-kvc-m-a>누적 K·V 계산 0개</div>
+    </div>
+    <div class="kvc-metric kvc-metric-on">
+      <div class="kvc-metric-l"><span class="kvc-badge kvc-badge-on">KV cache 있음</span></div>
+      <div class="kvc-metric-v" data-kvc-m-b>누적 K·V 계산 0개</div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  /* Same palette as .pd-widget so the two widgets look like siblings. */
+  .kvc-widget {
+    --kvc-bg-secondary: #f4f4f3;
+    --kvc-bg-info: #e6f0ff;
+    --kvc-bg-primary: #fafaf8;
+    --kvc-bg-calc: #fbe3d6;
+    --kvc-bg-cache: #dcdcda;
+    --kvc-text-primary: #1a1a1a;
+    --kvc-text-secondary: #525252;
+    --kvc-text-tertiary: #8a8a8a;
+    --kvc-text-info: #2563eb;
+    --kvc-border-secondary: #cfcfcf;
+    --kvc-border-tertiary: #e3e3e3;
+    --kvc-fb-color: #d85a30;
+    --kvc-fb-text: #993c1d;
+    --kvc-mode-off: #be123c;
+    --kvc-mode-on: #036c4f;
+
+    --kvc-radius-md: 6px;
+    --kvc-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --kvc-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    padding: 1rem 0;
+    color: var(--kvc-text-primary);
+    font-family: var(--kvc-font-sans);
+  }
+
+  [data-theme='dark'] .kvc-widget {
+    --kvc-bg-secondary: #2a2d31;
+    --kvc-bg-info: #0c447c;
+    --kvc-bg-primary: #1c1c1d;
+    --kvc-bg-calc: #5a3414;
+    --kvc-bg-cache: #44474d;
+    --kvc-text-primary: #d2d2d2;
+    --kvc-text-secondary: #a8a8a8;
+    --kvc-text-tertiary: #828282;
+    --kvc-text-info: #85b7eb;
+    --kvc-border-secondary: #424246;
+    --kvc-border-tertiary: #353539;
+    --kvc-fb-color: #ef9f27;
+    --kvc-fb-text: #f4b878;
+    --kvc-mode-off: #fb7185;
+    --kvc-mode-on: #34d399;
+  }
+
+  .kvc-widget .kvc-sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  .kvc-widget .kvc-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 640px) {
+    .kvc-widget .kvc-panels { grid-template-columns: 1fr; }
+  }
+  .kvc-widget .kvc-panel {
+    min-width: 0;
+    background: var(--kvc-bg-secondary);
+    border-radius: var(--kvc-radius-md);
+    padding: 10px 8px 8px;
+  }
+  .kvc-widget .kvc-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 1px 8px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .kvc-widget .kvc-badge-off {
+    color: var(--kvc-mode-off);
+    background: color-mix(in srgb, var(--kvc-mode-off) 10%, transparent);
+  }
+  .kvc-widget .kvc-badge-on {
+    color: var(--kvc-mode-on);
+    background: color-mix(in srgb, var(--kvc-mode-on) 10%, transparent);
+  }
+  .kvc-widget .kvc-panel-off { border-top: 3px solid var(--kvc-mode-off); }
+  .kvc-widget .kvc-panel-on { border-top: 3px solid var(--kvc-mode-on); }
+  .kvc-widget .kvc-metric-off { border-left: 3px solid var(--kvc-mode-off); }
+  .kvc-widget .kvc-metric-on { border-left: 3px solid var(--kvc-mode-on); }
+  .kvc-widget .kvc-expl-text .kvc-badge { margin-right: 6px; font-size: 12px; }
+  .kvc-widget .kvc-panel-title {
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--kvc-text-secondary);
+    margin-bottom: 6px;
+  }
+  .kvc-widget .kvc-svg { width: 100%; height: auto; display: block; margin: 0 auto; }
+  .kvc-widget .kvc-cap {
+    font-size: 13px;
+    text-align: center;
+    color: var(--kvc-text-secondary);
+    margin-top: 4px;
+  }
+  .kvc-widget .kvc-cap b { color: var(--kvc-fb-text); font-weight: 600; }
+
+  /* SVG cells. State classes: is-calc (orange), is-cache (gray), is-read (blue). */
+  .kvc-widget .kvc-cell {
+    fill: var(--kvc-bg-primary);
+    stroke: var(--kvc-border-secondary);
+    stroke-width: 0.8;
+  }
+  .kvc-widget .kvc-cell.is-cache { fill: var(--kvc-bg-cache); stroke: var(--kvc-text-tertiary); }
+  .kvc-widget .kvc-cell.is-calc { fill: var(--kvc-bg-calc); stroke: var(--kvc-fb-color); stroke-width: 1.4; }
+  .kvc-widget .kvc-cell.is-read { fill: var(--kvc-bg-info); stroke: var(--kvc-text-info); stroke-width: 1.2; }
+  .kvc-widget .kvc-cell.is-flash { animation: kvc-flash 0.8s ease-out; }
+  @keyframes kvc-flash {
+    0% { stroke-width: 4; opacity: 0.35; }
+    100% { stroke-width: 1.4; opacity: 1; }
+  }
+
+  .kvc-widget .kvc-ct {
+    font-family: var(--kvc-font-sans);
+    font-size: 12px;
+    fill: var(--kvc-text-primary);
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+  }
+  .kvc-widget .kvc-tok {
+    font-family: var(--kvc-font-sans);
+    font-size: 12px;
+    fill: var(--kvc-text-primary);
+  }
+  .kvc-widget .kvc-tok-end { text-anchor: end; dominant-baseline: central; }
+  .kvc-widget .kvc-tok-mid { text-anchor: middle; }
+  .kvc-widget .kvc-next {
+    font-family: var(--kvc-font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    fill: var(--kvc-fb-text);
+    dominant-baseline: central;
+  }
+  .kvc-widget .kvc-hint {
+    font-family: var(--kvc-font-sans);
+    font-size: 12px;
+    font-style: italic;
+    fill: var(--kvc-text-tertiary);
+    dominant-baseline: central;
+  }
+  .kvc-widget .kvc-box {
+    fill: none;
+    stroke: var(--kvc-border-secondary);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+  }
+  .kvc-widget .kvc-box-title {
+    font-family: var(--kvc-font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    fill: var(--kvc-text-secondary);
+  }
+  .kvc-widget .kvc-read-tag {
+    font-family: var(--kvc-font-sans);
+    font-size: 12px;
+    fill: var(--kvc-text-info);
+    text-anchor: start;
+  }
+  .kvc-widget .kvc-app {
+    font-family: var(--kvc-font-sans);
+    font-size: 11px;
+    fill: var(--kvc-fb-text);
+    dominant-baseline: central;
+  }
+  .kvc-widget .kvc-att {
+    fill: none;
+    stroke: var(--kvc-fb-color);
+    stroke-width: 1;
+    stroke-linejoin: round;
+    stroke-linecap: butt;
+    opacity: 0.7;
+  }
+  .kvc-widget .kvc-att-read { stroke: var(--kvc-text-info); opacity: 0.7; }
+
+  /* Controls (same look as .pd-widget) */
+  .kvc-widget .kvc-controls {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px;
+  }
+  .kvc-widget .kvc-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--kvc-border-secondary);
+    border-radius: var(--kvc-radius-md);
+    background: var(--kvc-bg-primary);
+    color: var(--kvc-text-primary);
+    font-family: var(--kvc-font-sans);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .kvc-widget .kvc-btn:hover { background: var(--kvc-bg-secondary); border-color: var(--kvc-text-tertiary); }
+  .kvc-widget .kvc-btn:focus-visible { outline: 2px solid var(--kvc-text-info); outline-offset: 2px; }
+  .kvc-widget .kvc-icon { display: inline-block; flex-shrink: 0; }
+  .kvc-widget .kvc-icon-pause { display: none; }
+  .kvc-widget .kvc-btn.is-playing .kvc-icon-play { display: none; }
+  .kvc-widget .kvc-btn.is-playing .kvc-icon-pause { display: inline-block; }
+  .kvc-widget .kvc-slider { flex: 1; min-width: 100px; accent-color: var(--kvc-text-info); }
+  .kvc-widget .kvc-step-l {
+    font-size: 13px; color: var(--kvc-text-secondary);
+    margin-left: auto; min-width: 100px; text-align: right;
+  }
+
+  .kvc-widget .kvc-expl {
+    background: var(--kvc-bg-secondary);
+    border-radius: var(--kvc-radius-md);
+    padding: 12px 16px;
+    margin-top: 12px;
+    min-height: 110px;
+  }
+  .kvc-widget .kvc-expl-tag { font-size: 12px; color: var(--kvc-text-tertiary); font-weight: 500; margin-bottom: 4px; }
+  .kvc-widget .kvc-expl-text { font-size: 14px; line-height: 1.6; color: var(--kvc-text-primary); }
+  .kvc-widget .kvc-expl-text div + div { margin-top: 4px; }
+  .kvc-widget .kvc-expl-text code {
+    font-family: var(--kvc-font-mono); font-size: 13px;
+    background: var(--kvc-bg-primary); padding: 1px 1px; border-radius: 3px;
+  }
+
+  .kvc-widget .kvc-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 480px) {
+    .kvc-widget .kvc-metrics { grid-template-columns: 1fr; }
+  }
+  .kvc-widget .kvc-metric { background: var(--kvc-bg-secondary); border-radius: var(--kvc-radius-md); padding: 10px 14px; }
+  .kvc-widget .kvc-metric-l { font-size: 12px; color: var(--kvc-text-secondary); margin-bottom: 2px; }
+  .kvc-widget .kvc-metric-v { font-size: 14px; font-weight: 500; }
+
+  .kvc-widget .kvc-legend {
+    display: flex; gap: 14px; font-size: 12px; color: var(--kvc-text-tertiary);
+    margin-top: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .kvc-widget .kvc-legend-item { display: flex; align-items: center; gap: 6px; }
+  .kvc-widget .kvc-sw { width: 14px; height: 10px; border-radius: 2px; flex-shrink: 0; border: 1.4px solid; }
+  .kvc-widget .kvc-sw-calc { background: var(--kvc-bg-calc); border-color: var(--kvc-fb-color); }
+  .kvc-widget .kvc-sw-cache { background: var(--kvc-bg-cache); border-color: var(--kvc-text-tertiary); }
+  .kvc-widget .kvc-sw-read { background: var(--kvc-bg-info); border-color: var(--kvc-text-info); }
+  .kvc-widget .kvc-arrow { color: var(--kvc-fb-color); font-size: 13px; }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .kvc-widget .kvc-cell.is-flash { animation: none; }
+  }
+</style>
+
+<script>
+  // Finds every .kvc-widget and bootstraps an independent instance scoped to its root.
+  function initKvCacheWidget(root: HTMLElement) {
+    const TOK = ['I', 'like', 'my', 'cat', 'a', 'lot', '.'];
+    const NEXT = ['cat', 'a', 'lot', '.', 'EOS'];
+    const PROMPT = 3;
+    const N = 4;
+
+    // Geometry (SVG user units). Both panels share the same rows and columns.
+    const CW = 32, CH = 22;
+    const QX = 66, TRUNK_X = 129, KX = 160, VX = 198, NEXTX = 296;
+    const ROW_Y0 = 12, ROW_PITCH = 29;
+    const BOX_PAD = 6;
+    const SLIDE_PX = 30;
+
+    const $ = <T extends Element = Element>(sel: string): T | null => root.querySelector<T>(sel);
+    const gA = $<SVGGElement>('.kvc-svg-a');
+    const gB = $<SVGGElement>('.kvc-svg-b');
+    if (!gA || !gB) return;
+
+    const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const rowY = (i: number) => ROW_Y0 + i * ROW_PITCH;
+    const rowCy = (i: number) => rowY(i) + CH / 2;
+
+    const cell = (x: number, y: number, label: string, cls: string, id = '') =>
+      '<rect class="kvc-cell ' + cls + '"' + (id ? ' id="' + id + '"' : '') + ' x="' + x + '" y="' + y +
+      '" width="' + CW + '" height="' + CH + '" rx="3"/>' +
+      '<text class="kvc-ct" x="' + (x + CW / 2) + '" y="' + (y + CH / 2) + '">' + label + '</text>';
+
+    const tokLabel = (i: number) =>
+      '<text class="kvc-tok kvc-tok-end" x="58" y="' + rowCy(i) + '">' + TOK[i] + '</text>';
+    const nextLabel = (i: number, t: number) =>
+      '<text class="kvc-next" x="' + NEXTX + '" y="' + rowCy(i) + '">→ ' + NEXT[t] + '</text>';
+
+    // Orthogonal attention lines: one trunk between the Q and K columns, one branch per K.
+    function elbow(n: number, cls: string): string {
+      const last = n - 1;
+      let d = 'M' + (QX + CW) + ',' + rowCy(last) + ' H' + TRUNK_X + ' V' + rowCy(0);
+      for (let i = 0; i < n; i++) d += ' M' + TRUNK_X + ',' + rowCy(i) + ' H' + KX;
+      return '<path class="kvc-att ' + cls + '" d="' + d + '"/>';
+    }
+
+    // Total sequence length processed at decode step t.
+    const seqLen = (t: number) => PROMPT + t;
+    const cumNoCache = (t: number) => { let s = 0; for (let k = 1; k <= t; k++) s += seqLen(k); return s; };
+
+    function rowFlash(): string { return reduced() ? 'is-calc' : 'is-calc is-flash'; }
+
+    function renderA(t: number): string {
+      const n = seqLen(t);
+      let s = elbow(n, '');
+      for (let i = 0; i < n; i++) {
+        const y = rowY(i);
+        const cls = rowFlash();
+        s += tokLabel(i) + cell(QX, y, 'Q', cls) + cell(KX, y, 'K', cls) + cell(VX, y, 'V', cls);
+      }
+      s += nextLabel(n - 1, t);
+      return s;
+    }
+
+    function renderB(t: number): string {
+      const n = seqLen(t);          // tokens in cache after this step
+      const hasNew = t >= 1;
+      let s = '';
+
+      // dashed KV cache box around the K and V columns, one row taller each step
+      const bx = KX - BOX_PAD, bw = VX + CW + BOX_PAD - bx;
+      const by = ROW_Y0 - BOX_PAD, bh = (n - 1) * ROW_PITCH + CH + 2 * BOX_PAD;
+      s += '<rect class="kvc-box" x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" rx="6"/>';
+      const ty = by + bh + 16;
+      if (hasNew) {
+        s += '<text class="kvc-box-title" x="' + bx + '" y="' + ty + '">KV cache</text>';
+        s += '<text class="kvc-read-tag" x="' + (bx + 64) + '" y="' + ty + '">read</text>';
+      } else {
+        s += '<text class="kvc-box-title" x="' + bx + '" y="' + ty + '">KV cache: prefill이 만든 cache</text>';
+      }
+
+      if (hasNew) s += elbow(n, 'kvc-att-read');
+
+      for (let i = 0; i < n; i++) {
+        const y = rowY(i);
+        const isNew = hasNew && i === n - 1;
+        s += tokLabel(i);
+        if (isNew) {
+          const cls = rowFlash();
+          s += cell(QX, y, 'Q', cls);
+          s += '<g id="kvc-new-kv">' + cell(KX, y, 'K', 'is-calc') + cell(VX, y, 'V', 'is-calc') + '</g>';
+          s += '<text class="kvc-app" x="' + (VX + CW + BOX_PAD + 4) + '" y="' + rowCy(i) + '">◂ append</text>';
+        } else {
+          const cls = hasNew ? 'is-read' : 'is-cache';
+          s += cell(KX, y, 'K', cls) + cell(VX, y, 'V', cls);
+        }
+      }
+      s += nextLabel(n - 1, t);
+      return s;
+    }
+
+    // Slide the new K and V cells in from the right into the bottom slot of the box.
+    function animateAppend(t: number) {
+      if (t < 1 || reduced()) return;
+      const el = $<SVGGElement>('#kvc-new-kv');
+      if (!el || !el.animate) return;
+      el.animate(
+        [{ transform: 'translate(' + SLIDE_PX + 'px,0)', opacity: 0.2 }, { transform: 'none', opacity: 1 }],
+        { duration: 400, easing: 'ease-out' },
+      );
+    }
+
+    const playBtn = $<HTMLButtonElement>('[data-kvc-play]');
+    const resetBtn = $<HTMLButtonElement>('[data-kvc-reset]');
+    const slider = $<HTMLInputElement>('[data-kvc-slider]');
+    const stepLabel = $('[data-kvc-step-l]');
+    const explTag = $('[data-kvc-expl-tag]');
+    const explText = $('[data-kvc-expl-text]');
+    const capA = $('[data-kvc-cap-a]');
+    const capB = $('[data-kvc-cap-b]');
+    const mA = $('[data-kvc-m-a]');
+    const mB = $('[data-kvc-m-b]');
+    const playLabel = playBtn?.querySelector('.kvc-btn-label');
+
+    const OFF = '<span class="kvc-badge kvc-badge-off">KV cache 없음</span>';
+    const ON = '<span class="kvc-badge kvc-badge-on">KV cache 있음</span>';
+
+    function explain(t: number): { tag: string; text: string } {
+      const line = (x: string) => '<div>' + x + '</div>';
+      if (t === 0) {
+        return {
+          tag: 'Prefill 완료',
+          text: line('Prefill이 프롬프트 3개 token의 K·V를 계산해 KV cache에 넣었습니다.') +
+            line('Play를 누르면 decode 스텝이 진행됩니다.'),
+        };
+      }
+      const n = seqLen(t);
+      let text =
+        line(OFF + 'token ' + n + '개의 K·V를 모두 다시 계산합니다.') +
+        line(ON + '새 token의 K·V 1개만 계산해 cache 끝에 append합니다. 앞의 ' + (n - 1) + '개는 읽기만 합니다.');
+      if (t === N) {
+        text += line('누적 ' + cumNoCache(t) + '개 대 ' + t + '개. 생성 길이 N이 늘면 O(N²) 대 O(N)으로 커집니다.');
+      }
+      return { tag: 'Decode 스텝 ' + t + ' · 출력 <code>' + NEXT[t] + '</code>', text };
+    }
+
+    let cur = 0;
+    let playing = false;
+    let timer: number | null = null;
+
+    function render(t: number) {
+      cur = t;
+      gA!.innerHTML = renderA(t);
+      gB!.innerHTML = renderB(t);
+      animateAppend(t);
+
+      const ex = explain(t);
+      if (explTag) explTag.innerHTML = ex.tag;
+      if (explText) explText.innerHTML = ex.text;
+      if (slider) slider.value = String(t);
+      if (stepLabel) stepLabel.textContent = '스텝 ' + t + ' / ' + N;
+      if (capA) capA.textContent = seqLen(t) + '개';
+      if (capB) capB.textContent = (t === 0 ? PROMPT : 1) + '개';
+      if (mA) mA.textContent = '누적 K·V 계산 ' + cumNoCache(t) + '개';
+      if (mB) mB.textContent = '누적 K·V 계산 ' + t + '개';
+    }
+
+    function setPlayingUI(isPlaying: boolean) {
+      if (!playBtn) return;
+      playBtn.classList.toggle('is-playing', isPlaying);
+      if (playLabel) playLabel.textContent = isPlaying ? 'Pause' : 'Play';
+      playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+    }
+
+    function pause() {
+      playing = false;
+      if (timer !== null) { clearInterval(timer); timer = null; }
+      setPlayingUI(false);
+    }
+
+    function play() {
+      if (cur >= N) render(0);
+      playing = true;
+      setPlayingUI(true);
+      timer = window.setInterval(() => {
+        if (cur >= N) { pause(); return; }
+        render(cur + 1);
+        if (cur >= N) pause();
+      }, 1800);
+    }
+
+    playBtn?.addEventListener('click', () => { if (playing) pause(); else play(); });
+    resetBtn?.addEventListener('click', () => { pause(); render(0); });
+    slider?.addEventListener('input', (e) => {
+      pause();
+      render(parseInt((e.target as HTMLInputElement).value));
+    });
+
+    render(0);
+  }
+
+  document.querySelectorAll<HTMLElement>('.kvc-widget').forEach(initKvCacheWidget);
+</script>

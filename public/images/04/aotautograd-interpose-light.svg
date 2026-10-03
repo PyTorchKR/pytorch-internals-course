@@ -24,12 +24,12 @@
   <text x="388" y="112" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="8.5" fill="#8A8078" text-anchor="middle">(custom backend는 FX graph를 직접 받을 수 있음)</text>
 
   <!-- Real path: Dynamo ↓ → AOTAutograd -->
-  <path d="M252 96 V184 Q252 192 260 192 H268" fill="none" stroke="#9A7B68" stroke-width="1.4" marker-end="url(#aoi-arr-warm)"/>
+  <path d="M252 96 V192 H268" fill="none" stroke="#9A7B68" stroke-width="1.4" marker-end="url(#aoi-arr-warm)"/>
   <rect x="168" y="132" width="72" height="14" rx="2" fill="#FFFFFF"/>
   <text x="236" y="142" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="8.5" fill="#9A7B68" text-anchor="end">FX graph</text>
 
   <!-- AOTAutograd → backend compiler -->
-  <path d="M504 192 H548 Q556 192 556 184 V100" fill="none" stroke="#9A7B68" stroke-width="1.4" marker-end="url(#aoi-arr-warm)"/>
+  <path d="M504 192 H556 V100" fill="none" stroke="#9A7B68" stroke-width="1.4" marker-end="url(#aoi-arr-warm)"/>
   <rect x="452" y="132" width="96" height="14" rx="2" fill="#FFFFFF"/>
   <text x="544" y="142" font-family="'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', system-ui, -apple-system, sans-serif" font-size="8.5" fill="#9A7B68" text-anchor="end">FWD/BWD 그래프</text>
 
