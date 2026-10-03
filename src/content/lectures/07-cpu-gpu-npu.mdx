@@ -1115,7 +1115,7 @@ GEMM kernel의 mainloop는 A·B tile을 반복해서 load하고 matrix product�
 
 [^persistent]: tile마다 ThreadBlock을 새로 띄우는 대신, SM 수만큼의 ThreadBlock을 한 번 띄워 두고 각 block이 tile을 여러 개 연달아 처리하는 kernel. block 사이의 launch 공백이 없어져 한 tile의 store를 다음 tile의 연산과 겹칠 수 있습니다.
 [^multicast]: Hopper의 thread block cluster는 인접 SM 몇 개를 묶어 서로의 SMEM에 접근하게 하는 단위이고, TMA multicast는 같은 A 또는 B tile을 cluster 안 여러 SM의 SMEM에 한 번의 GMEM 읽기로 복사하는 기능입니다.
-[^hilbert]: 출력 tile을 행 우선으로 처리하는 대신 공간을 채우는 Hilbert 곡선 순서로 처리해, 동시에 도는 ThreadBlock들이 같은 A 행 띠·B 열 띠를 재사용하게 만들어 L2 hit rate를 높이는 스케줄링.
+[^hilbert]: 출력 tile을 행 우선으로 처리하는 대신 공간을 채우는 Hilbert 곡선 순서로 처리해, 동시에 도는 ThreadBlock들이 같은 A row panel·B column panel을 재사용하게 만들어 L2 hit rate를 높이는 스케줄링.
 
 이 수치는 해당 H100 BF16 matmul shape과 benchmark 환경에서 측정한 결과입니다. 최종 kernel은 같은 환경의 cuBLAS 대비 약 107% 성능을 기록했습니다. 단계별 결과를 보면 Warp 수를 늘리기보다 TMA, 큰 tile, software pipeline과 locality 개선으로 data movement와 연산을 overlap해 성능을 높였습니다. 다른 matrix shape과 dtype에서는 결과가 달라질 수 있습니다.
 
