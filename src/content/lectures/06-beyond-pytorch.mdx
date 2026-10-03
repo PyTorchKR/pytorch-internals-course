@@ -162,12 +162,12 @@ Self-Attention의 또 다른 중요한 특징은 Causal이냐, Non-Causal이냐�
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div class="text-center">
-  <ThemeImage lightSrc="/images/06/attention-noncausal-light.svg" darkSrc="/images/06/attention-noncausal-dark.svg" alt="Non-Causal Attention: 'them'의 새 표현이 앞뒤 모든 token을 참조하는 양방향 attention" class="h-56 mx-auto" />
+  <ThemeImage lightSrc="/images/06/attention-noncausal-light.svg" darkSrc="/images/06/attention-noncausal-dark.svg" alt="Non-Causal Attention: 'them'의 새 표현이 앞뒤 모든 token을 참조하는 양방향 attention" class="mx-auto w-full max-w-[660px]" />
   <p class="mt-2 font-bold">Non-Causal Attention</p>
   <p class="text-sm text-gray-500 dark:text-gray-400">앞/뒤 모든 token을 고려 (양방향)</p>
 </div>
 <div class="text-center">
-  <ThemeImage lightSrc="/images/06/attention-causal-light.svg" darkSrc="/images/06/attention-causal-dark.svg" alt="Causal Attention: 'them'의 새 표현이 자기 자신과 이전 token만 참조하는 단방향 attention" class="h-56 mx-auto" />
+  <ThemeImage lightSrc="/images/06/attention-causal-light.svg" darkSrc="/images/06/attention-causal-dark.svg" alt="Causal Attention: 'them'의 새 표현이 자기 자신과 이전 token만 참조하는 단방향 attention" class="mx-auto w-full max-w-[660px]" />
   <p class="mt-2 font-bold">Causal Attention</p>
   <p class="text-sm text-gray-500 dark:text-gray-400">현재 + 이전 token만 고려 (단방향)</p>
 </div>
@@ -183,7 +183,7 @@ Prefill과 Decode는 같은 model과 weight를 사용하는 두 실행 단계입
 
 두 단계는 계산 특성이 다릅니다. 실제 추론 과정을 시간축에 펼쳐 보면 다음과 같습니다.
 
-<img src="/images/06/slide09_1.png" alt="LLM 추론 타임라인: 모델 로딩 후 첫 token까지의 Prefill과 token을 반복 생성하는 Decode 단계" class="h-56 mx-auto" />
+<img src="/images/06/slide09_1.png" alt="LLM 추론 타임라인: 모델 로딩 후 첫 token까지의 Prefill과 token을 반복 생성하는 Decode 단계" class="mx-auto" />
 
 > 출처: [https://intel.github.io/intel-npu-acceleration-library/llm_performance.html](https://intel.github.io/intel-npu-acceleration-library/llm_performance.html)
 
@@ -208,7 +208,7 @@ Prefill 쪽도 개념적으로는 거의 같습니다. Decoder-Only LLM이 할 �
 
 여기서 헷갈리기 쉬운 부분이 있는데, "동시에 처리해도 된다"는 건 token 간에 영향이 없다는 뜻이 아닙니다. attention을 통해 왼쪽 token이 오른쪽 token에 영향을 주는 것은 그대로입니다. 다만 한 token의 최종 출력(다음 token 예측)은 옆 token을 처리하는 데 필요한 입력이 아닙니다. 그래서 모든 token을 첫 레이어부터 병렬로 진행할 수 있습니다.
 
-<img src="/images/06/prefill-vs-decode.png" alt="Prefill은 프롬프트 token 5개의 query가 KV cache를 causal하게 참조해 attention 삼각형 전체를 채우고, Decode는 새 token query 하나가 cache 전체를 참조해 삼각형의 마지막 행만 계산하는 그림" class="h-56 mx-auto" />
+<img src="/images/06/prefill-vs-decode.png" alt="Prefill은 프롬프트 token 5개의 query가 KV cache를 causal하게 참조해 attention 삼각형 전체를 채우고, Decode는 새 token query 하나가 cache 전체를 참조해 삼각형의 마지막 행만 계산하는 그림" class="mx-auto" />
 
 > 출처: [https://flashinfer.ai/2024/02/02/introduce-flashinfer.html](https://flashinfer.ai/2024/02/02/introduce-flashinfer.html)
 
@@ -253,7 +253,7 @@ KV cache의 비용은 두 가지입니다. sequence 길이에 비례해 메모�
 Prefill과 Decode의 차이는 **Roofline Analysis** 그래프 한 장으로 정리됩니다. 아키텍처나 성능 분석을 하는 분들에게는 익숙한 그래프입니다. 그래프의 왼쪽 사선(Memory Bound 영역. Decode가 여기에 있음)과 오른쪽 가로선이 지붕(roof)처럼 보여서 붙은 이름입니다. 사선과 가로선이 만나는 점을 ridge point라고 합니다(아래 그림에서는 "turning point"로 표시됩니다).
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide12_1.png" alt="Nvidia A6000 GPU의 FP16 Roofline 그래프: 왼쪽 사선 구간은 memory-bound, 오른쪽 가로선 구간은 compute-bound이고, 두 구간이 만나는 곳에 turning point가 표시됨" class="h-72" />
+  <img src="/images/06/slide12_1.png" alt="Nvidia A6000 GPU의 FP16 Roofline 그래프: 왼쪽 사선 구간은 memory-bound, 오른쪽 가로선 구간은 compute-bound이고, 두 구간이 만나는 곳에 turning point가 표시됨" class="mx-auto w-full max-w-[688px]" />
 </div>
 
 > 출처: [LLM Inference Unveiled: Survey and Roofline Model Insights](https://arxiv.org/abs/2402.16363)
@@ -310,7 +310,7 @@ Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자�
 이 현상은 오래전부터 알려져 있었습니다. 아래 논문은 1994년 12월 기술 보고서(1995년 ACM 게재)로, **"Memory Wall"** 이라는 용어를 처음 쓰거나 적어도 널리 알렸고, 당시에도 *"프로세서의 성능은 연산을 얼마나 빨리 처리하느냐가 아니라, 데이터를 얼마나 빨리 들고 오고 내보낼 수 있느냐로 결정된다"* 는 지적이 있었습니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide13_1.png" alt="Wulf & McKee의 논문 'Hitting the Memory Wall: Implications of the Obvious' 첫 페이지(December 1994 표기)" class="h-64" />
+  <img src="/images/06/slide13_1.png" alt="Wulf & McKee의 논문 'Hitting the Memory Wall: Implications of the Obvious' 첫 페이지(December 1994 표기)" class="mx-auto w-full max-w-[589px]" />
 </div>
 
 > 출처: Wulf & McKee, "Hitting the Memory Wall: Implications of the Obvious", ACM SIGARCH Computer Architecture News 23(1), 1995
@@ -320,7 +320,7 @@ Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자�
 다만 하드웨어의 연산 밀도(Computing Density)는 그보다 훨씬 빠르게 늘어납니다. 두 곡선의 격차가 벌어지면서 연산 대비 메모리 성능은 시간이 갈수록 더 부족해집니다. 그래서 LLM 추론을 비롯한 대부분의 워크로드에서는 메모리 대역폭을 얼마나 효율적으로 쓰느냐가 성능을 좌우합니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide15_1.png" alt="20년간 하드웨어 peak FLOPS는 60000배, DRAM 대역폭은 100배, interconnect 대역폭은 30배 늘어난 추세 그래프" class="h-64" />
+  <img src="/images/06/slide15_1.png" alt="20년간 하드웨어 peak FLOPS는 60000배, DRAM 대역폭은 100배, interconnect 대역폭은 30배 늘어난 추세 그래프" class="mx-auto" />
 </div>
 
 > 출처: [AI and Memory Wall](https://arxiv.org/abs/2403.14123) (Gholami et al., 2024)
@@ -343,7 +343,7 @@ Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자�
 배치 크기에는 상한이 있습니다. Threshold intensity는 연산기를 모두 쓰는 데 필요한 최소 intensity입니다(Roofline 그래프의 ridge point. 보충 절에서 수식으로 다룹니다). 배치가 커져 threshold intensity를 넘으면 Compute Bound에 들어서고, 그 뒤로는 throughput 이득이 급격히 줄어듭니다. 반면 한 스텝에 처리할 일이 많아져 token당 지연시간은 계속 늘어납니다. 그래서 실제 서빙에서는 throughput과 latency SLO(Service Level Objective) 사이에서 배치 크기를 고릅니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide17_1.png" alt="Batching 방식 비교: individual request는 request마다 따로 실행, dynamic batching은 4개씩 묶지만 짧은 request 뒤에 빈 자리가 남고, continuous batching은 끝난 자리에 다음 request를 이어 붙여 빈 자리가 없음" class="h-60" />
+  <img src="/images/06/slide17_1.png" alt="Batching 방식 비교: individual request는 request마다 따로 실행, dynamic batching은 4개씩 묶지만 짧은 request 뒤에 빈 자리가 남고, continuous batching은 끝난 자리에 다음 request를 이어 붙여 빈 자리가 없음" class="mx-auto w-full max-w-[795px]" />
 </div>
 
 > 출처: [Continuous vs dynamic batching for AI inference](https://www.baseten.co/blog/continuous-vs-dynamic-batching-for-ai-inference/#continuous-batching-for-llm-inference-in-production)
@@ -368,11 +368,11 @@ Prefill은 Compute Bound, Decode는 Memory Bound라 필요한 하드웨어 자�
 
 <div class="grid grid-cols-2 gap-4 mt-4 items-start">
 <div class="text-center">
-  <img src="/images/06/slide18_2.png" alt="Autoregressive decoding: forward pass마다 token이 하나씩 늘어나는 기준선" class="h-48 mx-auto" />
+  <img src="/images/06/slide18_2.png" alt="Autoregressive decoding: forward pass마다 token이 하나씩 늘어나는 기준선" class="mx-auto w-full max-w-[697px]" />
   <div class="text-sm mt-2">기준선: forward pass 한 번에 token 하나</div>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide18_1.png" alt="Speculative Decoding: Assistant Model이 token 5개(All That Shines Is Not)를 제안하고, Main Model이 한 번의 forward pass로 검증해 앞 2개(All, That)를 accept한다. 아래쪽 Main Model(Auto-regressive) 줄에서는 세 번째 자리가 Glitters로 바뀌고 Is, Not이 이어지는 모습으로 그려짐" class="h-48 mx-auto" />
+  <img src="/images/06/slide18_1.png" alt="Speculative Decoding: Assistant Model이 token 5개(All That Shines Is Not)를 제안하고, Main Model이 한 번의 forward pass로 검증해 앞 2개(All, That)를 accept한다. 아래쪽 Main Model(Auto-regressive) 줄에서는 세 번째 자리가 Glitters로 바뀌고 Is, Not이 이어지는 모습으로 그려짐" class="mx-auto w-full max-w-[639px]" />
   <div class="text-sm mt-2">draft 5개 → 검증 → 2개 accept + 교정 token 1개</div>
 </div>
 </div>
@@ -386,7 +386,7 @@ Continuous Batching과 Speculative Decoding은 Decode를 Prefill처럼 병렬로
 마지막 token 하나를 처리하려면 그 전까지 생성된 모든 token으로부터 입력을 가져와 Attention을 다시 계산해야 합니다. 한 token당 비용이 $O(N)$이고, 그걸 $N$번 반복하니 sequence 전체의 누적 시간은 $O(N^2)$입니다. 즉 sequence 길이 $N$이 두 배가 되면 attention에 들어가는 누적 시간은 4배, 읽어야 하는 KV cache 메모리는 2배로 늘어나는 구조입니다. Context가 길어지는 추세이므로, 이 자승 항을 어떻게 다루느냐가 LLM 추론 효율을 좌우합니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide19_1.png" alt="문서 경계 token(<eod>)이 들어 있는 packed sequence의 causal attention mask 행렬: 각 token이 자기 자신과 앞 token만 참조하는 하삼각 구조" class="h-64" />
+  <img src="/images/06/slide19_1.png" alt="문서 경계 token(<eod>)이 들어 있는 packed sequence의 causal attention mask 행렬: 각 token이 자기 자신과 앞 token만 참조하는 하삼각 구조" class="mx-auto" />
 </div>
 
 > 출처: [4D masks support in Transformers](https://huggingface.co/blog/poedator/4d-masks)
@@ -401,10 +401,10 @@ FlashAttention은 계산을 block 단위로 쪼갭니다(tiling). 한 block을 �
 
 <div class="grid grid-cols-2 gap-4 mt-4">
 <div>
-  <img src="/images/06/slide20_1.png" alt="왼쪽은 Standard Attention으로 S, P, O 단계마다 Memory(HBM)에 쓰고 다시 읽는 왕복 구조이고, 오른쪽은 Flash Attention으로 K, V block을 불러와 한 kernel 안에서 처리하고 O만 쓰는 구조" class="h-56" />
+  <img src="/images/06/slide20_1.png" alt="왼쪽은 Standard Attention으로 S, P, O 단계마다 Memory(HBM)에 쓰고 다시 읽는 왕복 구조이고, 오른쪽은 Flash Attention으로 K, V block을 불러와 한 kernel 안에서 처리하고 O만 쓰는 구조" class="mx-auto w-full max-w-[838px]" />
 </div>
 <div>
-  <img src="/images/06/slide20_2.png" alt="GPT-2 attention 실행 시간 비교: PyTorch 구현은 matmul, mask, softmax, dropout 단계를 합쳐 약 17ms, FlashAttention의 fused kernel은 약 2ms" class="h-56" />
+  <img src="/images/06/slide20_2.png" alt="GPT-2 attention 실행 시간 비교: PyTorch 구현은 matmul, mask, softmax, dropout 단계를 합쳐 약 17ms, FlashAttention의 fused kernel은 약 2ms" class="mx-auto" />
 </div>
 </div>
 
@@ -432,7 +432,7 @@ PagedAttention은 OS의 virtual memory · paging과 거의 같은 발상으로 �
 둘을 decouple해 두고, request마다 **block table**이 logical block 번호를 physical block 위치로 매핑합니다(OS의 page table에 해당). 실제로 채워진 만큼만 physical block을 할당(on-demand allocation)합니다. 그래서 max를 가정한 over-provisioning이 필요 없습니다. 고정 크기 block은 physical 메모리에서 연속일 필요가 없으므로 external fragmentation도 사라집니다. 낭비는 각 sequence의 마지막 block에 남는 빈 자리 정도로 한정되어, 동시에 처리할 수 있는 request 수가 늘어납니다. 즉 PagedAttention은 attention 연산을 빠르게 하는 기법이 아니라 KV cache 메모리 관리 기법입니다. block 단위로 흩어진 KV를 읽어야 하므로, 논문 측정에서 attention kernel 자체는 FasterTransformer보다 20–26% 느립니다. 대신 같은 메모리에 더 많은 request를 담으므로 throughput은 2–4배 올라갑니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide21_1.png" alt="PagedAttention: Logical KV cache blocks(block당 4 slot)가 block table을 거쳐 Physical KV cache blocks의 비연속 위치(Block 7, 1, 3)로 매핑되고, 마지막 block은 on demand로 할당되는 구조" class="h-56" />
+  <img src="/images/06/slide21_1.png" alt="PagedAttention: Logical KV cache blocks(block당 4 slot)가 block table을 거쳐 Physical KV cache blocks의 비연속 위치(Block 7, 1, 3)로 매핑되고, 마지막 block은 on demand로 할당되는 구조" class="mx-auto" />
 </div>
 
 > 출처: [Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180)
@@ -442,7 +442,7 @@ PagedAttention은 OS의 virtual memory · paging과 거의 같은 발상으로 �
 이 외에도 **Quantization(양자화)** 이나 **Sparsity(희소성)** 같은 모델 압축 기술 역시 메모리 overhead를 줄이는 데 함께 활용됩니다. (이 강의에서 자세히 다루지는 않습니다.)
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide22_1.png" alt="INT8 양자화와 sparsity를 활용한 모델 경량화 기법 (NVIDIA TensorRT)" class="h-56" />
+  <img src="/images/06/slide22_1.png" alt="INT8 양자화와 sparsity를 활용한 모델 경량화 기법 (NVIDIA TensorRT)" class="mx-auto" />
 </div>
 
 > 출처: [Sparsity in INT8: Training Workflow and Best Practices for NVIDIA TensorRT Acceleration](https://developer.nvidia.com/blog/sparsity-in-int8-training-workflow-and-best-practices-for-tensorrt-acceleration/)
@@ -464,7 +464,7 @@ FlashAttention이 가정하는 GPU 모델은 세 가지 요소로 이루어져 �
 같은 데이터라도 HBM에서 계산하는 것보다 SRAM에 한 번 올려놓고 그 안에서 계산하는 편이 훨씬 빠릅니다. FlashAttention은 HBM에 있는 입력과 중간 데이터를 block 단위로 쪼개 대역폭이 높은 SRAM에 올리고, 곱과 합은 SRAM 안에서 계산합니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide24_1.png" alt="FlashAttention이 가정하는 GPU 모델: thread block들로 이루어진 Grid, per-block shared memory, device global memory" class="h-44" />
+  <img src="/images/06/slide24_1.png" alt="FlashAttention이 가정하는 GPU 모델: thread block들로 이루어진 Grid, per-block shared memory, device global memory" class="mx-auto" />
 </div>
 
 <div class="text-xs mt-2 text-center">
@@ -476,7 +476,7 @@ FlashAttention이 가정하는 GPU 모델은 세 가지 요소로 이루어져 �
 같은 맥락에서, sequence가 길어질수록 attention 자체가 얼마나 무거워지는지를 한 번에 보여주는 그림은 다음과 같습니다. $Q \times K^T$ → mask → softmax → $\times V$로 이어지는 전 과정에서 연산량과 메모리 접근량 모두 $O(N^2)$으로 커집니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide27_1.png" alt="Attention 계산 흐름: Q와 K(N x d)로 A = QK^T (N x N)를 만들고, mask, softmax를 거친 뒤 V(N x d)를 곱해 O (N x d)를 얻는 단계와 각 행렬의 크기" class="h-44" />
+  <img src="/images/06/slide27_1.png" alt="Attention 계산 흐름: Q와 K(N x d)로 A = QK^T (N x N)를 만들고, mask, softmax를 거친 뒤 V(N x d)를 곱해 O (N x d)를 얻는 단계와 각 행렬의 크기" class="mx-auto" />
 </div>
 
 ### FlashAttention: Tiling, Fusion, Online Softmax
@@ -493,7 +493,7 @@ FlashAttention은 앞 절에서 본 비효율을 풀기 위해 두 가지 기법
 큰 행렬을 통째로 처리하는 대신, 결과 행렬을 작은 block으로 쪼개고 각 block을 만드는 데 필요한 입력 조각만 한 번씩 SRAM에 올려 곱·누적합니다. 같은 데이터를 여러 번 HBM에서 다시 읽지 않고 재사용할 수 있어, 메모리 트래픽이 크게 줄어듭니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/tiling.gif" alt="Tiled Matrix Multiplication 애니메이션: 4×4 출력 행렬 C를 2×2 block으로 나누고 block 안의 셀 하나를 thread 하나가 맡는 분할" class="h-64" />
+  <img src="/images/06/tiling.gif" alt="Tiled Matrix Multiplication 애니메이션: 4×4 출력 행렬 C를 2×2 block으로 나누고 block 안의 셀 하나를 thread 하나가 맡는 분할" class="mx-auto" />
 </div>
 
 > 출처: [Tiled Matrix Multiplication](https://penny-xu.github.io/blog/tiled-matrix-multiplication?curius=1144)
@@ -504,12 +504,12 @@ FlashAttention은 앞 절에서 본 비효율을 풀기 위해 두 가지 기법
 
 <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center mt-4">
   <div class="text-center">
-    <img src="/images/06/fusion-multi.png" alt="Fusion 이전: Memory와 Compute 사이에서 op마다 입력을 읽고 결과를 메모리에 썼다가 다음 op이 다시 읽는 왕복 구조" class="h-44 mx-auto" />
+    <img src="/images/06/fusion-multi.png" alt="Fusion 이전: Memory와 Compute 사이에서 op마다 입력을 읽고 결과를 메모리에 썼다가 다음 op이 다시 읽는 왕복 구조" class="mx-auto w-full max-w-[473px]" />
     <div class="text-sm mt-2">op마다 HBM 왕복</div>
   </div>
   <div class="text-3xl text-center" style="color:var(--fig-blue)">→</div>
   <div class="text-center">
-    <img src="/images/06/fusion-fused.png" alt="Fusion 이후: Memory에서 입력을 한 번 읽고, Compute 안에서 여러 op을 이어서 처리한 뒤 최종 결과만 메모리에 한 번 쓰는 구조" class="h-44 mx-auto" />
+    <img src="/images/06/fusion-fused.png" alt="Fusion 이후: Memory에서 입력을 한 번 읽고, Compute 안에서 여러 op을 이어서 처리한 뒤 최종 결과만 메모리에 한 번 쓰는 구조" class="mx-auto w-full max-w-[475px]" />
     <div class="text-sm mt-2">하나의 커널로 fuse</div>
   </div>
 </div>
@@ -616,7 +616,7 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
 
 설명을 위해 한 번에 key 하나, 즉 column 하나씩 처리하는 형태로 적었습니다. 실제 FlashAttention은 같은 recurrence를 column 여러 개를 묶은 block 단위로 수행합니다. 또 매 스텝 나누지 않고 정규화 전 값을 누적했다가 마지막에 $d_N'$으로 한 번만 나눕니다.
 
-<div class="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 items-start mt-6">
+<div class="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 items-stretch mt-6">
   <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/30 p-5" style="font-size:1.05rem">
     <p class="font-bold mb-2">Algorithm FlashAttention</p>
     <div class="pl-4">
@@ -632,26 +632,26 @@ Online algorithm이란 모든 데이터를 한 번에 보고 처리하는 게 �
     </div>
   </div>
 
-  <div class="flex flex-col gap-2">
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Q는 모든 step에 동일</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$Q[k,:]$, query는 한 row 고정</p>
+  <div class="flex flex-col gap-2 h-full">
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p class="m-0 text-sm font-bold text-slate-900 dark:text-slate-100">Q는 모든 step에 동일</p>
+      <p class="mt-0.5 mb-0 text-xs text-slate-600 dark:text-slate-300">$Q[k,:]$, query는 한 row 고정</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">K는 $i$번째 column만 읽어들임</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$K^T[:, i]$, 순차 streaming load (실제 구현은 block 단위)</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p class="m-0 text-sm font-bold text-slate-900 dark:text-slate-100">K는 $i$번째 column만 읽어들임</p>
+      <p class="mt-0.5 mb-0 text-xs text-slate-600 dark:text-slate-300">$K^T[:, i]$, 순차 streaming load (실제 구현은 block 단위)</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">매 step마다 max값 update</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$m_i \leftarrow \max(m_{i-1}, x_i)$</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p class="m-0 text-sm font-bold text-slate-900 dark:text-slate-100">매 step마다 max값 update</p>
+      <p class="mt-0.5 mb-0 text-xs text-slate-600 dark:text-slate-300">$m_i \leftarrow \max(m_{i-1}, x_i)$</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Update된 max값으로 보정</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$d_i', o_i'$를 $e^{m_{i-1}-m_i}$로 rescale</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p class="m-0 text-sm font-bold text-slate-900 dark:text-slate-100">Update된 max값으로 보정</p>
+      <p class="mt-0.5 mb-0 text-xs text-slate-600 dark:text-slate-300">$d_i', o_i'$를 $e^{m_{i-1}-m_i}$로 rescale</p>
     </div>
-    <div class="rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 p-3">
-      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">최종 결과를 HBM에 저장</p>
-      <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">$O[k,:] \leftarrow o_N'$, single write</p>
+    <div class="flex-1 flex flex-col justify-center rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/40 px-3 py-2">
+      <p class="m-0 text-sm font-bold text-slate-900 dark:text-slate-100">최종 결과를 HBM에 저장</p>
+      <p class="mt-0.5 mb-0 text-xs text-slate-600 dark:text-slate-300">$O[k,:] \leftarrow o_N'$, single write</p>
     </div>
   </div>
 </div>
@@ -772,11 +772,11 @@ GPU 아키텍처는 CUDA가 가정했던 단순한 SIMT[^simt] 아키텍처에�
 
 <div class="grid grid-cols-2 gap-8 mt-4">
 <div class="text-center">
-  <img src="/images/06/slide32_1.png" alt="CPU와 GPU의 자원 배분 비교: CPU는 큰 control 유닛과 cache에 ALU 몇 개, GPU는 작은 control 유닛에 수많은 ALU" class="h-36 mx-auto" />
+  <img src="/images/06/slide32_1.png" alt="CPU와 GPU의 자원 배분 비교: CPU는 큰 control 유닛과 cache에 ALU 몇 개, GPU는 작은 control 유닛에 수많은 ALU" class="mx-auto" />
   <p class="text-sm mt-2">CUDA가 가정한 GPU: 작은 control에 수많은 동일한 ALU (SIMT)</p>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide32_2.png" alt="Nvidia Chips Becoming More Specialized: V100, A100, H100, B100 세대별로 쌓인 전용 기능(Tensor Core, sparsity, Asynchronous Copy, L2 Cache Residency, Transformer Engine, FP8/FP4 Data Format 등). B100 위쪽 빈 칸은 물음표로 표시됨" class="h-56 mx-auto" />
+  <img src="/images/06/slide32_2.png" alt="Nvidia Chips Becoming More Specialized: V100, A100, H100, B100 세대별로 쌓인 전용 기능(Tensor Core, sparsity, Asynchronous Copy, L2 Cache Residency, Transformer Engine, FP8/FP4 Data Format 등). B100 위쪽 빈 칸은 물음표로 표시됨" class="mx-auto w-full max-w-[875px]" />
   <p class="text-sm mt-2">세대마다 전용 기능이 쌓여 복잡해진 최근 GPU (V100 → B100)</p>
 </div>
 </div>
@@ -784,13 +784,13 @@ GPU 아키텍처는 CUDA가 가정했던 단순한 SIMT[^simt] 아키텍처에�
 CUTLASS는 C++ 템플릿 라이브러리입니다. 개발자는 이 템플릿으로 복잡해진 GPU의 계층적 병렬 실행을 직접 제어합니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide33_1.png" alt="CUTLASS의 계층적 GEMM 분할: Blocked GEMM(global memory) → Thread Block Tile(shared memory) → Warp Tile(register file) → Thread Tile(CUDA core)" class="h-52" />
+  <img src="/images/06/slide33_1.png" alt="CUTLASS의 계층적 GEMM 분할: Blocked GEMM(global memory) → Thread Block Tile(shared memory) → Warp Tile(register file) → Thread Tile(CUDA core)" class="mx-auto" />
 </div>
 
 하지만 최적화된 CUDA Kernel을 작성하는 것은 여전히 만만치 않습니다. 다음 그림은 GEMM(General Matrix Multiply, 일반 행렬곱) 커널 하나를 GPU peak 성능에 가깝게 끌어올리는 데 거치는 기법을 단계별로 보여 줍니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/How_Difficult_It_Is_to_Optimize_a_GEMM_Kernel.png" alt="GEMM 커널의 단계별 성능: vanilla 1–10%, Programming Guide 수준 30–50%(fp32), CUTLASS 80–90%, cuBLAS >90%(tf32)" class="max-w-2xl mx-auto" />
+  <img src="/images/06/How_Difficult_It_Is_to_Optimize_a_GEMM_Kernel.png" alt="GEMM 커널의 단계별 성능: vanilla 1–10%, Programming Guide 수준 30–50%(fp32), CUTLASS 80–90%, cuBLAS >90%(tf32)" class="max-w-2xl mx-auto w-full" />
 </div>
 
 정리하면 다음과 같습니다.
@@ -819,7 +819,7 @@ Triton에서는 프로그래머가 block의 shape과 data flow를 기술하고, 
 > 출처: Dylan Patel, [How Nvidia's CUDA Monopoly In Machine Learning Is Breaking](https://www.semianalysis.com/2023/01/16/nvidiaopenaitritonpytorch/) (SemiAnalysis, 2023)
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide35_1.png" alt="Triton 논문 Figure 3: CUDA는 block 안을 thread 단위로 나누고, Triton은 block 안을 range(tile) 단위로 다루는 프로그래밍 모델 차이" class="h-52" />
+  <img src="/images/06/slide35_1.png" alt="Triton 논문 Figure 3: CUDA는 block 안을 thread 단위로 나누고, Triton은 block 안을 range(tile) 단위로 다루는 프로그래밍 모델 차이" class="mx-auto w-full max-w-[589px]" />
 </div>
 
 > 출처: Tillet et al., [Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations](https://dl.acm.org/doi/10.1145/3315508.3329973) (MAPL 2019), Figure 3
@@ -828,7 +828,7 @@ Triton은 block 단위 프로그래밍 모델을 씁니다. 프로그래머는 �
 
 <div class="grid grid-cols-2 gap-4 mt-4">
 <div>
-  <img src="/images/06/slide36_1.png" alt="CUDA vs Triton 역할 비교표: memory 계층, parallelism, Tensor Core, vectorization을 CUDA는 수동으로, Triton은 대부분 컴파일러가 자동 처리" class="h-52" />
+  <img src="/images/06/slide36_1.png" alt="CUDA vs Triton 역할 비교표: memory 계층, parallelism, Tensor Core, vectorization을 CUDA는 수동으로, Triton은 대부분 컴파일러가 자동 처리" class="mx-auto w-full max-w-[780px]" />
 </div>
 <div class="flex flex-col justify-center text-sm">
 
@@ -870,7 +870,7 @@ NVIDIA는 Triton을 CUDA Tile IR로 lowering하는 backend도 공개했습니다
 커널 위쪽에는 서빙(serving) 레이어가 있습니다. Continuous Batching, Speculative Decoding 같은 기법은 점점 서빙 프레임워크의 기본 기능이 되고 있습니다. 오늘날 LLM 추론 스택에서는 모델·커널 위에 Inference Engine이 있고, 그 위에 Inference Server가 있습니다. Inference Engine은 weight를 올리고 batching·decoding·KV cache 관리를 맡아 모델을 실행합니다. Inference Server는 엔진 앞에서 API로 request를 받고, 모델 배포와 확장을 관리합니다. 아래 그림은 Inference Engine을 Inference Server 안에 중첩해 그리며, kernel 계층은 따로 그리지 않습니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/inference-engines-and-servers-architecture.png" alt="Inference Server 안에 Query Queue Scheduler, Metrics, 그리고 Batching·Model·Query Response를 담은 Inference Engine이 들어 있고, 서버가 Hardware(GPU/CPU)와 연결되는 구조. Application이 HTTP/gRPC로 요청을 보냄" class="max-w-2xl mx-auto" />
+  <img src="/images/06/inference-engines-and-servers-architecture.png" alt="Inference Server 안에 Query Queue Scheduler, Metrics, 그리고 Batching·Model·Query Response를 담은 Inference Engine이 들어 있고, 서버가 Hardware(GPU/CPU)와 연결되는 구조. Application이 HTTP/gRPC로 요청을 보냄" class="max-w-2xl mx-auto w-full" />
 </div>
 
 > 출처: [Koyeb - Best LLM Inference Engines and Servers to Deploy LLMs in Production](https://www.koyeb.com/blog/best-llm-inference-engines-and-servers-to-deploy-llms-in-production)
@@ -882,26 +882,26 @@ NVIDIA는 Triton을 CUDA Tile IR로 lowering하는 backend도 공개했습니다
 ### vLLM에 반영된 주요 최적화 기법
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide42_1.png" alt="vLLM Model Support 슬라이드: Transformer 계열 LLM, MoE, multi-modal, state-space, embedding, reward 모델을 지원하고 Llama 3 계열을 출시 당일 지원" class="h-72" />
+  <img src="/images/06/slide42_1.png" alt="vLLM Model Support 슬라이드: Transformer 계열 LLM, MoE, multi-modal, state-space, embedding, reward 모델을 지원하고 Llama 3 계열을 출시 당일 지원" class="mx-auto" />
 </div>
 
 먼저 지원 모델의 폭입니다. vLLM은 Transformer 계열 LLM과 MoE(Mixture of Experts), multi-modal, state-space, embedding, reward 모델을 지원합니다. 주요 모델은 출시 당일 지원됩니다. 그리고 앞서 다룬 최적화 기술들이 대부분 vLLM에 들어 있습니다. 아래 네 장이 그 예입니다.
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
 <div class="text-center">
-  <img src="/images/06/slide43_1.png" alt="Hash-based automatic prefix caching: 같은 prefix를 가진 두 request가 block hash로 KV block A, B를 재사용하는 예" class="h-56 mx-auto" />
+  <img src="/images/06/slide43_1.png" alt="Hash-based automatic prefix caching: 같은 prefix를 가진 두 request가 block hash로 KV block A, B를 재사용하는 예" class="mx-auto w-full max-w-[846px]" />
   <div class="text-sm mt-2"><strong>Prefix caching</strong>: 같은 prefix의 KV block을 hash로 찾아 재사용</div>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide43_2.png" alt="Chunked prefill: 긴 prefill을 잘라 decode와 같은 step에 섞어 스케줄링하고, 높은 qps에서 평균 latency를 절반으로 줄인 그래프" class="h-56 mx-auto" />
+  <img src="/images/06/slide43_2.png" alt="Chunked prefill: 긴 prefill을 잘라 decode와 같은 step에 섞어 스케줄링하고, 높은 qps에서 평균 latency를 절반으로 줄인 그래프" class="mx-auto w-full max-w-[847px]" />
   <div class="text-sm mt-2"><strong>Chunked prefill</strong>: 긴 prefill을 잘라 decode step에 섞어 latency 안정화</div>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide43_3.png" alt="Dynamic speculative decoding: 시스템 부하와 acceptance rate에 따라 draft 길이를 조절하는 그래프" class="h-56 mx-auto" />
+  <img src="/images/06/slide43_3.png" alt="Dynamic speculative decoding: 시스템 부하와 acceptance rate에 따라 draft 길이를 조절하는 그래프" class="mx-auto w-full max-w-[846px]" />
   <div class="text-sm mt-2"><strong>Dynamic speculative decoding</strong>: 부하와 acceptance rate에 따라 draft 길이 조절</div>
 </div>
 <div class="text-center">
-  <img src="/images/06/slide43_4.png" alt="Multi-LoRA serving: pretrained weight W에 저차원 adapter A, B를 더하는 구조로, 여러 LoRA에 대한 request를 한 batch로 처리" class="h-56 mx-auto" />
+  <img src="/images/06/slide43_4.png" alt="Multi-LoRA serving: pretrained weight W에 저차원 adapter A, B를 더하는 구조로, 여러 LoRA에 대한 request를 한 batch로 처리" class="mx-auto w-full max-w-[842px]" />
   <div class="text-sm mt-2"><strong>Multi-LoRA serving</strong>: 서로 다른 LoRA adapter의 request를 한 batch로</div>
 </div>
 </div>
@@ -1025,7 +1025,7 @@ vLLM은 PyTorch 위에서 동작합니다. vLLM 팀은 새 하드웨어 지원�
 리벨리온은 이 점 때문에 PyTorch device backend와 vLLM platform·kernel integration을 함께 제공합니다. 그래야 기존 model과 serving workflow를 리벨리온 NPU에서 그대로 사용할 수 있기 때문입니다.
 
 <div class="flex justify-center mt-4">
-  <img src="/images/06/slide44_1.png" alt="PyTorch as a Narrow Waist: Models와 Utilities가 PyTorch 위에 있고, PyTorch 아래에 NVIDIA GPU, AMD GPU, Intel GPU, Google TPU 등이 놓인 구조" class="h-64" />
+  <img src="/images/06/slide44_1.png" alt="PyTorch as a Narrow Waist: Models와 Utilities가 PyTorch 위에 있고, PyTorch 아래에 NVIDIA GPU, AMD GPU, Intel GPU, Google TPU 등이 놓인 구조" class="mx-auto w-full max-w-[578px]" />
 </div>
 
 vLLM은 **hardware plugin system**을 제공하며, vendor는 platform plugin을 별도 package(out-of-tree)로 유지할 수 있습니다. 리벨리온의 [vllm-rbln](https://github.com/rebellions-sw/vllm-rbln)도 이 방식으로 ATOM·REBEL 지원을 제공합니다. 다만 PyTorch device support만으로 vLLM 지원이 자동 완성되는 것은 아닙니다. vendor는 platform integration 외에 다음 구현을 추가로 제공해야 합니다: attention kernel, KV cache kernel, distributed communication.

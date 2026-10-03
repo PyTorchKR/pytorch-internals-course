@@ -41,7 +41,7 @@ PyTorch + NPU 온라인 모임 #5 | 2025-01-15
 
 **MPI**
 
-<img src="/images/05/slide05_1.png" alt="MPI Distributed Memory: CPU마다 자기 memory가 있고, 다른 CPU와는 message로만 데이터를 주고받음" class="h-48 mx-auto" />
+<img src="/images/05/slide05_1.png" alt="MPI Distributed Memory: CPU마다 자기 memory가 있고, 다른 CPU와는 message로만 데이터를 주고받음" class="mx-auto" />
 
 Distributed Memory
 
@@ -50,7 +50,7 @@ Distributed Memory
 
 **OpenMP**
 
-<img src="/images/05/slide05_2.png" alt="OpenMP의 Shared Memory 모델 구조도" class="h-48 mx-auto" />
+<img src="/images/05/slide05_2.png" alt="OpenMP의 Shared Memory 모델 구조도" class="mx-auto" />
 
 Shared Memory
 
@@ -70,7 +70,7 @@ MPI와 OpenMP는 밑에 있는 메모리 시스템에 대한 가정뿐만 아니
 
 **MPI**
 
-<img src="/images/05/slide06_1.png" alt="MPI의 독립적인 프로세스들의 묶음 구조" class="h-48 mx-auto" />
+<img src="/images/05/slide06_1.png" alt="MPI의 독립적인 프로세스들의 묶음 구조" class="mx-auto" />
 
 독립적인 프로세스들의 묶음
 
@@ -79,7 +79,7 @@ MPI와 OpenMP는 밑에 있는 메모리 시스템에 대한 가정뿐만 아니
 
 **OpenMP**
 
-<img src="/images/05/slide06_2.png" alt="OpenMP Fork-Join: Master thread가 fork로 thread team을 만들고(첫 번째 구간은 A~D, 두 번째 구간은 A~C) join 뒤 다시 혼자 실행하는 과정을 반복" class="h-48 mx-auto" />
+<img src="/images/05/slide06_2.png" alt="OpenMP Fork-Join: Master thread가 fork로 thread team을 만들고(첫 번째 구간은 A~D, 두 번째 구간은 A~C) join 뒤 다시 혼자 실행하는 과정을 반복" class="mx-auto" />
 
 Master-Worker (Fork-Join) 모델
 
@@ -94,7 +94,7 @@ PyTorch의 분산 학습에서 각 GPU 프로세스가 독립적으로 동일한
 
 ### MPI 프로그램 구조
 
-<img src="/images/05/slide07_1.png" alt="MPI 프로그램 구조: 각 프로세스의 initialization, 병렬 job 수행, finalize 단계" class="h-80 mx-auto" />
+<img src="/images/05/slide07_1.png" alt="MPI 프로그램 구조: 각 프로세스의 initialization, 병렬 job 수행, finalize 단계" class="mx-auto w-full max-w-[744px]" />
 
 MPI 프로그램은 대체로 위와 같이 구성됩니다. MPI를 사용할 때 많은 경우 여러 프로세스에서 동일한 프로그램(single program)을 돌리는 방식이 일반적이며, PyTorch 분산 프로그램도 대부분 이 SPMD(single program, multiple data) 방식을 따릅니다. 실제로는 동일한 코드가 각각의 다른 프로세스에서 실행된다고 생각하면 됩니다.
 
@@ -123,7 +123,7 @@ PyTorch의 분산 프로그래밍 모델을 구성하는 주요 개념을 조금
   darkSrc="/images/05/torch_distributed_dark.svg"
   lightSrc="/images/05/torch_distributed_light.svg"
   alt="torch.distributed 전체 아키텍처: Rendezvous가 Node들을 묶고, 각 Process 내부는 High-level 패키지, c10d, Backend 레이어로 구성"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[1400px]"
 />
 
 첫째, Node와 Rendezvous 관점입니다. Rendezvous는 참여 process의 membership과 초기화 정보를 구성합니다. 각 Process에는 Global rank와 Local rank가 부여되며, `torchrun` agent가 각 node에서 worker process를 실행합니다.
@@ -187,8 +187,8 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
 <hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
-  <img src="/images/05/torch_distributed_scatter.png" alt="Scatter 연산: 하나의 프로세스가 가진 데이터를 여러 프로세스에 분산" class="h-56 mx-auto diagram-bg p-2 rounded" />
-  <img src="/images/05/torch_distributed_gather.png" alt="Gather 연산: 여러 프로세스의 데이터를 하나의 프로세스로 수집" class="h-56 mx-auto diagram-bg p-2 rounded" />
+  <img src="/images/05/torch_distributed_scatter.png" alt="Scatter 연산: 하나의 프로세스가 가진 데이터를 여러 프로세스에 분산" class="mx-auto diagram-bg p-2 rounded" />
+  <img src="/images/05/torch_distributed_gather.png" alt="Gather 연산: 여러 프로세스의 데이터를 하나의 프로세스로 수집" class="mx-auto diagram-bg p-2 rounded" />
 </div>
 
 **Reduce / All-Reduce**: 여러 프로세스의 데이터를 하나로 합치는 연산. 분산 학습에서는 gradient를 합산할 때 All-Reduce를 씁니다.
@@ -201,8 +201,8 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
 <hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
-  <img src="/images/05/torch_distributed_reduce.png" alt="Reduce 연산: 여러 프로세스의 데이터를 연산으로 합쳐 하나의 프로세스에 저장" class="h-56 mx-auto diagram-bg p-2 rounded" />
-  <img src="/images/05/torch_distributed_all_reduce.png" alt="All-Reduce 연산: 여러 프로세스의 데이터를 합쳐 결과를 모든 프로세스에 공유" class="h-56 mx-auto diagram-bg p-2 rounded" />
+  <img src="/images/05/torch_distributed_reduce.png" alt="Reduce 연산: 여러 프로세스의 데이터를 연산으로 합쳐 하나의 프로세스에 저장" class="mx-auto diagram-bg p-2 rounded" />
+  <img src="/images/05/torch_distributed_all_reduce.png" alt="All-Reduce 연산: 여러 프로세스의 데이터를 합쳐 결과를 모든 프로세스에 공유" class="mx-auto diagram-bg p-2 rounded" />
 </div>
 
 **Broadcast / All-Gather**: 한쪽의 데이터를 모든 프로세스로 퍼뜨리거나 모으는 연산
@@ -215,8 +215,8 @@ c10d에는 보편적으로 쓰이는 collective communication API가 여러 개 
 <hr style="margin: 0.5rem 0; border-top: 1px solid var(--fig-line-soft);" />
 
 <div class="grid grid-cols-2 gap-x-4">
-  <img src="/images/05/torch_distributed_broadcast.png" alt="Broadcast 연산: 한 프로세스의 데이터를 모든 프로세스에 동일하게 전달" class="h-56 mx-auto diagram-bg p-2 rounded" />
-  <img src="/images/05/torch_distributed_all_gather.png" alt="All-Gather 연산: 각 프로세스가 가진 서로 다른 데이터를 모든 프로세스에 수집" class="h-56 mx-auto diagram-bg p-2 rounded" />
+  <img src="/images/05/torch_distributed_broadcast.png" alt="Broadcast 연산: 한 프로세스의 데이터를 모든 프로세스에 동일하게 전달" class="mx-auto diagram-bg p-2 rounded" />
+  <img src="/images/05/torch_distributed_all_gather.png" alt="All-Gather 연산: 각 프로세스가 가진 서로 다른 데이터를 모든 프로세스에 수집" class="mx-auto diagram-bg p-2 rounded" />
 </div>
 
 **Reduce-Scatter / All-to-All**: 위 연산들의 조합·일반형으로, 병렬화 패키지 내부에서 쓰이는 연산
@@ -738,7 +738,7 @@ FSDP2의 내부 동작은 initialization, forward, backward 세 단계로 나눌
 
 이 구조를 그대로 실행하면 layer마다 "all-gather가 끝나기를 기다렸다가 계산"하는 직렬 흐름이 되어 통신 시간이 전부 노출됩니다. 이를 피하는 기법이 **prefetch**입니다. layer i를 계산하는 동안 다음 layer i+1의 all-gather를 미리 시작해 두는 기법입니다. 통신은 계산과 별도의 CUDA stream에서 돌기 때문에 둘이 동시에 진행될 수 있습니다. layer i의 계산이 끝날 때쯤이면 layer i+1의 parameter가 이미 도착해 있어, 통신 시간이 계산 뒤로 숨습니다. FSDP2에서는 CPU thread가 GPU 실행보다 앞서 kernel들을 stream에 enqueue하기만 해도 prefetch가 자동으로 일어납니다(implicit prefetching). `set_modules_to_forward_prefetch` 같은 API로 스케줄을 명시적으로 제어할 수도 있습니다.
 
-<img src="/images/05/fsdp2_implicit_prefetch.png" alt="Implicit prefetching: all-gather stream이 layer i+1, i+2의 all-gather를 미리 발행해 default stream의 layer 계산과 겹쳐지는 타임라인" class="h-40 mt-4 mx-auto diagram-bg p-2 rounded" />
+<img src="/images/05/fsdp2_implicit_prefetch.png" alt="Implicit prefetching: all-gather stream이 layer i+1, i+2의 all-gather를 미리 발행해 default stream의 layer 계산과 겹쳐지는 타임라인" class="mt-4 mx-auto diagram-bg p-2 rounded" />
 
 <div class="text-xs mt-2 text-center">
 
@@ -777,7 +777,7 @@ FSDP는 DDP의 상위 호환이 아닙니다. FSDP는 학습 상태를 sharding�
 
 이 단순 모델에서 ring all-reduce는 reduce-scatter와 all-gather로 구현할 수 있으므로 DDP와 FSDP backward의 데이터 이동량이 비슷하게 계산됩니다. 실제 통신 시간은 collective algorithm, topology, bucket 크기, overlap 정도에 따라 달라집니다.
 
-<img src="/images/05/fsdp2_allreduce_decomposition.png" alt="All-Reduce = Reduce-Scatter로 합산 조각을 나눈 뒤 All-Gather로 모으는 두 단계" class="h-56 mt-4 mx-auto diagram-bg p-2 rounded" />
+<img src="/images/05/fsdp2_allreduce_decomposition.png" alt="All-Reduce = Reduce-Scatter로 합산 조각을 나눈 뒤 All-Gather로 모으는 두 단계" class="mt-4 mx-auto diagram-bg p-2 rounded w-full max-w-[874px]" />
 
 <div class="text-xs mt-2 text-center">
 
@@ -830,7 +830,7 @@ for transformer_block in model.layers:
 
 위 코드에서 볼 수 있듯이, feed_forward의 w1은 column 방향으로, w2는 row 방향으로 분할하는 식의 계획을 세웁니다. attention도 같은 패턴으로, wq/wk/wv는 `ColwiseParallel`, 출력 projection인 wo는 `RowwiseParallel`로 자르는 것이 공식 TP tutorial의 Llama 예제 구성입니다. 이 분할 방식은 Megatron-LM에서 제안된 것이고, `parallelize_module`은 이를 plan 하나로 적용하게 해 줍니다.
 
-<img src="/images/05/slide35_1.png" alt="Megatron-LM Tensor Parallel: (a) MLP는 A를 열로, B를 행으로 나누고 g에서 all-reduce, (b) self-attention은 head 단위로 나눔" class="h-72 mt-4 mx-auto" />
+<img src="/images/05/slide35_1.png" alt="Megatron-LM Tensor Parallel: (a) MLP는 A를 열로, B를 행으로 나누고 g에서 all-reduce, (b) self-attention은 head 단위로 나눔" class="mt-4 mx-auto" />
 
 <div class="text-sm mt-2 max-w-3xl mx-auto">
 

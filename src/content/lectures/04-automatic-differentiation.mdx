@@ -53,7 +53,7 @@ PyTorch + NPU 온라인 모임 #4 | 2025-01-08
   darkSrc="/images/04/training-loop-dark.svg"
   lightSrc="/images/04/training-loop-light.svg"
   alt="training loop: training data가 forward를 거쳐 loss가 되고, autodiff로 구한 gradient로 optimizer가 weight를 update"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 네트워크의 weight(예: $a, b$)는 랜덤하게 초기화되거나 학습 중간 체크포인트에서 시작됩니다. 학습은 현재 weight로 training data에 대한 성능을 평가하고 weight를 고치는 일을 반복합니다.
@@ -553,7 +553,7 @@ def backward(self, ge_scalar, tangents_1):
   darkSrc="/images/04/compile-train-flow-dark.svg"
   lightSrc="/images/04/compile-train-flow-light.svg"
   alt="torch.compile 학습에서 첫 compiled_model 호출이 compiled forward/backward를 가진 torch.autograd.Function을 만들고, loss.backward()가 그 compiled backward를 호출"
-  class="h-96 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[700px]"
 />
 
 
@@ -569,7 +569,7 @@ Training mode에서 `torch.compile()`이 model의 forward와 backward graph를 c
   darkSrc="/images/04/aotautograd-interpose-dark.svg"
   lightSrc="/images/04/aotautograd-interpose-light.svg"
   alt="Dynamo의 FX graph가 기본 경로에서 AOTAutograd를 거쳐 backend compiler로 가고, 결과가 torch.autograd.Function으로 감싸짐"
-  class="h-80 mx-auto mt-4"
+  class="mx-auto mt-4 w-full max-w-[680px]"
 />
 
 Training mode에서는 Dynamo가 생성한 FX graph가 AOTAutograd로 전달됩니다. AOTAutograd는 forward와 backward를 포함한 joint graph를 생성하고, 이를 compiled forward와 compiled backward로 partition합니다. Inference mode에서는 joint graph 생성과 partitioning을 생략하고 functionalization과 decomposition을 적용한 forward graph를 backend compiler로 전달합니다.
@@ -647,7 +647,7 @@ AOTAutograd는 이 두 방법으로 graph mode에서도 eager mode와 같은 방
 
 AOTAutograd의 전체 구조입니다.
 
-<img src="/images/04/slide25_1.png" alt="torch.* 호출의 FX graph가 functionalization·decomposition·tracing을 거쳐 ATen graph가 되고, 입력은 unwrapping·deduping, 출력은 autograd.Function으로 다시 감싸지는 AOTAutograd 구조" class="h-64 mx-auto" />
+<img src="/images/04/slide25_1.png" alt="torch.* 호출의 FX graph가 functionalization·decomposition·tracing을 거쳐 ATen graph가 되고, 입력은 unwrapping·deduping, 출력은 autograd.Function으로 다시 감싸지는 AOTAutograd 구조" class="mx-auto" />
 
 > 출처: [Hotchips 2023 Tutorial: ML Inference (YouTube)](https://www.youtube.com/watch?v=i-dOWSHk3Wk)
 
@@ -817,7 +817,7 @@ to give us the forwards pass and the backwards pass.
 
 앞 절의 `joint_fw_bw`를 C++ dispatcher 수준에서 trace하면, forward와 backward가 모두 하나의 graph 안에 들어간 **joint FX graph**가 만들어집니다. 이것이 수행 순서표의 D 단계 결과물입니다.
 
-<img src="/images/04/slide30_1.png" alt="TORCH_LOGS=aot_joint_graph로 출력한 joint graph 코드. forward 연산(초록)과 backward 연산(빨강)이 하나의 forward 함수 안에 있다" class="h-56 mx-auto" />
+<img src="/images/04/slide30_1.png" alt="TORCH_LOGS=aot_joint_graph로 출력한 joint graph 코드. forward 연산(초록)과 backward 연산(빨강)이 하나의 forward 함수 안에 있다" class="mx-auto w-full max-w-[856px]" />
 
 위 graph에는 forward와 backward 연산이 함께 있고, forward에서 만들어진 중간 tensor가 backward node의 input으로 연결되는 관계도 살아 있습니다. G 단계의 partitioner는 이 정보를 이용해 저장할 tensor와 recompute할 tensor를 결정합니다.
 
@@ -826,7 +826,7 @@ to give us the forwards pass and the backwards pass.
 
 Decomposition은 실제로는 D 단계의 tracing 중에 적용됩니다. Dispatcher를 지나는 op에 decomposition table의 규칙이 있으면, 그 op을 더 작은 ATen op으로 바꿔 기록합니다. 그래서 결과 joint graph는 이미 ATen 수준입니다(앞의 joint graph 그림에 `clamp_min`이 아니라 `aten.maximum`이 보이는 이유입니다). 여기서는 이해를 위해 E 단계로 따로 떼어 설명합니다.
 
-<img src="/images/04/slide31_1.png" alt="clamp_min이 clamp → maximum으로 분해되는 PrimTorch decomposition 코드 예제" class="h-72 mx-auto" />
+<img src="/images/04/slide31_1.png" alt="clamp_min이 clamp → maximum으로 분해되는 PrimTorch decomposition 코드 예제" class="mx-auto w-full max-w-[868px]" />
 
 그림의 `# torchinductor/decomposition.py`는 원 슬라이드의 옛 경로입니다. 현재 경로는 `torch/_inductor/decomposition.py`입니다.
 

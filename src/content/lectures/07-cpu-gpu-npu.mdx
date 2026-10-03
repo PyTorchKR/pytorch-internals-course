@@ -46,7 +46,7 @@ PyTorch + NPU 온라인 모임 #7 | 2025-02-12
   lightSrc="/images/07/processor_design_abstraction_light.svg"
   darkSrc="/images/07/processor_design_abstraction_dark.svg"
   alt="Developer에서 Datapath까지의 계층. Programming Language·Compiler는 SW, ISA·Control Logic·Datapath는 HW이고, 오른쪽 ①②③은 추상화를 각각 Control Logic, Compiler, Developer까지 끌어올리는 세 가지 접근"
-  class="h-36 mx-auto"
+  class="mx-auto w-full max-w-[680px]"
 />
 
 이 스택에서 Programming Language와 Compiler는 소프트웨어 영역에 해당하고, ISA(Instruction Set Architecture)와 Control Logic, Datapath는 하드웨어 영역에 해당합니다. 특히 Control Logic과 Datapath를 합쳐서 **Microarchitecture**라고 부릅니다.
@@ -106,7 +106,7 @@ PyTorch + NPU 온라인 모임 #7 | 2025-02-12
   lightSrc="/images/07/latency_hiding_light.svg"
   darkSrc="/images/07/latency_hiding_dark.svg"
   alt="위: 작업을 하나씩 처리하면 Latency가 Throughput을 정한다. 아래: 작업을 겹쳐 처리하면 다음 작업의 시작 간격이 Throughput을 정한다"
-  class="h-36 mx-auto"
+  class="mx-auto w-full max-w-[880px]"
 />
 
 위 그림은 같은 길이의 작업이라도 처리 방식에 따라 Throughput이 어떻게 달라지는지를 보여줍니다.
@@ -506,7 +506,7 @@ OOO Processor는 명령어가 들어올 때마다 코드에 적힌 Architectural
     lightSrc="/images/07/loop_pipeline_light.svg"
     darkSrc="/images/07/loop_pipeline_dark.svg"
     alt="같은 루프 본문 네 벌이 밀려 겹친 모습. 점선 상자 안에서는 서로 다른 iteration의 명령어가 함께 실행된다"
-    class="h-36 mx-auto"
+    class="mx-auto w-full max-w-[800px]"
   />
   <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>점선 상자 = 2 cycle 동안 서로 다른 iteration의 명령어 6개(cycle당 3개)가 함께 실행됨</div>
 </div>
@@ -551,7 +551,7 @@ VLIW로 넘어가기 전에 OOO의 비용을 짚어 둡니다. OOO Processor는 
     lightSrc="/images/07/loop_pipeline_light.svg"
     darkSrc="/images/07/loop_pipeline_dark.svg"
     alt="OOO가 실행 중에 만들어 내는 loop pipeline: 같은 루프 본문 네 벌이 밀려 겹친다"
-    class="h-36 mx-auto"
+    class="mx-auto w-full max-w-[800px]"
   />
   <div style={{ fontSize: '0.9em', fontStyle: 'italic', opacity: 0.75, textAlign: 'center' }}>OOO: 하드웨어가 매 cycle 동적으로 만들어내는 Loop Pipeline</div>
 </div>
@@ -688,7 +688,7 @@ Modulo Scheduling에서는 OOO Processor가 실행 중에 하던 일을 컴파�
 
 최근 AI accelerator 문맥에서는 VLIW 계열의 정적 제어 방식을 **Reconfigurable Architecture**라고 설명하기도 합니다. 넓은 control word나 command stream이 여러 Functional Unit과 data path의 동작을 지정하기 때문입니다. 그래서 소프트웨어가 cycle마다 하드웨어의 사용 구성을 바꾸는 것처럼 보입니다. VLIW와 reconfigurable processor가 같은 용어라는 뜻은 아닙니다. 이 명칭은 컴파일러가 하드웨어 동작을 명시적으로 스케줄한다는 공통 계보를 가리킵니다.
 
-<img src="/images/07/slide35_2.png" alt="CGRA 예: 4×4 Functional Unit 배열이 이웃끼리 연결되고 각 FU가 Config Memory와 로컬 register file을 가짐" class="h-64 mx-auto" />
+<img src="/images/07/slide35_2.png" alt="CGRA 예: 4×4 Functional Unit 배열이 이웃끼리 연결되고 각 FU가 Config Memory와 로컬 register file을 가짐" class="mx-auto" />
 
 **CGRA**(Coarse-Grained Reconfigurable Architecture)는 위 그림처럼 Functional Unit(FU)을 2차원 격자로 배열하고 이웃끼리 연결한 구조입니다. 각 FU의 Config Memory에 "이 cycle에 무엇을 계산하고 결과를 어느 이웃으로 보낼지"를 적어 두므로, 소프트웨어가 cycle마다 연산뿐 아니라 FU 사이의 데이터 경로까지 구성합니다. VLIW보다 더 많은 hardware detail을 control word에 노출한다는 뜻에서 이 강의는 이를 "Extreme VLIW"로 비유합니다(표준 분류명은 아닙니다).
 
@@ -783,11 +783,11 @@ Thread-level 병렬 아키텍처가 서버 시장에서 중요해진 이유 하�
 
 <MemoryHierarchyDiagram />
 
-가장 위에는 실제 연산을 담당하는 Compute Unit들이 있습니다. 그 밑에 빠른 On-Chip Memory(CPU의 경우 보통 Cache)가 있고, 가장 아래에 DRAM 같은 오프칩 메모리가 있습니다. Compute Unit과 On-Chip Memory는 Interconnect로 이어지고, On-Chip Memory와 DRAM 사이의 경계에는 Memory Wall이 표시되어 있습니다(뜻은 아래에서 설명합니다). 위로 갈수록 빠르고 작고, 아래로 갈수록 느리고 큽니다. 이 구조를 **Memory Hierarchy**라고 부릅니다.
+가장 위에는 실제 연산을 담당하는 Compute Unit들이 있습니다. 그 밑에 빠른 On-Chip Memory(CPU의 경우 보통 Cache)가 있고, 가장 아래에 DRAM 같은 오프칩 메모리가 있습니다. CPU는 보통 DDR DRAM을 씁니다. GPU가 쓰는 HBM(High Bandwidth Memory)도 DRAM die를 여러 층 쌓아 프로세서 옆에 붙인 DRAM입니다. 그래서 이 절에서 말하는 DRAM은 HBM까지 포함합니다. Compute Unit과 On-Chip Memory는 Interconnect로 이어지고, On-Chip Memory와 DRAM 사이의 경계에는 Memory Wall이 표시되어 있습니다(뜻은 아래에서 설명합니다). 위로 갈수록 빠르고 작고, 아래로 갈수록 느리고 큽니다. 이 구조를 **Memory Hierarchy**라고 부릅니다.
 
 현대 프로세서에서 가장 큰 성능 병목은 이 오프칩 메모리(DRAM)에 접근할 때의 bandwidth와 Latency입니다. 연산 능력은 세대를 거치며 계속 향상되지만, DRAM에 접근하는 속도는 그 속도를 따라가지 못합니다. 이 현상을 가리키는 용어가 **Memory Wall**이고, Wulf와 McKee의 1994년 기술 보고서(1995년 ACM 게재)에서 널리 알려졌습니다. 프로세서 설계의 과제는 "DRAM bandwidth를 어떻게 최대한 활용할 것인가"가 됩니다.
 
-<img src="/images/07/slide41_1.png" alt="Wulf & McKee, 'Hitting the Memory Wall: Implications of the Obvious' (1994) 첫 페이지" class="h-72 mx-auto" />
+<img src="/images/07/slide41_1.png" alt="Wulf & McKee, 'Hitting the Memory Wall: Implications of the Obvious' (1994) 첫 페이지" class="mx-auto w-full max-w-[578px]" />
 
 ### Multithreading을 활용한 Memory Latency Hiding
 
@@ -859,7 +859,7 @@ SIMT 모델의 기본 단위는 다음과 같습니다.
 
 CUDA 프로그래머가 많은 Thread를 작성해 두면, GPU는 이를 다음과 같이 실행합니다. 어떤 Warp가 실행되다가 Cache Miss나 메모리 접근 같은 긴 Latency 이벤트를 만나면, 그 Warp는 일시 중단됩니다. SM은 즉시 실행 가능한 다른 Warp로 전환해 연산 유닛을 계속 가동합니다. 그러다가 처음 Warp가 기다리던 메모리 접근이 끝나면 그 Warp는 다시 후보 큐에 들어가 실행됩니다.
 
-<img src="/images/07/slide49_1.png" alt="Latency hiding with 4 threads(AMD): Batch 1~4가 시간 순으로 Stall, Runnable, Done 상태를 거치며 서로의 대기 시간을 겹쳐 숨기는 타임라인. AMD 그림의 Batch는 이 강의의 Warp에 해당함" class="h-80 mx-auto" />
+<img src="/images/07/slide49_1.png" alt="Latency hiding with 4 threads(AMD): Batch 1~4가 시간 순으로 Stall, Runnable, Done 상태를 거치며 서로의 대기 시간을 겹쳐 숨기는 타임라인. AMD 그림의 Batch는 이 강의의 Warp에 해당함" class="mx-auto" />
 
 이 방식은 전환할 ready Warp가 충분히 많아야 동작합니다. GPU는 많은 Thread를 in-flight 상태로 두고, Warp scheduler가 issue 시점마다 실행 가능한 Warp를 골라 memory latency로 생기는 빈 cycle을 줄입니다.
 
@@ -1070,7 +1070,7 @@ Blackwell(B200)에서도 TMA pipeline, warp specialization, mbarrier 동기화�
 
 [^cta]: Cooperative Thread Array. CUDA의 ThreadBlock을 하드웨어(PTX) 수준에서 부르는 이름입니다.
 
-<img src="/images/07/blackwell_tcgen05_tmem.png" alt="Blackwell tcgen05 MMA의 데이터 경로: Tensor Core가 TMEM에서 A를, SMEM에서 B를 읽어 결과 C를 TMEM에 누적하고, Register File은 이 경로에서 완전히 비켜나 있다" class="h-72 mx-auto" />
+<img src="/images/07/blackwell_tcgen05_tmem.png" alt="Blackwell tcgen05 MMA의 데이터 경로: Tensor Core가 TMEM에서 A를, SMEM에서 B를 읽어 결과 C를 TMEM에 누적하고, Register File은 이 경로에서 완전히 비켜나 있다" class="mx-auto" />
 
 위 그림은 한 `tcgen05.mma` 형태의 data path를 보여줍니다. Operand descriptor는 register로 전달되지만, matrix tile과 accumulator의 주요 data path는 TMEM·SMEM을 사용하므로 accumulator 전체를 각 thread의 register에 보관하지 않아도 됩니다.
 
@@ -1086,7 +1086,7 @@ GEMM kernel의 mainloop는 A·B tile을 반복해서 load하고 matrix product�
     lightSrc="/images/07/blackwell_gemm_pipeline_light.svg"
     darkSrc="/images/07/blackwell_gemm_pipeline_dark.svg"
     alt="Blackwell GEMM 3단 파이프라인: 같은 시각에 TMA는 tile k+1을 GMEM에서 SMEM으로 옮기고, Tensor Core는 tile k를 TMEM에 누적하고, Epilogue warp-group은 tile k-1을 GMEM에 쓴다"
-    class="h-64 mx-auto"
+    class="mx-auto w-full max-w-[880px]"
 />
 
 이 pipeline에서 mainloop 담당 Warp는 TMA·MMA instruction을 발행하고 buffer slot을 관리합니다. 이 Warp는 mbarrier로 동기화도 맡습니다. epilogue 담당 Warp는 output을 변환해 저장합니다. 역할 분담과 software pipeline이 명시적이어도 kernel은 여전히 CUDA의 CTA·Warp 실행 모델과 hardware Warp scheduling 위에서 동작합니다.
