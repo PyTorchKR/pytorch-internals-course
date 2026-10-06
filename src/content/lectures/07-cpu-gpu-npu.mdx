@@ -323,7 +323,7 @@ blt   s1, t0, loop  # 8`}</pre>
   </div>
 </div>
 
-이 루프는 Python으로 쓰면 `for i in range(n): a[i] = a[i] * a[i] + a[i]`입니다. `s0`이 배열 `a`의 시작 주소, `s1`이 `i`, `t0`이 `n`이고, 1~2번이 주소 계산, 3번이 load, 4~5번이 곱셈과 덧셈, 6번이 store, 7번이 `i += 1`입니다. 왼쪽은 루프 자체(`loop:` 레이블이 붙어 반복 시작점이 되는 코드)이고, 오른쪽은 두 iteration을 순차 실행했을 때의 명령어 trace입니다. 마지막 줄에 있는 BLT(Branch if Less Than)가 조건부 분기 명령어로, 루프의 끝에서 다시 처음으로 되돌아가는 **Back Edge**를 형성합니다. 문제는 이 조건부 분기가 해결되어야만 다음 iteration을 시작할 수 있다는 점입니다.
+이 루프는 Python으로 쓰면 `for i in range(n): a[i] = a[i] * a[i] + a[i]`입니다. `s0`이 배열 `a`의 시작 주소, `s1`이 `i`, `t0`이 `n`이고, 1\~2번이 주소 계산, 3번이 load, 4\~5번이 곱셈과 덧셈, 6번이 store, 7번이 `i += 1`입니다. 왼쪽은 루프 자체(`loop:` 레이블이 붙어 반복 시작점이 되는 코드)이고, 오른쪽은 두 iteration을 순차 실행했을 때의 명령어 trace입니다. 마지막 줄에 있는 BLT(Branch if Less Than)가 조건부 분기 명령어로, 루프의 끝에서 다시 처음으로 되돌아가는 **Back Edge**를 형성합니다. 문제는 이 조건부 분기가 해결되어야만 다음 iteration을 시작할 수 있다는 점입니다.
 
 따라서 아무 장치 없이 그대로 두면 이 루프는 iteration 단위로 순차 실행될 수밖에 없습니다. 한 iteration이 BLT까지 다 끝나야 비로소 다음 iteration의 첫 명령어를 시작할 수 있는 구조이기 때문입니다. 이 구조를 어떻게 깨고 iteration들을 겹쳐 실행할 것인가가 Loop-level pipelining의 출발점입니다.
 
